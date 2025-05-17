@@ -12,125 +12,199 @@ import {
   Statistic,
   Space,
   Spin,
+  Avatar, // Added for testimonials
 } from "antd";
 import {
-  HeartOutlined,
+  HeartFilled, // Changed from HeartOutlined for more impact
   TeamOutlined,
   RiseOutlined,
   ArrowRightOutlined,
+  GiftOutlined, // New: for How it Works & Impact
+  ShareAltOutlined, // New: for How it Works
+  EditOutlined, // New: for How it Works
+  GlobalOutlined, // New: for general use, e.g. community
+  MessageOutlined, // New: for testimonials
 } from "@ant-design/icons";
 import { getCauses, reset } from "../../redux/slices/causesSlice";
 import CauseCard from "../../components/causes/CauseCard";
+import "./HomePage.css"; // Import a dedicated CSS file for HomePage styles
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
+
+// Placeholder images - replace with your actual high-quality images
+const HERO_BACKGROUND_URL =
+  "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"; // Example: hands holding a plant
+const IMPACT_IMAGE_1_URL =
+  "https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80"; // Example: person receiving food
+const IMPACT_IMAGE_2_URL =
+  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80"; // Example: community event
 
 const HomePage = () => {
   const dispatch = useDispatch();
   const { causes, isLoading } = useSelector((state) => state.causes);
 
   useEffect(() => {
-    // Fetch featured/recent causes
-    dispatch(getCauses({ limit: 6 }));
+    dispatch(getCauses({ limit: 3 })); // Fetch 3 featured causes for a cleaner look
 
     return () => {
       dispatch(reset());
     };
   }, [dispatch]);
 
+  const statsData = [
+    {
+      title: "Lives Touched",
+      value: 1200,
+      icon: <TeamOutlined />,
+      suffix: "+",
+      color: "#3498db",
+    }, // Using a vibrant blue
+    {
+      title: "Active Causes",
+      value: 45,
+      icon: <HeartFilled />,
+      color: "#e74c3c",
+    }, // Slightly adjusted red
+    {
+      title: "Funds Raised",
+      value: 5800,
+      icon: <RiseOutlined />,
+      prefix: "$",
+      color: "#2ecc71",
+    }, // Using a fresh green
+  ];
+
+  const howItWorksSteps = [
+    {
+      icon: <EditOutlined style={{ fontSize: 48, color: "#1890ff" }} />,
+      title: "Create or Find a Cause",
+      description:
+        "Easily start your own fundraising campaign or discover existing causes that resonate with you.",
+    },
+    {
+      icon: <ShareAltOutlined style={{ fontSize: 48, color: "#52c41a" }} />,
+      title: "Share & Spread Awareness",
+      description:
+        "Amplify your impact by sharing causes with your network through social media and email.",
+    },
+    {
+      icon: <GiftOutlined style={{ fontSize: 48, color: "#faad14" }} />,
+      title: "Contribute & Make a Difference",
+      description:
+        "Securely donate to causes you care about and see the tangible results of your generosity.",
+    },
+  ];
+
+  const testimonials = [
+    {
+      avatar: (
+        <Avatar
+          size={64}
+          icon={<TeamOutlined />}
+          style={{ backgroundColor: "#87d068" }}
+        />
+      ),
+      quote:
+        "Hands2gether provided an incredible platform to support local families. Seeing the direct impact of our collective effort was truly heartwarming.",
+      name: "Jane Doe",
+      role: "Community Volunteer",
+    },
+    {
+      avatar: (
+        <Avatar
+          size={64}
+          icon={<TeamOutlined />}
+          style={{ backgroundColor: "#1890ff" }}
+        />
+      ),
+      quote:
+        "As a small organization, fundraising was always a challenge. Hands2gether made it simple to reach a wider audience and secure the funds we needed.",
+      name: "John Smith",
+      role: "Non-Profit Founder",
+    },
+  ];
+
   return (
-    <div>
+    <div className="homepage-container">
       {/* Hero Section */}
       <section
         className="hero-section"
         style={{
-          background:
-            'linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("/hero-bg.jpg")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          padding: "80px 0",
-          textAlign: "center",
-          color: "#fff",
-          marginBottom: 60,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${HERO_BACKGROUND_URL})`,
         }}
       >
-        <div className="container">
-          <Title level={1} style={{ color: "#fff", marginBottom: 16 }}>
-            Together We Can Make a Difference
+        <div className="container text-center">
+          <Title level={1} className="hero-title">
+            Empowering Communities, Together.
           </Title>
-          <Paragraph
-            style={{ fontSize: 18, maxWidth: 800, margin: "0 auto 32px" }}
-          >
-            Hands2gether connects people who want to help with those in need of
-            food assistance. Join our community and start making an impact
-            today.
+          <Paragraph className="hero-subtitle">
+            Join Hands2gether to discover, support, or create causes that bring
+            positive change to people's lives.
           </Paragraph>
-          <Space size="large">
-            <Button type="primary" size="large">
+          <Space size="large" wrap>
+            <Button type="primary" size="large" className="hero-button-primary">
               <Link to="/causes">Explore Causes</Link>
             </Button>
-            <Button size="large">
-              <Link to="/causes/create">Create a Cause</Link>
+            <Button size="large" className="hero-button-secondary">
+              <Link to="/causes/create">Start a Cause</Link>
             </Button>
           </Space>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="stats-section" style={{ marginBottom: 60 }}>
+      <section className="stats-section section-padding">
         <div className="container">
-          <Row gutter={[24, 24]} justify="center">
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="People Helped"
-                  value={1200}
-                  prefix={<TeamOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="Active Causes"
-                  value={45}
-                  prefix={<HeartOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card>
-                <Statistic
-                  title="Total Contributions"
-                  value={5800}
-                  prefix={<RiseOutlined />}
-                  suffix="$"
-                />
-              </Card>
-            </Col>
+          <Row gutter={[32, 32]} justify="center">
+            {statsData.map((stat, index) => (
+              <Col xs={24} sm={12} md={8} key={index}>
+                <Card className="stat-card" bordered={false}>
+                  <Statistic
+                    title={
+                      <Title level={5} className="stat-title">
+                        {stat.title}
+                      </Title>
+                    }
+                    value={stat.value}
+                    prefix={
+                      <span
+                        className="stat-icon-wrapper"
+                        style={{ backgroundColor: stat.color }}
+                      >
+                        {React.cloneElement(stat.icon, {
+                          style: { color: "#fff", fontSize: "24px" },
+                        })}
+                      </span>
+                    }
+                    suffix={stat.suffix}
+                    valueStyle={{
+                      color: "#2c3e50",
+                      fontWeight: "bold",
+                      fontSize: "2.2rem",
+                    }}
+                  />
+                </Card>
+              </Col>
+            ))}
           </Row>
         </div>
       </section>
 
       {/* Featured Causes Section */}
-      <section className="featured-causes" style={{ marginBottom: 60 }}>
+      <section className="featured-causes-section section-padding background-light">
         <div className="container">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 24,
-            }}
-          >
-            <Title level={2}>Featured Causes</Title>
-            <Button type="link">
+          <div className="section-header">
+            <Title level={2} className="section-title">
+              Featured Causes
+            </Title>
+            <Button type="text" className="section-viewall-button">
               <Link to="/causes">
-                View All <ArrowRightOutlined />
+                View All Causes <ArrowRightOutlined />
               </Link>
             </Button>
           </div>
-
           {isLoading ? (
-            <div className="text-center" style={{ padding: 40 }}>
+            <div className="text-center" style={{ padding: "50px 0" }}>
               <Spin size="large" />
             </div>
           ) : (
@@ -138,16 +212,16 @@ const HomePage = () => {
               {causes && causes.length > 0 ? (
                 causes.map((cause) => (
                   <Col xs={24} sm={12} md={8} key={cause.id}>
-                    <CauseCard cause={cause} />
+                    <CauseCard cause={cause} className="featured-cause-card" />
                   </Col>
                 ))
               ) : (
                 <Col span={24}>
                   <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Title level={4}>No causes found</Title>
+                    <Title level={4}>No featured causes at the moment.</Title>
                     <Paragraph>
-                      Be the first to{" "}
-                      <Link to="/causes/create">create a cause</Link>!
+                      Why not be the first to{" "}
+                      <Link to="/causes/create">create a new cause</Link>?
                     </Paragraph>
                   </div>
                 </Col>
@@ -158,236 +232,136 @@ const HomePage = () => {
       </section>
 
       {/* How It Works Section */}
-      <section
-        className="how-it-works"
-        style={{
-          background: "#f9f9f9",
-          padding: "60px 0",
-          marginBottom: 60,
-        }}
-      >
+      <section className="how-it-works-section section-padding">
         <div className="container">
-          <Title level={2} className="text-center" style={{ marginBottom: 40 }}>
-            How It Works
-          </Title>
-
+          <div className="section-header">
+            <Title level={2} className="section-title">
+              Making a Difference is Easy
+            </Title>
+          </div>
           <Row gutter={[32, 32]} justify="center">
-            <Col xs={24} sm={8}>
-              <Card
-                style={{ height: "100%", textAlign: "center" }}
-                cover={
-                  <div style={{ padding: 20 }}>
-                    <div
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        background: "#4CAF50",
-                        color: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 28,
-                        fontWeight: "bold",
-                        margin: "0 auto",
-                      }}
-                    >
-                      1
-                    </div>
-                  </div>
-                }
-              >
-                <Title level={4}>Create a Cause</Title>
-                <Paragraph>
-                  Register an account and create a cause to help those in need.
-                  Add details, images, and set funding or food goals.
-                </Paragraph>
-              </Card>
-            </Col>
-
-            <Col xs={24} sm={8}>
-              <Card
-                style={{ height: "100%", textAlign: "center" }}
-                cover={
-                  <div style={{ padding: 20 }}>
-                    <div
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        background: "#4CAF50",
-                        color: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 28,
-                        fontWeight: "bold",
-                        margin: "0 auto",
-                      }}
-                    >
-                      2
-                    </div>
-                  </div>
-                }
-              >
-                <Title level={4}>Share Your Cause</Title>
-                <Paragraph>
-                  Share your cause with friends, family, and the community. The
-                  more people who know, the more help you can receive.
-                </Paragraph>
-              </Card>
-            </Col>
-
-            <Col xs={24} sm={8}>
-              <Card
-                style={{ height: "100%", textAlign: "center" }}
-                cover={
-                  <div style={{ padding: 20 }}>
-                    <div
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: "50%",
-                        background: "#4CAF50",
-                        color: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 28,
-                        fontWeight: "bold",
-                        margin: "0 auto",
-                      }}
-                    >
-                      3
-                    </div>
-                  </div>
-                }
-              >
-                <Title level={4}>Make an Impact</Title>
-                <Paragraph>
-                  Receive contributions and help people in need. Track your
-                  progress and thank your contributors.
-                </Paragraph>
-              </Card>
-            </Col>
+            {howItWorksSteps.map((step, index) => (
+              <Col xs={24} sm={12} md={8} key={index}>
+                <Card
+                  className="how-it-works-card text-center"
+                  bordered={false}
+                >
+                  <div className="how-it-works-icon">{step.icon}</div>
+                  <Title level={4} style={{ marginTop: 20, marginBottom: 10 }}>
+                    {step.title}
+                  </Title>
+                  <Paragraph>{step.description}</Paragraph>
+                </Card>
+              </Col>
+            ))}
           </Row>
-
           <div className="text-center" style={{ marginTop: 40 }}>
             <Button type="primary" size="large">
-              <Link to="/register">Get Started</Link>
+              <Link to="/register">Get Started Now</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="testimonials" style={{ marginBottom: 60 }}>
+      {/* Impact Showcase Section */}
+      <section className="impact-showcase-section section-padding background-light">
         <div className="container">
-          <Title level={2} className="text-center" style={{ marginBottom: 40 }}>
-            What People Say
-          </Title>
+          <div className="section-header">
+            <Title level={2} className="section-title">
+              Our Collective Impact
+            </Title>
+            <Paragraph className="section-subtitle">
+              See how contributions like yours are changing lives and building
+              stronger communities.
+            </Paragraph>
+          </div>
+          <Row gutter={[32, 32]} align="middle">
+            <Col xs={24} md={12}>
+              <img
+                src={IMPACT_IMAGE_1_URL}
+                alt="Impactful story 1"
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                }}
+              />
+              <Title level={4}>Nourishing Families</Title>
+              <Paragraph>
+                With the funds raised, we've been able to provide over 500
+                families with essential food packages, ensuring no one in our
+                local area goes hungry.
+              </Paragraph>
+            </Col>
+            <Col xs={24} md={12}>
+              <img
+                src={IMPACT_IMAGE_2_URL}
+                alt="Impactful story 2"
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                }}
+              />
+              <Title level={4}>Supporting Local Shelters</Title>
+              <Paragraph>
+                Emergency shelters received critical supplies and support,
+                helping them continue their vital work for those most in need
+                during challenging times.
+              </Paragraph>
+            </Col>
+          </Row>
+        </div>
+      </section>
 
-          <Carousel autoplay>
-            <div>
-              <Card style={{ maxWidth: 800, margin: "0 auto", padding: 20 }}>
-                <Paragraph style={{ fontSize: 18, fontStyle: "italic" }}>
-                  "Hands2gether helped me connect with people who really needed
-                  food assistance in my community. I was able to make a direct
-                  impact and see the results of my contributions."
-                </Paragraph>
-                <Divider />
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div style={{ marginRight: 16 }}>
-                    <div
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        background: "#f0f0f0",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <TeamOutlined style={{ fontSize: 24 }} />
-                    </div>
-                  </div>
-                  <div>
-                    <Title level={5} style={{ margin: 0 }}>
-                      Sarah Johnson
-                    </Title>
-                    <Paragraph style={{ margin: 0 }}>
-                      Volunteer, New York
-                    </Paragraph>
-                  </div>
-                </div>
-              </Card>
-            </div>
-            <div>
-              <Card style={{ maxWidth: 800, margin: "0 auto", padding: 20 }}>
-                <Paragraph style={{ fontSize: 18, fontStyle: "italic" }}>
-                  "When our food bank was running low on supplies, I created a
-                  cause on Hands2gether. Within days, we received enough
-                  donations to help over 100 families."
-                </Paragraph>
-                <Divider />
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <div style={{ marginRight: 16 }}>
-                    <div
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        background: "#f0f0f0",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <TeamOutlined style={{ fontSize: 24 }} />
-                    </div>
-                  </div>
-                  <div>
-                    <Title level={5} style={{ margin: 0 }}>
-                      Robert Chen
-                    </Title>
-                    <Paragraph style={{ margin: 0 }}>
-                      Food Bank Manager, Chicago
-                    </Paragraph>
-                  </div>
-                </div>
-              </Card>
-            </div>
+      {/* Testimonials Section */}
+      <section className="testimonials-section section-padding">
+        <div className="container">
+          <div className="section-header">
+            <Title level={2} className="section-title">
+              Voices from Our Community
+            </Title>
+          </div>
+          <Carousel autoplay dots={{ className: "testimonial-dots" }}>
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="testimonial-slide">
+                <Card className="testimonial-card" bordered={false}>
+                  <div className="testimonial-avatar">{testimonial.avatar}</div>
+                  <Paragraph className="testimonial-quote">
+                    <MessageOutlined
+                      style={{ marginRight: 8, color: "#1890ff" }}
+                    />
+                    {testimonial.quote}
+                  </Paragraph>
+                  <Divider className="testimonial-divider" />
+                  <Title level={5} className="testimonial-name">
+                    {testimonial.name}
+                  </Title>
+                  <Text type="secondary" className="testimonial-role">
+                    {testimonial.role}
+                  </Text>
+                </Card>
+              </div>
+            ))}
           </Carousel>
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section
-        className="cta"
-        style={{
-          background: "#4CAF50",
-          padding: "60px 0",
-          textAlign: "center",
-          color: "#fff",
-        }}
-      >
-        <div className="container">
-          <Title level={2} style={{ color: "#fff", marginBottom: 16 }}>
-            Ready to Make a Difference?
+      {/* Call to Action Section */}
+      <section className="cta-section">
+        <div className="container text-center">
+          <Title level={2} className="cta-title">
+            Ready to Make a Lasting Impact?
           </Title>
-          <Paragraph style={{ fontSize: 18, marginBottom: 32 }}>
-            Join our community today and start helping those in need.
+          <Paragraph className="cta-subtitle">
+            Your support can change lives. Join our community of givers today.
           </Paragraph>
-          <Space size="large">
-            <Button
-              size="large"
-              style={{ background: "#fff", color: "#4CAF50" }}
-            >
-              <Link to="/register">Sign Up Now</Link>
+          <Space size="large" wrap>
+            <Button type="primary" size="large" className="cta-button-primary">
+              <Link to="/register">Sign Up & Get Involved</Link>
             </Button>
-            <Button ghost size="large">
-              <Link to="/causes">Browse Causes</Link>
+            <Button size="large" className="cta-button-secondary">
+              <Link to="/causes">Explore Active Causes</Link>
             </Button>
           </Space>
         </div>

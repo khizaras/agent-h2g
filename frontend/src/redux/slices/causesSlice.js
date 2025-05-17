@@ -328,9 +328,7 @@ export const causesSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
-      })
-
-      // Follow cause cases
+      }) // Follow cause cases
       .addCase(followCause.fulfilled, (state) => {
         if (state.cause) {
           state.cause.isFollowing = true;
@@ -341,6 +339,13 @@ export const causesSlice = createSlice({
       .addCase(unfollowCause.fulfilled, (state) => {
         if (state.cause) {
           state.cause.isFollowing = false;
+        }
+      })
+
+      // Toggle follow cause cases
+      .addCase(toggleFollowCause.fulfilled, (state, action) => {
+        if (state.cause) {
+          state.cause.isFollowing = action.payload.isFollowing;
         }
       })
 

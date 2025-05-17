@@ -6,6 +6,7 @@ import feedbackReducer from "../slices/feedbackSlice";
 import notificationsReducer from "../slices/notificationsSlice";
 import userReducer from "../slices/userSlice";
 import alertsReducer from "../slices/alertsSlice";
+import adminReducer from "../slices/adminSlice";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     notifications: notificationsReducer,
     user: userReducer,
     alerts: alertsReducer,
+    admin: adminReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

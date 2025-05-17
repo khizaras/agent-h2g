@@ -101,11 +101,15 @@ const getCauseById = async (req, res) => {
         isFollowing = await Cause.isFollowing(req.user.id, cause.id);
       }
 
+      // Get feedback for this cause
+      const feedback = await Cause.getFeedback(cause.id);
+
       res.json({
         success: true,
         cause: {
           ...cause,
           isFollowing,
+          feedback: feedback || [], // Add feedback to the cause object
         },
       });
     } else {
@@ -413,14 +417,13 @@ const followCause = async (req, res) => {
         success: false,
         error: "Already following this cause",
       });
-    }
-
-    // Follow cause
+    } // Follow cause
     await Cause.follow(req.user.id, cause_id);
 
     res.json({
       success: true,
       message: "Cause followed successfully",
+      isFollowing: true,
     });
   } catch (error) {
     console.error("Error in followCause:", error.message);
@@ -456,14 +459,13 @@ const unfollowCause = async (req, res) => {
         success: false,
         error: "Not following this cause",
       });
-    }
-
-    // Unfollow cause
+    } // Unfollow cause
     await Cause.unfollow(req.user.id, cause_id);
 
     res.json({
       success: true,
       message: "Cause unfollowed successfully",
+      isFollowing: false,
     });
   } catch (error) {
     console.error("Error in unfollowCause:", error.message);

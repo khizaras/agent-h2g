@@ -53,9 +53,11 @@ const { Search } = AntInput;
 
 const AdminUsersPage = () => {
   const dispatch = useDispatch();
-  const { users = [], isLoading = false } = useSelector(
+  const { users, isLoading = false } = useSelector(
     (state) => state.admin || {}
   );
+  // Ensure users is always an array
+  const usersArray = Array.isArray(users) ? users : [];
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -123,8 +125,7 @@ const AdminUsersPage = () => {
     setSelectedUser(user);
     setIsDrawerVisible(true);
   };
-
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = usersArray.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase());

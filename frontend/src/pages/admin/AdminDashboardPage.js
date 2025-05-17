@@ -45,6 +45,7 @@ import {
 import moment from "moment";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import "./AdminDashboard.css";
 
 import {
   getAdminStats,
@@ -58,7 +59,8 @@ const { Option } = Select;
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Use null coalescing operator to handle potentially undefined state
+  const dispatch = useDispatch();
+  // Use default values and optional chaining to safely handle potentially undefined state
   const {
     stats = null,
     activities = [],
@@ -1221,6 +1223,7 @@ const AdminDashboardPage = () => {
             </Row>
 
             <Row gutter={[24, 24]} className="charts-row mb-4">
+              {" "}
               <Col xs={24} lg={16}>
                 <Card className="chart-card shadow-sm">
                   <div className="card-title-section mb-3">
@@ -1231,13 +1234,20 @@ const AdminDashboardPage = () => {
                       </Title>
                     </Space>
                   </div>
-                  <HighchartsReact
-                    highcharts={Highcharts}
-                    options={contributionsChartOptions}
-                  />
+                  {stats?.contributionsChart ? (
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={contributionsChartOptions}
+                    />
+                  ) : (
+                    <div className="no-data-message">
+                      <Text type="secondary">
+                        No contribution data available
+                      </Text>
+                    </div>
+                  )}
                 </Card>
-              </Col>
-
+              </Col>{" "}
               <Col xs={24} lg={8}>
                 <Card className="chart-card shadow-sm">
                   <div className="card-title-section mb-3">
@@ -1248,10 +1258,16 @@ const AdminDashboardPage = () => {
                       </Title>
                     </Space>
                   </div>
-                  <HighchartsReact
-                    highcharts={Highcharts}
-                    options={causesByCategoryChartOptions}
-                  />
+                  {stats?.causesByCategory ? (
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={causesByCategoryChartOptions}
+                    />
+                  ) : (
+                    <div className="no-data-message">
+                      <Text type="secondary">No category data available</Text>
+                    </div>
+                  )}
                 </Card>
               </Col>
             </Row>

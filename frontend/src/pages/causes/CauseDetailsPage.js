@@ -78,13 +78,11 @@ const CauseDetailsPage = () => {
   useEffect(() => {
     dispatch(getCauseById(id));
   }, [dispatch, id]);
-
   useEffect(() => {
     if (cause && user) {
-      setIsFollowing(cause.is_followed || false);
+      setIsFollowing(cause.isFollowing || false);
     }
   }, [cause, user]);
-
   const handleFollowToggle = () => {
     if (!user) {
       notification.warning({
@@ -94,7 +92,7 @@ const CauseDetailsPage = () => {
       return;
     }
 
-    dispatch(toggleFollowCause(id))
+    dispatch(toggleFollowCause({ id, isFollowing }))
       .unwrap()
       .then((result) => {
         setIsFollowing(result.isFollowing);

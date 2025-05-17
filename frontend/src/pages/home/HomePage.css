@@ -1,0 +1,419 @@
+/* General Page Styles */
+.homepage-container {
+  font-family: "Roboto", sans-serif; /* Example: Using Roboto font */
+  color: #333;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.section-padding {
+  padding: 60px 0;
+}
+
+.background-light {
+  background-color: #f9f9f9; /* Light grey background for alternating sections */
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.section-title {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700;
+  color: #2c3e50; /* Dark blue-grey */
+  margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 1.125rem; /* 18px */
+  color: #7f8c8d; /* Medium grey */
+  max-width: 700px;
+  margin: 0 auto 20px auto;
+}
+
+.section-viewall-button {
+  font-weight: 600;
+  color: #3498db; /* Bright blue for links */
+}
+.section-viewall-button:hover {
+  color: #2980b9;
+}
+
+/* Hero Section */
+.hero-section {
+  min-height: auto; /* Allow height to be determined by content */
+  padding: 80px 20px; /* Increased padding for visual balance */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 3rem; /* Adjusted from 3.5rem */
+  font-weight: 700;
+  color: #fff !important; /* Ensure white color overrides Ant Design */
+  margin-bottom: 24px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-subtitle {
+  font-size: 1.25rem; /* Adjusted from 1.5rem */
+  max-width: 700px; /* Slightly reduced max-width */
+  margin: 0 auto 30px auto; /* Adjusted bottom margin */
+  color: #f0f0f0 !important; /* Lighter white for subtitle */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hero-button-primary,
+.hero-button-secondary {
+  padding: 12px 30px !important;
+  font-size: 1.1rem !important; /* 17.6px */
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.hero-button-primary {
+  background-color: #e67e22 !important; /* Vibrant orange */
+  border-color: #e67e22 !important;
+}
+.hero-button-primary:hover {
+  background-color: #d35400 !important; /* Darker orange on hover */
+  border-color: #d35400 !important;
+}
+
+.hero-button-secondary {
+  background-color: transparent !important;
+  border: 2px solid #fff !important;
+  color: #fff !important;
+}
+.hero-button-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #f0f0f0 !important;
+}
+
+/* Stats Section */
+.stats-section {
+  padding: 0; /* Reverted to original padding for more space */
+  background-color: #ffffff; /* Changed to white background */
+}
+
+.stats-section .stat-card {
+  background-color: #f9f9f9; /* Light grey background for cards */
+  border-radius: 16px; /* Increased border radius for a softer look */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); /* Refined shadow for depth */
+  padding: 30px 25px; /* Adjusted padding */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: left; /* Align text to the left */
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center; /* Center items vertically */
+}
+
+.stats-section .stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px; /* Fixed width for icon wrapper */
+  height: 60px; /* Fixed height for icon wrapper */
+  border-radius: 12px; /* Rounded corners for icon wrapper */
+  margin-right: 20px; /* Space between icon and text */
+  flex-shrink: 0; /* Prevent icon wrapper from shrinking */
+}
+
+.stats-section .stat-title.ant-typography {
+  font-size: 1rem; /* 16px */
+  color: #555; /* Slightly darker grey for title */
+  margin-bottom: 4px !important;
+  font-weight: 500;
+}
+
+.stats-section .ant-statistic-content {
+  font-size: 2rem; /* 32px */
+  font-weight: 700; /* Bold for the value */
+  color: #2c3e50; /* Dark blue-grey for value */
+  line-height: 1.2;
+}
+
+/* Remove default prefix styling if not needed or to avoid conflict */
+.stats-section .ant-statistic-content-prefix {
+  display: none; /* Hiding default prefix as icon is now part of a custom wrapper */
+}
+
+.stats-section .ant-statistic-content-suffix {
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  color: #777;
+  margin-left: 4px;
+}
+
+/* Featured Causes Section */
+.featured-causes-section .featured-cause-card .ant-card-cover img {
+  height: 220px; /* Fixed height for cause images */
+  object-fit: cover;
+}
+.featured-causes-section .featured-cause-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.featured-causes-section .featured-cause-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* How It Works Section */
+.how-it-works-card {
+  background-color: #fff;
+  padding: 30px 20px;
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%; /* Ensure cards are same height if content differs slightly */
+}
+
+.how-it-works-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.how-it-works-icon {
+  margin-bottom: 20px;
+  display: inline-block;
+  padding: 15px;
+  background-color: #e8f4fd; /* Light blue background for icon container */
+  border-radius: 50%;
+}
+
+.how-it-works-card .ant-card-body {
+  padding: 0 !important; /* Remove default card padding if using custom padding */
+}
+
+/* Impact Showcase Section */
+.impact-showcase-section img {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+.impact-showcase-section img:hover {
+  transform: scale(1.03);
+}
+.impact-showcase-section .ant-typography {
+  color: #333;
+}
+
+/* Testimonials Section */
+.testimonials-section .testimonial-slide {
+  padding: 20px 0; /* Add padding for carousel arrows if they overlap */
+}
+
+.testimonial-card {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  margin: 0 auto; /* Center card in carousel slide */
+  max-width: 700px;
+}
+
+.testimonial-avatar {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.testimonial-quote {
+  font-size: 1.125rem; /* 18px */
+  font-style: italic;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 20px !important;
+  text-align: center;
+}
+
+.testimonial-divider {
+  margin: 16px 0 !important;
+}
+
+.testimonial-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px !important;
+  text-align: center;
+}
+
+.testimonial-role {
+  color: #7f8c8d;
+  text-align: center;
+  display: block;
+}
+
+.testimonial-dots .ant-carousel-dot button {
+  background: #bdc3c7 !important; /* Lighter dot color */
+}
+
+.testimonial-dots .ant-carousel-dot-active button {
+  background: #3498db !important; /* Active dot color - bright blue */
+}
+
+/* Call to Action Section */
+.cta-section {
+  background: linear-gradient(
+    135deg,
+    #3498db 0%,
+    #2980b9 100%
+  ); /* Blue gradient */
+  color: #fff;
+  padding: 80px 20px;
+}
+
+.cta-title {
+  font-size: 2.8rem; /* 44.8px */
+  font-weight: 700;
+  color: #fff !important;
+  margin-bottom: 16px;
+}
+
+.cta-subtitle {
+  font-size: 1.25rem; /* 20px */
+  color: #ecf0f1 !important; /* Light greyish white */
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-button-primary,
+.cta-button-secondary {
+  padding: 12px 30px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.cta-button-primary {
+  background-color: #e67e22 !important; /* Vibrant orange */
+  border-color: #e67e22 !important;
+  color: #fff !important;
+}
+.cta-button-primary:hover {
+  background-color: #d35400 !important;
+  border-color: #d35400 !important;
+}
+
+.cta-button-secondary {
+  background-color: transparent !important;
+  border: 2px solid #fff !important;
+  color: #fff !important;
+}
+.cta-button-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #f0f0f0 !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 2.8rem; /* 44.8px */
+  }
+  .hero-subtitle {
+    font-size: 1.25rem; /* 20px */
+  }
+  .section-title {
+    font-size: 2rem; /* 32px */
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.2rem; /* 35.2px */
+  }
+  .hero-subtitle {
+    font-size: 1.1rem; /* 17.6px */
+  }
+  .section-padding {
+    padding: 40px 0;
+  }
+  .section-title {
+    font-size: 1.8rem; /* 28.8px */
+  }
+  .stats-section .ant-statistic-content {
+    font-size: 2rem; /* 32px */
+  }
+  .impact-showcase-section .ant-col-md-12:not(:last-child) {
+    margin-bottom: 30px; /* Add space between stacked impact items on mobile */
+  }
+  .cta-title {
+    font-size: 2.2rem; /* 35.2px */
+  }
+  .cta-subtitle {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 1.8rem; /* 28.8px */
+  }
+  .hero-subtitle {
+    font-size: 1rem; /* 16px */
+  }
+  .hero-button-primary,
+  .hero-button-secondary {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .hero-section .ant-space-item:last-child .hero-button-secondary {
+    margin-bottom: 0;
+  }
+  .stats-section .stat-card {
+    padding: 20px;
+  }
+  .stats-section .ant-statistic-title {
+    font-size: 0.9rem; /* 14.4px */
+  }
+  .stats-section .ant-statistic-content {
+    font-size: 1.8rem; /* 28.8px */
+  }
+  .how-it-works-card {
+    padding: 20px 15px;
+  }
+  .testimonial-card {
+    padding: 20px;
+  }
+  .testimonial-quote {
+    font-size: 1rem; /* 16px */
+  }
+  .cta-title {
+    font-size: 1.8rem; /* 28.8px */
+  }
+  .cta-subtitle {
+    font-size: 0.9rem; /* 14.4px */
+  }
+  .cta-button-primary,
+  .cta-button-secondary {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .cta-section .ant-space-item:last-child .cta-button-secondary {
+    margin-bottom: 0;
+  }
+}
