@@ -8,7 +8,7 @@ class Cause {
       description,
       image,
       location,
-      category,
+      category_id,
       funding_goal,
       food_goal,
       user_id,
@@ -16,14 +16,14 @@ class Cause {
 
     try {
       const [result] = await pool.query(
-        `INSERT INTO causes (title, description, image, location, category, funding_goal, food_goal, user_id) 
+        `INSERT INTO causes (title, description, image, location, category_id, funding_goal, food_goal, user_id) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           title,
           description,
           image,
           location,
-          category,
+          category_id,
           funding_goal,
           food_goal,
           user_id,
@@ -60,7 +60,7 @@ class Cause {
       description,
       image,
       location,
-      category,
+      category_id,
       funding_goal,
       food_goal,
       status,
@@ -70,14 +70,14 @@ class Cause {
       await pool.query(
         `UPDATE causes SET 
          title = ?, description = ?, image = ?, location = ?, 
-         category = ?, funding_goal = ?, food_goal = ?, status = ?
+         category_id = ?, funding_goal = ?, food_goal = ?, status = ?
          WHERE id = ?`,
         [
           title,
           description,
           image,
           location,
-          category,
+          category_id,
           funding_goal,
           food_goal,
           status,
@@ -94,7 +94,7 @@ class Cause {
   // Get all causes with filters
   static async getAll(filters = {}) {
     const {
-      category,
+      category_id,
       location,
       status,
       search,
@@ -117,9 +117,9 @@ class Cause {
     const queryParams = [];
 
     // Add filters if provided
-    if (category) {
-      query += ` AND c.category = ?`;
-      queryParams.push(category);
+    if (category_id) {
+      query += ` AND c.category_id = ?`;
+      queryParams.push(category_id);
     }
 
     if (location) {
@@ -158,9 +158,9 @@ class Cause {
       let countQueryParams = [];
 
       // Add the same filters to count query
-      if (category) {
-        countQuery += ` AND c.category = ?`;
-        countQueryParams.push(category);
+      if (category_id) {
+        countQuery += ` AND c.category_id = ?`;
+        countQueryParams.push(category_id);
       }
 
       if (location) {

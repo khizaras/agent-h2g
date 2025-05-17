@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -17,6 +17,10 @@ import {
   Divider,
   Row,
   Col,
+  Checkbox,
+  Radio,
+  Spin,
+  Empty,
 } from "antd";
 import {
   UploadOutlined,
@@ -28,10 +32,17 @@ import {
   ShoppingOutlined,
   InfoCircleOutlined,
   ArrowLeftOutlined,
+  TagsOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 
 import { createCause } from "../../redux/slices/causesSlice";
+import {
+  getCategories,
+  getCategoryById,
+  saveCauseFieldValues,
+} from "../../redux/slices/categoriesSlice";
+import "./CauseForms.css";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -40,17 +51,41 @@ const { Option } = Select;
 const CreateCausePage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isLoading } = useSelector((state) => state.causes);
+  const { isLoading: causesLoading } = useSelector((state) => state.causes);
+  const {
+    categories = [],
+    currentCategory = null,
+    isLoading: categoriesLoading,
+  } = useSelector((state) => state.categories);
   const { user } = useSelector((state) => state.auth);
 
   const [imageFile, setImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [dynamicFieldValues, setDynamicFieldValues] = useState({});
+  const [form] = Form.useForm();
 
+  // Fetch categories when component mounts
+  useEffect(() => {
+    dispatch(getCategories());
+  }, [dispatch]);
+
+  // Fetch category details when a category is selected
+  useEffect(() => {
+    if (selectedCategoryId) {
+      dispatch(getCategoryById(selectedCategoryId));
+    }
+  }, [selectedCategoryId, dispatch]);
   const onFinish = (values) => {
     const formData = new FormData();
 
     // Add all form values to formData
     Object.keys(values).forEach((key) => {
+      // Skip dynamic fields, they'll be handled separately
+      if (key.startsWith("dynamic_")) {
+        return;
+      }
+
       if (key === "end_date") {
         formData.append(
           key,
@@ -66,9 +101,42 @@ const CreateCausePage = () => {
       formData.append("image", imageFile);
     }
 
+    // Create an array to store dynamic field values
+    const categoryFieldValues = [];
+
+    // Process dynamic fields if a category is selected
+    if (selectedCategoryId && currentCategory?.fields?.length > 0) {
+      currentCategory.fields.forEach((field) => {
+        const fieldKey = `dynamic_${field.id}`;
+        if (values[fieldKey] !== undefined) {
+          let fieldValue = values[fieldKey];
+
+          // Handle array values (checkbox groups)
+          if (Array.isArray(fieldValue)) {
+            fieldValue = fieldValue.join(",");
+          }
+
+          categoryFieldValues.push({
+            field_id: field.id,
+            value: fieldValue !== null ? String(fieldValue) : "",
+          });
+        }
+      });
+    }
+
     dispatch(createCause(formData))
       .unwrap()
       .then((cause) => {
+        // If we have category field values, save them
+        if (categoryFieldValues.length > 0) {
+          dispatch(
+            saveCauseFieldValues({
+              causeId: cause.id,
+              values: categoryFieldValues,
+            })
+          );
+        }
+
         message.success("Cause created successfully!");
         navigate(`/causes/${cause.id}`);
       })
@@ -76,7 +144,6 @@ const CreateCausePage = () => {
         message.error(`Failed to create cause: ${error}`);
       });
   };
-
   const handleImageChange = ({ file }) => {
     if (file.status === "uploading") {
       return;
@@ -90,6 +157,245 @@ const CreateCausePage = () => {
       reader.addEventListener("load", () => setPreviewImage(reader.result));
       reader.readAsDataURL(file.originFileObj);
     }
+  };
+
+  // Handle category change
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategoryId(categoryId);
+
+    // Reset dynamic field values when category changes
+    setDynamicFieldValues({});
+
+    // Clear any previously set dynamic field values in the form
+    if (currentCategory?.fields) {
+      const fieldsToReset = {};
+      currentCategory.fields.forEach((field) => {
+        fieldsToReset[`dynamic_${field.id}`] = undefined;
+      });
+      form.setFieldsValue(fieldsToReset);
+    }
+  };
+
+  // Render dynamic fields based on selected category
+  const renderDynamicFields = () => {
+    if (!currentCategory || !currentCategory.fields || categoriesLoading) {
+      return selectedCategoryId ? (
+        <Spin tip="Loading category fields..." />
+      ) : null;
+    }
+
+    if (currentCategory.fields.length === 0) {
+      return <Empty description="No custom fields for this category" />;
+    }
+
+    return (
+      <>
+        {" "}
+        <Divider orientation="left">
+          <Space>
+            <TagsOutlined />
+            <span>Category-specific Information</span>
+          </Space>
+        </Divider>
+        {[...currentCategory.fields]
+          .sort((a, b) => a.display_order - b.display_order)
+          .map((field) => {
+            const fieldKey = `dynamic_${field.id}`;
+
+            // Generate the appropriate field component based on field type
+            switch (field.type) {
+              case "text":
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please enter ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder={field.placeholder || `Enter ${field.name}`}
+                    />
+                  </Form.Item>
+                );
+
+              case "textarea":
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please enter ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <TextArea
+                      rows={4}
+                      placeholder={field.placeholder || `Enter ${field.name}`}
+                    />
+                  </Form.Item>
+                );
+
+              case "number":
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please enter ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      style={{ width: "100%" }}
+                      placeholder={field.placeholder || `Enter ${field.name}`}
+                    />
+                  </Form.Item>
+                );
+
+              case "date":
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please select ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <DatePicker style={{ width: "100%" }} />
+                  </Form.Item>
+                );
+
+              case "select":
+                let options = [];
+                try {
+                  options =
+                    typeof field.options === "string"
+                      ? JSON.parse(field.options)
+                      : field.options || [];
+                } catch (e) {
+                  console.error("Error parsing options:", e);
+                }
+
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please select ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <Select
+                      placeholder={field.placeholder || `Select ${field.name}`}
+                    >
+                      {options.map((option, idx) => (
+                        <Option
+                          key={`${fieldKey}_opt_${idx}`}
+                          value={option.value || option}
+                        >
+                          {option.label || option}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                );
+
+              case "checkbox":
+                let checkOptions = [];
+                try {
+                  checkOptions =
+                    typeof field.options === "string"
+                      ? JSON.parse(field.options)
+                      : field.options || [];
+                } catch (e) {
+                  console.error("Error parsing options:", e);
+                }
+
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please select at least one ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <Checkbox.Group>
+                      {checkOptions.map((option, idx) => (
+                        <Checkbox
+                          key={`${fieldKey}_opt_${idx}`}
+                          value={option.value || option}
+                        >
+                          {option.label || option}
+                        </Checkbox>
+                      ))}
+                    </Checkbox.Group>
+                  </Form.Item>
+                );
+
+              case "radio":
+                let radioOptions = [];
+                try {
+                  radioOptions =
+                    typeof field.options === "string"
+                      ? JSON.parse(field.options)
+                      : field.options || [];
+                } catch (e) {
+                  console.error("Error parsing options:", e);
+                }
+
+                return (
+                  <Form.Item
+                    key={fieldKey}
+                    name={fieldKey}
+                    label={field.name}
+                    rules={[
+                      {
+                        required: field.required,
+                        message: `Please select ${field.name}`,
+                      },
+                    ]}
+                  >
+                    <Radio.Group>
+                      {radioOptions.map((option, idx) => (
+                        <Radio
+                          key={`${fieldKey}_opt_${idx}`}
+                          value={option.value || option}
+                        >
+                          {option.label || option}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
+                );
+
+              default:
+                return null;
+            }
+          })}
+      </>
+    );
   };
 
   // Custom upload button
@@ -152,7 +458,6 @@ const CreateCausePage = () => {
               Back to causes
             </Button>
           </div>
-
           <div className="form-header mb-4">
             <Title level={2} className="mb-2">
               Create a New Cause
@@ -162,18 +467,16 @@ const CreateCausePage = () => {
               clear and detailed to help others understand how they can help.
             </Paragraph>
           </div>
-
-          <Divider className="mb-4" />
-
+          <Divider className="mb-4" />{" "}
           <Form
             layout="vertical"
             onFinish={onFinish}
             className="create-cause-form"
             initialValues={{
-              category: "local",
               status: "active",
             }}
             size="large"
+            form={form}
           >
             <Row gutter={24}>
               <Col xs={24} lg={16}>
@@ -197,21 +500,26 @@ const CreateCausePage = () => {
 
               <Col xs={24} lg={8}>
                 <Form.Item
-                  name="category"
+                  name="category_id"
                   label="Category"
                   rules={[
                     { required: true, message: "Please select a category" },
                   ]}
                 >
-                  <Select placeholder="Select a category">
-                    <Option value="local">Local Community Support</Option>
-                    <Option value="emergency">Emergency Relief</Option>
-                    <Option value="recurring">Recurring Program</Option>
+                  <Select
+                    placeholder="Select a category"
+                    loading={categoriesLoading}
+                    onChange={handleCategoryChange}
+                  >
+                    {categories.map((category) => (
+                      <Option key={category.id} value={category.id}>
+                        {category.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>
             </Row>
-
             <Form.Item
               name="description"
               label="Description"
@@ -229,7 +537,6 @@ const CreateCausePage = () => {
                 className="description-textarea"
               />
             </Form.Item>
-
             <Row gutter={24}>
               <Col xs={24} md={12}>
                 <Form.Item
@@ -263,7 +570,6 @@ const CreateCausePage = () => {
                 </Form.Item>
               </Col>
             </Row>
-
             <Row gutter={24}>
               <Col xs={24} md={12}>
                 <Form.Item name="funding_goal" label="Funding Goal ($)">
@@ -294,8 +600,7 @@ const CreateCausePage = () => {
                   />
                 </Form.Item>
               </Col>
-            </Row>
-
+            </Row>{" "}
             <Card className="upload-card mt-3 mb-3">
               <Form.Item
                 name="image"
@@ -320,9 +625,13 @@ const CreateCausePage = () => {
                 </Upload>
               </Form.Item>
             </Card>
-
+            {/* Dynamic Category Fields */}
+            {selectedCategoryId && (
+              <Card className="dynamic-fields-card mt-3 mb-3">
+                {renderDynamicFields()}
+              </Card>
+            )}
             <Divider className="mt-4 mb-4" />
-
             <Form.Item className="form-actions text-right">
               <Space size="middle">
                 <Button
@@ -331,11 +640,11 @@ const CreateCausePage = () => {
                   size="large"
                 >
                   Cancel
-                </Button>
+                </Button>{" "}
                 <Button
                   type="primary"
                   htmlType="submit"
-                  loading={isLoading}
+                  loading={causesLoading || categoriesLoading}
                   size="large"
                   className="submit-button"
                 >

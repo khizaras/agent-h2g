@@ -26,6 +26,15 @@ router.get("/", getCauses);
 router.get("/:id", getCauseById);
 router.get("/:id/contributions", getCauseContributions);
 router.get("/:id/feedback", getCauseFeedback);
+router.get(
+  "/:id/category-values",
+  require("../controllers/categoryController").getCauseFieldValues
+);
+router.post(
+  "/:id/category-values",
+  protect,
+  require("../controllers/categoryController").saveCauseFieldValues
+);
 
 // Private routes
 router.post(

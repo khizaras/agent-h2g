@@ -21,6 +21,7 @@ import MyFollowedCausesPage from "./pages/profile/MyFollowedCausesPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminCausesPage from "./pages/admin/AdminCausesPage";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Auth components
@@ -59,7 +60,6 @@ const App = () => {
               <Route path="/causes/:id" element={<CauseDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-
               {/* Private routes */}
               <Route element={<PrivateRoute />}>
                 <Route path="/causes/create" element={<CreateCausePage />} />
@@ -73,15 +73,17 @@ const App = () => {
                   path="/followed-causes"
                   element={<MyFollowedCausesPage />}
                 />
-              </Route>
-
+              </Route>{" "}
               {/* Admin routes */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
                 <Route path="/admin/causes" element={<AdminCausesPage />} />
+                <Route
+                  path="/admin/categories"
+                  element={<AdminCategoriesPage />}
+                />
               </Route>
-
               {/* 404 route */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

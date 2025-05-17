@@ -9,8 +9,14 @@ const createCause = async (req, res) => {
     console.log("Request body:", req.body);
     console.log("Request file:", req.file);
 
-    const { title, description, location, category, funding_goal, food_goal } =
-      req.body;
+    const {
+      title,
+      description,
+      location,
+      category_id,
+      funding_goal,
+      food_goal,
+    } = req.body;
 
     // Handle image upload
     let image = null;
@@ -23,7 +29,7 @@ const createCause = async (req, res) => {
       description,
       image,
       location,
-      category,
+      category_id,
       funding_goal: funding_goal || null,
       food_goal: food_goal || null,
       user_id: req.user.id,
@@ -35,7 +41,7 @@ const createCause = async (req, res) => {
       description,
       image,
       location,
-      category,
+      category_id,
       funding_goal: funding_goal || null,
       food_goal: food_goal || null,
       user_id: req.user.id,
@@ -136,7 +142,7 @@ const updateCause = async (req, res) => {
       title,
       description,
       location,
-      category,
+      category_id,
       funding_goal,
       food_goal,
       status,
@@ -172,7 +178,7 @@ const updateCause = async (req, res) => {
       description,
       image,
       location,
-      category,
+      category_id,
       funding_goal: funding_goal || null,
       food_goal: food_goal || null,
       status: status || cause.status,

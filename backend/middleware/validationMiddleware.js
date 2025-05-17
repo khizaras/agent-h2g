@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const db = require("../models"); // Import database models
 
 // Validation middleware
 const validateRequest = (req, res, next) => {
@@ -38,17 +39,29 @@ const causeValidation = [
     .isEmpty()
     .withMessage("Description is required"),
   body("location").trim().not().isEmpty().withMessage("Location is required"),
-  body("category")
-    .isIn(["local", "emergency", "recurring"])
-    .withMessage("Category must be local, emergency, or recurring"),
+  body("category_id")
+    .custom(async (value) => {
+      try {
+        // Use the custom Category model's method instead of Sequelize's findByPk
+        const category = await db.Category.findById(value);
+        if (!category) {
+          throw new Error("Invalid category ID");
+        }
+        return true;
+      } catch (error) {
+        console.error("Category validation error:", error);
+        throw new Error("Invalid category ID");
+      }
+    })
+    .withMessage("Category ID must be valid"),
   body("funding_goal")
     .optional()
     .isNumeric()
     .withMessage("Funding goal must be a number"),
   body("food_goal")
     .optional()
-    .isInt({ min: 1 })
-    .withMessage("Food goal must be a positive integer"),
+    .isInt({ min: 0 }) // Allow 0 as a valid value
+    .withMessage("Food goal must be a non-negative integer"),
   validateRequest,
 ];
 

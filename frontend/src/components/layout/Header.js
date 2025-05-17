@@ -26,6 +26,7 @@ import {
   PlusOutlined,
   SettingOutlined,
   AppstoreOutlined,
+  FormOutlined,
 } from "@ant-design/icons";
 import { isMobile } from "../../utils/responsive";
 import { logout } from "../../redux/slices/authSlice";
@@ -101,6 +102,11 @@ const Header = () => {
         key: "admin-users",
         label: <Link to="/admin/users">Manage Users</Link>,
         icon: <TeamOutlined />,
+      },
+      {
+        key: "admin-categories",
+        label: <Link to="/admin/categories">Manage Categories</Link>,
+        icon: <FormOutlined />,
       },
       {
         key: "admin-causes",
@@ -386,6 +392,18 @@ const Header = () => {
                               onClick={() => setMobileMenuVisible(false)}
                             >
                               Manage Users
+                            </Link>
+                          ),
+                        },
+                        {
+                          key: "admin-categories",
+                          icon: <FormOutlined />,
+                          label: (
+                            <Link
+                              to="/admin/categories"
+                              onClick={() => setMobileMenuVisible(false)}
+                            >
+                              Manage Categories
                             </Link>
                           ),
                         },

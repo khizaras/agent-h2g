@@ -39,6 +39,8 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/causes", require("./routes/causeRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/admin/categories", require("./routes/adminCategoryRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
 
 // Serve uploads as static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
