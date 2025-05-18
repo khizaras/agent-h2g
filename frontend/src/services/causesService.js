@@ -211,6 +211,16 @@ const unfollowCause = async (causeId, token) => {
   }
 };
 
+// Get category field values for a cause
+const getCauseFieldValues = async (causeId) => {
+  try {
+    const response = await axios.get(API_URL + causeId + "/category-values");
+    return response.data.values;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+};
+
 const causesService = {
   getCauses,
   getCauseById,
@@ -223,6 +233,7 @@ const causesService = {
   addFeedback,
   followCause,
   unfollowCause,
+  getCauseFieldValues,
 };
 
 export default causesService;

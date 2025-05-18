@@ -20,7 +20,7 @@ Hands2gether is a web and mobile application designed to connect people who want
 - **Frontend:** React.js, Ant Design, Redux Toolkit
 - **Backend:** Node.js, Express.js, MySQL
 - **Authentication:** JWT, Google OAuth
-- **File Upload:** Multer
+- **File Upload:** Multer, ImageKit (cloud storage)
 - **Email Notifications:** Nodemailer
 
 ## Getting Started
@@ -46,6 +46,29 @@ Hands2gether is a web and mobile application designed to connect people who want
    ```
 
 3. Create a `.env` file in the root directory with the necessary environment variables (see `.env.example`)
+
+   Required environment variables:
+
+   ```
+   # Database
+   DB_HOST=localhost
+   DB_USER=username
+   DB_PASSWORD=password
+   DB_NAME=hands2gether_db
+
+   # JWT Secret
+   JWT_SECRET=your_secret_key
+
+   # Email Service
+   EMAIL_SERVICE=gmail
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASS=your_app_password
+
+   # ImageKit (for cloud image storage)
+   IMAGEKIT_PUBLIC_KEY=your_public_key
+   IMAGEKIT_PRIVATE_KEY=your_private_key
+   IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_account
+   ```
 
 4. Set up the database
 
@@ -102,6 +125,18 @@ hands2gether/
 ├── .env                   # Environment variables
 └── package.json           # Project dependencies
 ```
+
+## Cloud Storage
+
+Hands2gether uses ImageKit for cloud storage of images. This provides:
+
+- Improved performance with optimized image delivery
+- Automatic image transformations (resizing, cropping, etc.)
+- CDN delivery for faster global access
+- Reduced server storage requirements
+- Better scalability
+
+See the [ImageKit Integration Documentation](./docs/imagekit-integration.md) for more details.
 
 ## Testing
 

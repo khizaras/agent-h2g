@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import { isMobile } from "../../utils/responsive";
 import moment from "moment";
+import "./CauseCard.css";
 
 const { Meta } = Card;
 const { Text, Paragraph } = Typography;
@@ -78,70 +79,36 @@ const CauseCard = ({ cause }) => {
     description && description.length > (mobile ? 80 : 120)
       ? `${description.substring(0, mobile ? 80 : 120)}...`
       : description;
-
   return (
     <Card
       hoverable
       className="cause-card"
       cover={
-        <div
-          style={{
-            height: 200,
-            overflow: "hidden",
-            background: "#f0f0f0",
-            position: "relative",
-          }}
-        >
+        <div className="cause-image-container">
+          {" "}
           {image ? (
-            <img
-              alt={title}
-              src={image}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
+            <img alt={title} src={image} className="cause-image" />
           ) : (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                color: "#999",
-                flexDirection: "column",
-              }}
-            >
+            <div className="cause-image-placeholder">
               <HeartOutlined style={{ fontSize: 48, marginBottom: 8 }} />
               <Text type="secondary">No image available</Text>
             </div>
           )}
-
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              zIndex: 1,
-            }}
-          >
-            <Tag color={categoryColors[category] || categoryColors.default}>
-              {category || "Miscellaneous"}
-            </Tag>
-          </div>
-
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              zIndex: 1,
-            }}
-          >
-            <Tag color={statusColors[status] || statusColors.default}>
-              {status || "Unknown"}
-            </Tag>
+          <div className="cause-tag-container">
+            <div>
+              <Tag color={categoryColors[category] || categoryColors.default}>
+                {category
+                  ? category.charAt(0).toUpperCase() + category.slice(1)
+                  : "Miscellaneous"}
+              </Tag>
+            </div>
+            <div>
+              <Tag color={statusColors[status] || statusColors.default}>
+                {status
+                  ? status.charAt(0).toUpperCase() + status.slice(1)
+                  : "Unknown"}
+              </Tag>
+            </div>
           </div>
         </div>
       }
@@ -155,35 +122,60 @@ const CauseCard = ({ cause }) => {
         }
         description={
           <div className="cause-card-content">
-            <Space align="center" size="small" style={{ marginBottom: 12 }}>
-              <EnvironmentOutlined style={{ color: "#1890ff" }} />
-              <Text type="secondary">
-                {location || "No location specified"}
-              </Text>
+            {" "}
+            <div className="cause-location-date">
+              <div
+                style={{
+                  marginRight: 16,
+                  marginBottom: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  maxWidth: "100%",
+                  overflow: "hidden",
+                }}
+              >
+                <EnvironmentOutlined
+                  style={{ color: "#1890ff", marginRight: 4, flexShrink: 0 }}
+                />
+                <Text
+                  type="secondary"
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {location || "No location specified"}
+                </Text>
+              </div>
 
-              <CalendarOutlined style={{ color: "#1890ff", marginLeft: 8 }} />
-              <Text type="secondary">
-                {moment(created_at).format("MMM DD, YYYY")}
-              </Text>
-            </Space>
-
-            <Paragraph
-              ellipsis={{ rows: 2 }}
-              style={{ marginBottom: 16, minHeight: 42 }}
+              <div
+                style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+              >
+                <CalendarOutlined
+                  style={{ color: "#1890ff", marginRight: 4 }}
+                />
+                <Text type="secondary">
+                  {moment(created_at).format("MMM DD, YYYY")}
+                </Text>
+              </div>
+            </div>{" "}
+            <div
+              className="cause-description"
+              style={{
+                height: "3em",
+                overflow: "hidden",
+                marginBottom: "16px",
+              }}
             >
-              {shortDescription || "No description available"}
-            </Paragraph>
-
+              <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 0 }}>
+                {shortDescription || "No description available"}
+              </Paragraph>
+            </div>
             <div className="cause-progress">
               {funding_goal > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 4,
-                    }}
-                  >
+                <div className="cause-progress-item">
+                  <div className="cause-progress-header">
                     <Text strong style={{ fontSize: 13 }}>
                       Funding Progress
                     </Text>
@@ -196,6 +188,7 @@ const CauseCard = ({ cause }) => {
                     percent={fundingPercentage}
                     status={fundingPercentage >= 100 ? "success" : "active"}
                     showInfo={false}
+                    size="small"
                     strokeColor={{
                       from: "#108ee9",
                       to: "#87d068",
@@ -208,14 +201,11 @@ const CauseCard = ({ cause }) => {
               )}
 
               {food_goal > 0 && (
-                <div style={{ marginBottom: 12 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 4,
-                    }}
-                  >
+                <div
+                  className="cause-progress-item"
+                  style={{ marginBottom: 0 }}
+                >
+                  <div className="cause-progress-header">
                     <Text strong style={{ fontSize: 13 }}>
                       Food Items
                     </Text>
@@ -227,6 +217,7 @@ const CauseCard = ({ cause }) => {
                     percent={foodPercentage}
                     status={foodPercentage >= 100 ? "success" : "active"}
                     showInfo={false}
+                    size="small"
                     strokeColor={{
                       from: "#fa8c16",
                       to: "#faad14",
@@ -238,17 +229,9 @@ const CauseCard = ({ cause }) => {
                 </div>
               )}
             </div>
-
             <Divider style={{ margin: "12px 0" }} />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Space align="center" size="small">
+            <div className="cause-footer">
+              <div className="cause-creator">
                 <Avatar
                   src={creator_avatar}
                   icon={!creator_avatar && <UserOutlined />}
@@ -257,7 +240,7 @@ const CauseCard = ({ cause }) => {
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {creator_name || "Anonymous"}
                 </Text>
-              </Space>
+              </div>
 
               <Button type="primary" size="small" icon={<ArrowRightOutlined />}>
                 <Link to={`/causes/${id}`} style={{ color: "inherit" }}>

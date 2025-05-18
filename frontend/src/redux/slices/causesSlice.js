@@ -4,6 +4,7 @@ import causesService from "../../services/causesService";
 const initialState = {
   causes: [],
   cause: null,
+  categoryFieldValues: [],
   pagination: {
     total: 0,
     page: 1,
@@ -233,6 +234,23 @@ export const toggleFollowCause = createAsyncThunk(
   }
 );
 
+// Get cause category field values
+export const getCauseFieldValues = createAsyncThunk(
+  "causes/getCategoryValues",
+  async (id, thunkAPI) => {
+    try {
+      return await causesService.getCauseFieldValues(id);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.error) ||
+        error.message ||
+        error.toString();
+
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const causesSlice = createSlice({
   name: "causes",
   initialState,
@@ -365,6 +383,20 @@ export const causesSlice = createSlice({
               parseInt(action.payload.food_quantity);
           }
         }
+      })
+      // Get cause field values cases
+      .addCase(getCauseFieldValues.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getCauseFieldValues.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.categoryFieldValues = action.payload;
+      })
+      .addCase(getCauseFieldValues.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });

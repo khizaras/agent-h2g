@@ -218,12 +218,15 @@ class Category {
       throw new Error(`Error updating field order: ${error.message}`);
     }
   }
-
   // Get category data values for a cause
   static async getCauseFieldValues(causeId) {
     try {
       const [rows] = await pool.query(
-        `SELECT * FROM cause_category_values WHERE cause_id = ?`,
+        `SELECT cv.*, cf.name, cf.type, cf.required, cf.options, cf.placeholder
+         FROM cause_category_values cv
+         JOIN category_fields cf ON cv.field_id = cf.id
+         WHERE cv.cause_id = ?
+         ORDER BY cf.display_order ASC`,
         [causeId]
       );
 
@@ -247,11 +250,43 @@ class Category {
           [causeId]
         );
 
-        // Insert new values
+        // Validate cause_id and field_id before inserting
+        const [causeExists] = await connection.query(
+          `SELECT id FROM causes WHERE id = ?`,
+          [causeId]
+        );
+        if (causeExists.length === 0) {
+          throw new Error(`Cause with id ${causeId} does not exist`);
+        }
+
+        // Log input data for debugging
+        console.log("Debug: causeId", causeId);
+        console.log("Debug: fieldValues", fieldValues);
+
         for (const field of fieldValues) {
+          // Validate category_id exists
+          const [categoryExists] = await connection.query(
+            `SELECT id FROM categories WHERE id = ?`,
+            [field.category_id]
+          );
+          if (categoryExists.length === 0) {
+            throw new Error(
+              `Category with id ${field.category_id} does not exist`
+            );
+          }
+
+          // Validate field_id exists
+          const [fieldExists] = await connection.query(
+            `SELECT id FROM category_fields WHERE id = ?`,
+            [field.field_id]
+          );
+          if (fieldExists.length === 0) {
+            throw new Error(`Field with id ${field.field_id} does not exist`);
+          }
+
           await connection.query(
-            `INSERT INTO cause_category_values (cause_id, field_id, value) VALUES (?, ?, ?)`,
-            [causeId, field.field_id, field.value]
+            `INSERT INTO cause_category_values (cause_id, category_id, field_id, value) VALUES (?, ?, ?, ?)`,
+            [causeId, field.category_id, field.field_id, field.value]
           );
         }
 

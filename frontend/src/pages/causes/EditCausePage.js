@@ -68,6 +68,13 @@ const EditCausePage = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
 
+  // Helper function to safely convert a date string to a Moment object
+  const safelyParseMomentDate = (dateString) => {
+    if (!dateString || dateString === "null") return null;
+    const date = moment(dateString);
+    return date.isValid() ? date : null;
+  };
+
   // Fetch categories when component mounts
   useEffect(() => {
     dispatch(getCategories());
@@ -104,13 +111,11 @@ const EditCausePage = () => {
         // Set selected category
         if (causeData.category_id) {
           setSelectedCategoryId(causeData.category_id);
-        }
-
-        // Set form values
+        } // Set form values
         form.setFieldsValue({
           ...causeData,
           category_id: causeData.category_id,
-          end_date: causeData.end_date ? moment(causeData.end_date) : null,
+          end_date: safelyParseMomentDate(causeData.end_date),
         });
 
         setInitialLoad(false);
@@ -123,18 +128,21 @@ const EditCausePage = () => {
   const onFinish = (values) => {
     const formData = new FormData();
 
+    // Helper function to safely handle date formatting
+    const safelyFormatDate = (dateValue) => {
+      return dateValue && moment.isMoment(dateValue) && dateValue.isValid()
+        ? dateValue.format("YYYY-MM-DD")
+        : "";
+    };
+
     // Add form values to formData
     Object.keys(values).forEach((key) => {
       // Skip dynamic fields, they'll be handled separately
       if (key.startsWith("dynamic_")) {
         return;
       }
-
       if (key === "end_date") {
-        formData.append(
-          key,
-          values[key] ? values[key].format("YYYY-MM-DD") : ""
-        );
+        formData.append(key, safelyFormatDate(values[key]));
       } else if (values[key] !== undefined && values[key] !== null) {
         formData.append(key, values[key]);
       }
@@ -157,11 +165,12 @@ const EditCausePage = () => {
 
           // Handle array values (checkbox groups)
           if (Array.isArray(fieldValue)) {
-            fieldValue = fieldValue.join(",");
+            fieldValue = JSON.stringify(fieldValue);
           }
 
           categoryFieldValues.push({
             field_id: field.id,
+            category_id: selectedCategoryId,
             value: fieldValue !== null ? String(fieldValue) : "",
           });
         }
@@ -195,12 +204,13 @@ const EditCausePage = () => {
     }
 
     if (file.status === "done") {
-      setImageFile(file.originFileObj);
+      // Set the file for form submission
+      setImageFile(file.originFileObj || file);
 
       // Create a preview URL
       const reader = new FileReader();
       reader.addEventListener("load", () => setPreviewImage(reader.result));
-      reader.readAsDataURL(file.originFileObj);
+      reader.readAsDataURL(file.originFileObj || file);
     }
   };
   // Handle category change
@@ -230,11 +240,12 @@ const EditCausePage = () => {
           (f) => f.id === fieldValue.field_id
         );
         if (field) {
-          const fieldKey = `dynamic_${field.id}`;
-
-          // For checkbox fields, split comma-separated values into array
+          const fieldKey = `dynamic_${field.id}`; // For checkbox fields, split comma-separated values into array
           if (field.type === "checkbox" && fieldValue.value) {
             fieldValueObj[fieldKey] = fieldValue.value.split(",");
+          } else if (field.type === "date" && fieldValue.value) {
+            // Convert date strings to Moment objects for date pickers
+            fieldValueObj[fieldKey] = safelyParseMomentDate(fieldValue.value);
           } else {
             fieldValueObj[fieldKey] = fieldValue.value;
           }
@@ -333,7 +344,6 @@ const EditCausePage = () => {
                     />
                   </Form.Item>
                 );
-
               case "date":
                 return (
                   <Form.Item
@@ -347,7 +357,11 @@ const EditCausePage = () => {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} />
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      format="YYYY-MM-DD"
+                      placeholder={field.placeholder || `Select ${field.name}`}
+                    />
                   </Form.Item>
                 );
 
@@ -475,7 +489,6 @@ const EditCausePage = () => {
       <div style={{ marginTop: 8 }}>Change Image</div>
     </div>
   );
-
   // Custom file upload props
   const fileUploadProps = {
     name: "image",
@@ -492,6 +505,9 @@ const EditCausePage = () => {
         message.error("Image must be smaller than 5MB!");
         return false;
       }
+
+      // Set the image file directly here
+      setImageFile(file);
 
       return false; // Prevent automatic upload
     },
@@ -612,6 +628,7 @@ const EditCausePage = () => {
             </Col>
 
             <Col xs={24} md={12}>
+              {" "}
               <Form.Item name="end_date" label="End Date (Optional)">
                 <DatePicker
                   style={{ width: "100%" }}
@@ -620,6 +637,7 @@ const EditCausePage = () => {
                   }
                   placeholder="When does this cause end?"
                   prefix={<ClockCircleOutlined />}
+                  format="YYYY-MM-DD"
                 />
               </Form.Item>
             </Col>
@@ -635,7 +653,6 @@ const EditCausePage = () => {
                 />
               </Form.Item>
             </Col>
-
             <Col xs={24} md={8}>
               <Form.Item name="food_goal" label="Food Items Goal">
                 <InputNumber
@@ -646,7 +663,6 @@ const EditCausePage = () => {
                 />
               </Form.Item>
             </Col>
-
             <Col xs={24} md={8}>
               <Form.Item
                 name="status"
@@ -659,9 +675,9 @@ const EditCausePage = () => {
                   <Option value="suspended">Suspended</Option>
                 </Select>
               </Form.Item>
-            </Col>
+            </Col>{" "}
           </Row>
-          <Form.Item name="image" label="Cause Image">
+          <Form.Item label="Cause Image">
             <Upload
               {...fileUploadProps}
               listType="picture-card"

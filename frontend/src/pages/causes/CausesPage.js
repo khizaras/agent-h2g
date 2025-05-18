@@ -27,6 +27,7 @@ import {
 
 import CauseCard from "../../components/causes/CauseCard";
 import { getCauses } from "../../redux/slices/causesSlice";
+import "./CausesPage.css";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -74,24 +75,32 @@ const CausesPage = () => {
   const handlePageChange = (page) => {
     setFilters({ ...filters, page });
   };
-
   return (
     <div className="causes-page-container">
-      <div className="container">
-        <Breadcrumb className="breadcrumb-navigation mt-3 mb-2">
+      <div
+        className="container"
+        style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px" }}
+      >
+        <Breadcrumb className="breadcrumb-navigation">
           <Breadcrumb.Item>
             <Link to="/">Home</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Food Assistance Causes</Breadcrumb.Item>
-        </Breadcrumb>
-
+        </Breadcrumb>{" "}
         <div className="page-header-wrapper">
-          <div className="page-header flexible-header mb-3">
+          <div className="page-header">
             <div className="title-section">
-              <Title level={2} className="mb-1">
+              <Title
+                level={2}
+                style={{ marginBottom: 8, fontSize: 28, fontWeight: 600 }}
+              >
                 Food Assistance Causes
               </Title>
-              <Text type="secondary" className="header-description">
+              <Text
+                type="secondary"
+                className="header-description"
+                style={{ fontSize: 16 }}
+              >
                 Browse through active food assistance initiatives and support
                 those in need in your community.
               </Text>
@@ -104,14 +113,15 @@ const CausesPage = () => {
                 onClick={() => navigate("/causes/create")}
                 size="large"
                 className="create-button"
+                style={{ fontWeight: 500, height: 48 }}
               >
                 Create New Cause
               </Button>
             )}
           </div>
         </div>
-
-        <Card className="filters-card shadow-sm mb-4">
+        <Card className="filters-card">
+          {" "}
           <div className="filters-container">
             <Input.Search
               placeholder="Search causes by title or description"
@@ -123,6 +133,8 @@ const CausesPage = () => {
               }
               allowClear
               size="large"
+              enterButton={<SearchOutlined />}
+              style={{ maxWidth: "500px" }}
             />
 
             <Space size="middle" className="filters-group">
@@ -134,6 +146,7 @@ const CausesPage = () => {
                 allowClear
                 size="large"
                 className="filter-select"
+                popupMatchSelectWidth={false}
               >
                 <Option value="local">Local Community</Option>
                 <Option value="emergency">Emergency Relief</Option>
@@ -148,6 +161,7 @@ const CausesPage = () => {
                 allowClear
                 size="large"
                 className="filter-select"
+                popupMatchSelectWidth={false}
               >
                 <Option value="active">Active</Option>
                 <Option value="completed">Completed</Option>
@@ -160,10 +174,10 @@ const CausesPage = () => {
                 title="Reset Filters"
                 size="large"
                 className="reset-button"
+                type="default"
               />
             </Space>
           </div>
-
           {(filters.category ||
             filters.status !== "active" ||
             filters.search) && (
@@ -212,17 +226,20 @@ const CausesPage = () => {
             </div>
           )}
         </Card>
-
         <div className="causes-results">
+          {" "}
           {isLoading ? (
-            <div className="loading-container text-center p-5">
-              <Spin size="large" />
-              <div className="mt-3">
-                <Text type="secondary">Loading causes...</Text>
+            <div className="loading-container">
+              <Spin size="large" tip="Loading causes..." />
+              <div style={{ marginTop: 20 }}>
+                <Text type="secondary" style={{ fontSize: 16 }}>
+                  Please wait while we retrieve the latest causes
+                </Text>
               </div>
             </div>
           ) : causes.length > 0 ? (
             <>
+              {" "}
               <Row gutter={[24, 24]} className="causes-grid">
                 {causes.map((cause) => (
                   <Col
@@ -235,45 +252,71 @@ const CausesPage = () => {
                     <CauseCard cause={cause} />
                   </Col>
                 ))}
-              </Row>
-
-              <div className="pagination-container text-center mt-4 mb-4">
-                <Pagination
-                  current={pagination.page}
-                  pageSize={pagination.limit}
-                  total={pagination.total}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
-                  showTotal={(total) => `Total ${total} causes`}
-                  className="custom-pagination"
-                />
+              </Row>{" "}
+              <div className="pagination-container">
+                <Card
+                  bordered={false}
+                  style={{
+                    background: "#f9f9f9",
+                    borderRadius: "8px",
+                    padding: "16px 0",
+                  }}
+                >
+                  <Pagination
+                    current={pagination.page}
+                    pageSize={pagination.limit}
+                    total={pagination.total}
+                    onChange={handlePageChange}
+                    showSizeChanger={false}
+                    showTotal={(total) => `Total ${total} causes`}
+                    className="custom-pagination"
+                    style={{ textAlign: "center" }}
+                  />
+                </Card>
               </div>
             </>
           ) : (
-            <Card className="empty-state-card shadow-sm p-4 text-center">
+            <Card className="empty-state-card">
               <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                imageStyle={{ height: 120 }}
                 description={
                   <div className="empty-description">
-                    <Text className="mb-2">
-                      No causes found matching your filters.
+                    <Title
+                      level={4}
+                      style={{ marginBottom: 16, color: "#666" }}
+                    >
+                      No causes found matching your filters
+                    </Title>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        display: "block",
+                        marginBottom: 24,
+                      }}
+                    >
+                      Try adjusting your search criteria or create a new cause
                     </Text>
-                    <div className="mt-3">
+                    <Space size="middle">
                       <Button
                         type="primary"
+                        size="large"
                         onClick={handleResetFilters}
-                        className="mr-2"
+                        icon={<ReloadOutlined />}
                       >
                         Clear filters
                       </Button>
                       {user && (
                         <Button
                           type="default"
+                          size="large"
                           onClick={() => navigate("/causes/create")}
+                          icon={<PlusOutlined />}
                         >
                           Create a new cause
                         </Button>
                       )}
-                    </div>
+                    </Space>
                   </div>
                 }
               />

@@ -8,6 +8,21 @@ const createCause = async (req, res) => {
   try {
     console.log("Request body:", req.body);
     console.log("Request file:", req.file);
+    console.log("Request file type:", req.file ? typeof req.file : "No file");
+    console.log("Request files:", req.files);
+
+    if (req.file) {
+      console.log("File details:");
+      console.log("- fieldname:", req.file.fieldname);
+      console.log("- originalname:", req.file.originalname);
+      console.log("- mimetype:", req.file.mimetype);
+      console.log("- size:", req.file.size);
+      if (req.file.imagekit) {
+        console.log("- imagekit data present:", req.file.imagekit);
+      } else {
+        console.log("- NO imagekit data - upload middleware may have failed");
+      }
+    }
 
     const {
       title,
@@ -16,30 +31,30 @@ const createCause = async (req, res) => {
       category_id,
       funding_goal,
       food_goal,
-    } = req.body;
-
-    // Handle image upload
+    } = req.body; // Handle image upload
     let image = null;
-    if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+    let imageFileId = null;
+    if (req.file && req.file.imagekit) {
+      image = req.file.imagekit.url;
+      imageFileId = req.file.imagekit.fileId;
     }
 
     console.log("Creating cause with data:", {
       title,
       description,
       image,
+      imageFileId,
       location,
       category_id,
       funding_goal: funding_goal || null,
       food_goal: food_goal || null,
       user_id: req.user.id,
-    });
-
-    // Create cause
+    }); // Create cause
     const cause = await Cause.create({
       title,
       description,
       image,
+      imageFileId,
       location,
       category_id,
       funding_goal: funding_goal || null,
@@ -148,6 +163,9 @@ const updateCause = async (req, res) => {
       status,
     } = req.body;
 
+    console.log("Update request body:", req.body);
+    console.log("Update request file:", req.file);
+
     // Check if cause exists
     const cause = await Cause.findById(req.params.id);
 
@@ -158,51 +176,72 @@ const updateCause = async (req, res) => {
       });
     }
 
+    console.log("Found cause:", cause);
+
     // Check ownership or admin
     if (cause.user_id !== req.user.id && !req.user.is_admin) {
       return res.status(403).json({
         success: false,
         error: "Not authorized to update this cause",
       });
-    }
-
-    // Handle image upload
+    } // Handle image upload
     let image = cause.image;
-    if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+    let imageFileId = cause.imageFileId;
+
+    // If there's a new image, update both the URL and file ID
+    if (req.file && req.file.imagekit) {
+      image = req.file.imagekit.url;
+      imageFileId = req.file.imagekit.fileId;
+
+      console.log("New image from ImageKit:", {
+        url: image,
+        fileId: imageFileId,
+      });
+
+      // Delete the old image from ImageKit if it exists
+      if (cause.imageFileId) {
+        try {
+          const { deleteFile } = require("../utils/imageKitService");
+          await deleteFile(cause.imageFileId);
+          console.log(`Deleted old image with ID ${cause.imageFileId}`);
+        } catch (deleteError) {
+          console.error("Error deleting old image:", deleteError);
+          // Continue with the update even if deletion fails
+        }
+      }
+    } else if (req.file) {
+      // If there's a file but no imagekit data, something went wrong with ImageKit upload
+      console.error(
+        "File uploaded but no ImageKit data available. Upload middleware may have failed."
+      );
     }
 
-    // Update cause
-    const updatedCause = await Cause.update(req.params.id, {
+    const updateData = {
       title,
       description,
       image,
+      imageFileId,
       location,
       category_id,
       funding_goal: funding_goal || null,
       food_goal: food_goal || null,
       status: status || cause.status,
-    });
+    };
 
-    // If status changed, notify followers
-    if (status && status !== cause.status) {
-      await Notification.notifyCauseFollowers(
-        cause.id,
-        `Cause status updated: ${cause.title}`,
-        `The status of ${cause.title} has been updated to ${status}`,
-        "cause_update"
-      );
-    }
+    console.log("Updating cause with data:", updateData);
+
+    // Update cause
+    const updatedCause = await Cause.update(req.params.id, updateData);
 
     res.json({
       success: true,
       cause: updatedCause,
     });
   } catch (error) {
-    console.error("Error in updateCause:", error.message);
+    console.error("Error in updateCause:", error);
     res.status(500).json({
       success: false,
-      error: "Server error",
+      error: "Server error: " + error.message,
     });
   }
 };
@@ -228,6 +267,18 @@ const deleteCause = async (req, res) => {
         success: false,
         error: "Not authorized to delete this cause",
       });
+    }
+
+    // Delete image from ImageKit if it exists
+    if (cause.imageFileId) {
+      try {
+        const { deleteFile } = require("../utils/imageKitService");
+        await deleteFile(cause.imageFileId);
+        console.log(`Deleted image with ID ${cause.imageFileId}`);
+      } catch (deleteError) {
+        console.error("Error deleting image:", deleteError);
+        // Continue with the delete even if image deletion fails
+      }
     }
 
     // Delete cause

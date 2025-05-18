@@ -54,87 +54,83 @@ class Cause {
       throw new Error(`Error finding cause by ID: ${error.message}`);
     }
   }
-
+  
   // Update cause
   static async update(id, causeData) {
     try {
       // Start building the query and parameters
       let queryParts = [];
       let queryParams = [];
-
+      
       // For each property in causeData, add it to the query if it's defined
       if (causeData.title !== undefined) {
         queryParts.push("title = ?");
         queryParams.push(causeData.title);
       }
-
+      
       if (causeData.description !== undefined) {
         queryParts.push("description = ?");
         queryParams.push(causeData.description);
       }
-
+      
       if (causeData.image !== undefined) {
         queryParts.push("image = ?");
         queryParams.push(causeData.image);
       }
-
+      
       if (causeData.imageFileId !== undefined) {
         queryParts.push("imageFileId = ?");
         queryParams.push(causeData.imageFileId);
-        console.log(
-          `Adding imageFileId to update query: ${causeData.imageFileId}`
-        );
+        console.log(`Adding imageFileId to update query: ${causeData.imageFileId}`);
       }
-
+      
       if (causeData.location !== undefined) {
         queryParts.push("location = ?");
         queryParams.push(causeData.location);
       }
-
+      
       if (causeData.category_id !== undefined) {
         queryParts.push("category_id = ?");
         queryParams.push(causeData.category_id);
       }
-
+      
       if (causeData.funding_goal !== undefined) {
         queryParts.push("funding_goal = ?");
         queryParams.push(causeData.funding_goal);
       }
-
+      
       if (causeData.food_goal !== undefined) {
         queryParts.push("food_goal = ?");
         queryParams.push(causeData.food_goal);
       }
-
+      
       if (causeData.status !== undefined) {
         queryParts.push("status = ?");
         queryParams.push(causeData.status);
       }
-
+      
       // If nothing to update, return the original data
       if (queryParts.length === 0) {
         console.log("No fields to update for cause ID", id);
         return { id, ...causeData };
       }
-
+      
       // Finish building the query
       const query = `UPDATE causes SET ${queryParts.join(", ")} WHERE id = ?`;
       queryParams.push(id);
-
+      
       console.log("Update query:", query);
       console.log("Update params:", queryParams);
-
+      
       // Execute the query
       const [result] = await pool.query(query, queryParams);
       console.log("Update result:", result);
-
+      
       return { id, ...causeData };
     } catch (error) {
       console.error("Error in Cause.update:", error);
-      if (error.code === "ER_BAD_FIELD_ERROR") {
-        console.error(
-          "This might be a column name issue. Check if all columns exist in the database."
-        );
+      if (error.code === 'ER_BAD_FIELD_ERROR') {
+        console.error("This might be a column name issue. Check if all columns exist in the database.");
       }
       throw new Error(`Error updating cause: ${error.message}`);
     }

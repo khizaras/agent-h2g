@@ -23,6 +23,8 @@ import {
   Breadcrumb,
   Image,
   Empty,
+  Descriptions,
+  List,
 } from "antd";
 import {
   HeartOutlined,
@@ -40,11 +42,14 @@ import {
   InfoCircleOutlined,
   TeamOutlined,
   HistoryOutlined,
+  FileTextOutlined,
+  TagOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 
 import {
   getCauseById,
+  getCauseFieldValues,
   toggleFollowCause,
   deleteCause,
 } from "../../redux/slices/causesSlice";
@@ -68,6 +73,7 @@ const CauseDetailsPage = () => {
     useState(false);
   const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [categoryFieldValues, setCategoryFieldValues] = useState([]);
   const [contributeForm] = Form.useForm();
   const [feedbackForm] = Form.useForm();
 
@@ -77,6 +83,16 @@ const CauseDetailsPage = () => {
 
   useEffect(() => {
     dispatch(getCauseById(id));
+
+    // Fetch category field values
+    dispatch(getCauseFieldValues(id))
+      .unwrap()
+      .then((values) => {
+        setCategoryFieldValues(values);
+      })
+      .catch((error) => {
+        console.error("Error fetching category values:", error);
+      });
   }, [dispatch, id]);
   useEffect(() => {
     if (cause && user) {
@@ -256,11 +272,11 @@ const CauseDetailsPage = () => {
         {/* Main Content Column */}
         <Col xs={24} lg={16}>
           <Card className="card-elevated" style={{ marginBottom: 24 }}>
-            {/* Image Section */}
+            {/* Image Section */}{" "}
             <div className="cause-image" style={{ position: "relative" }}>
               {cause.image ? (
                 <Image
-                  src={`/uploads/${cause.image}`}
+                  src={cause.image}
                   alt={cause.title}
                   style={{
                     objectFit: "cover",
@@ -292,12 +308,21 @@ const CauseDetailsPage = () => {
                 style={{ position: "absolute", top: 16, right: 16, zIndex: 1 }}
               >
                 <Space size="small">
+                  {" "}
                   <Tag
-                    color={categoryColors[cause.category] || "blue"}
+                    color={
+                      categoryColors[
+                        cause.category_id ? cause.category_id : 0
+                      ] || "blue"
+                    }
                     style={{ fontSize: "14px" }}
                   >
-                    {cause.category.charAt(0).toUpperCase() +
-                      cause.category.slice(1)}
+                    {cause.category_name
+                      ? cause.category_name
+                      : cause.category
+                      ? cause.category.charAt(0).toUpperCase() +
+                        cause.category.slice(1)
+                      : "Unknown"}
                   </Tag>
                   <Tag
                     color={statusColors[cause.status] || "green"}
@@ -309,7 +334,6 @@ const CauseDetailsPage = () => {
                 </Space>
               </div>
             </div>
-
             {/* Title and Meta Information */}
             <div style={{ padding: "16px 24px" }}>
               <Title level={2} style={{ marginBottom: 12 }}>
@@ -347,6 +371,151 @@ const CauseDetailsPage = () => {
                   {cause.description || "No description provided."}
                 </Paragraph>
               </div>
+
+              {/* Category Fields Section - Styled for better appeal */}
+              {categoryFieldValues && categoryFieldValues.length > 0 && (
+                <div className="cause-category-fields">
+                  <Title level={4}>
+                    <TagOutlined style={{ marginRight: 8, color: "#1890ff" }} />
+                    Category Details
+                  </Title>
+
+                  <Card
+                    bordered={false}
+                    className="category-fields-card"
+                    style={{
+                      backgroundColor: "#f9f9f9",
+                      marginBottom: 24,
+                      borderRadius: 8,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <Row gutter={[16, 16]}>
+                      {categoryFieldValues.map((field) => {
+                        // Render different field types appropriately
+                        let fieldValue = field.value;
+                        let fieldIcon = null;
+
+                        // Assign icons based on field type
+                        switch (field.type) {
+                          case "date":
+                            fieldIcon = (
+                              <CalendarOutlined style={{ color: "#1890ff" }} />
+                            );
+                            fieldValue = field.value
+                              ? moment(field.value).format("MMMM DD, YYYY")
+                              : null;
+                            break;
+                          case "text":
+                          case "textarea":
+                            fieldIcon = (
+                              <FileTextOutlined style={{ color: "#1890ff" }} />
+                            );
+                            break;
+                          case "select":
+                          case "radio":
+                          case "checkbox":
+                            fieldIcon = (
+                              <TagOutlined style={{ color: "#1890ff" }} />
+                            );
+                            if (field.type === "checkbox" && field.value) {
+                              try {
+                                const values = JSON.parse(field.value);
+                                if (Array.isArray(values)) {
+                                  fieldValue = (
+                                    <Space size={[0, 8]} wrap>
+                                      {values.map((val, idx) => (
+                                        <Tag key={idx} color="blue">
+                                          {val}
+                                        </Tag>
+                                      ))}
+                                    </Space>
+                                  );
+                                }
+                              } catch (e) {
+                                // If parsing fails, try comma-separated values
+                                if (
+                                  typeof field.value === "string" &&
+                                  field.value.includes(",")
+                                ) {
+                                  const values = field.value.split(",");
+                                  fieldValue = (
+                                    <Space size={[0, 8]} wrap>
+                                      {values.map((val, idx) => (
+                                        <Tag key={idx} color="blue">
+                                          {val}
+                                        </Tag>
+                                      ))}
+                                    </Space>
+                                  );
+                                } else {
+                                  console.error(
+                                    "Error parsing checkbox value:",
+                                    e
+                                  );
+                                }
+                              }
+                            } else if (field.value) {
+                              fieldValue = (
+                                <Tag color="blue">{field.value}</Tag>
+                              );
+                            }
+                            break;
+                          default:
+                            fieldIcon = (
+                              <InfoCircleOutlined
+                                style={{ color: "#1890ff" }}
+                              />
+                            );
+                        }
+
+                        return (
+                          <Col xs={24} sm={12} key={field.id}>
+                            <Card
+                              size="small"
+                              bordered={false}
+                              style={{
+                                height: "100%",
+                                background: "white",
+                                borderRadius: 4,
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  marginBottom: 8,
+                                }}
+                              >
+                                <span style={{ marginRight: 8 }}>
+                                  {fieldIcon}
+                                </span>
+                                <Text strong>{field.name}</Text>
+                                {field.required && (
+                                  <Tag
+                                    color="red"
+                                    style={{ marginLeft: 8, fontSize: "0.8em" }}
+                                  >
+                                    Required
+                                  </Tag>
+                                )}
+                              </div>
+                              <div style={{ marginLeft: 24 }}>
+                                {fieldValue ? (
+                                  <div>{fieldValue}</div>
+                                ) : (
+                                  <Text type="secondary">Not provided</Text>
+                                )}
+                              </div>
+                            </Card>
+                          </Col>
+                        );
+                      })}
+                    </Row>
+                  </Card>
+                </div>
+              )}
 
               {/* Progress Section */}
               <Title level={4} style={{ marginTop: 24 }}>
@@ -477,12 +646,9 @@ const CauseDetailsPage = () => {
                           marginBottom: 8,
                         }}
                       >
+                        {" "}
                         <Avatar
-                          src={
-                            update.user_avatar
-                              ? `/uploads/${update.user_avatar}`
-                              : null
-                          }
+                          src={update.user_avatar || null}
                           icon={!update.user_avatar && <UserOutlined />}
                         />
                         <div style={{ marginLeft: 12 }}>
@@ -527,12 +693,9 @@ const CauseDetailsPage = () => {
                       style={{ marginBottom: 24 }}
                     >
                       <div style={{ display: "flex" }}>
+                        {" "}
                         <Avatar
-                          src={
-                            feedback.user_avatar
-                              ? `/uploads/${feedback.user_avatar}`
-                              : null
-                          }
+                          src={feedback.user_avatar || null}
                           icon={!feedback.user_avatar && <UserOutlined />}
                           style={{ flexShrink: 0 }}
                         />
@@ -594,6 +757,117 @@ const CauseDetailsPage = () => {
                 ) : (
                   <Empty
                     description="No feedback has been provided yet"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    style={{ margin: "40px 0" }}
+                  />
+                )}
+              </TabPane>
+
+              <TabPane
+                tab={
+                  <span>
+                    <FileTextOutlined />
+                    Category Details
+                  </span>
+                }
+                key="3"
+              >
+                {categoryFieldValues && categoryFieldValues.length > 0 ? (
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={categoryFieldValues}
+                    renderItem={(field) => {
+                      // Render different field types appropriately
+                      let fieldValue = field.value;
+                      let fieldIcon = null;
+
+                      // Assign icons based on field type
+                      switch (field.type) {
+                        case "date":
+                          fieldIcon = (
+                            <CalendarOutlined style={{ color: "#1890ff" }} />
+                          );
+                          fieldValue = field.value
+                            ? moment(field.value).format("MMMM DD, YYYY")
+                            : null;
+                          break;
+                        case "text":
+                        case "textarea":
+                          fieldIcon = (
+                            <FileTextOutlined style={{ color: "#1890ff" }} />
+                          );
+                          break;
+                        case "select":
+                        case "radio":
+                        case "checkbox":
+                          fieldIcon = (
+                            <TagOutlined style={{ color: "#1890ff" }} />
+                          );
+
+                          if (field.type === "checkbox" && field.value) {
+                            try {
+                              const values = JSON.parse(field.value);
+                              if (Array.isArray(values)) {
+                                fieldValue = (
+                                  <Space size={[0, 8]} wrap>
+                                    {values.map((val, idx) => (
+                                      <Tag key={idx} color="blue">
+                                        {val}
+                                      </Tag>
+                                    ))}
+                                  </Space>
+                                );
+                              }
+                            } catch (e) {
+                              console.error("Error parsing checkbox value:", e);
+                            }
+                          } else if (field.value) {
+                            fieldValue = <Tag color="blue">{field.value}</Tag>;
+                          }
+                          break;
+                        default:
+                          fieldIcon = (
+                            <InfoCircleOutlined style={{ color: "#1890ff" }} />
+                          );
+                      }
+
+                      return (
+                        <List.Item>
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar
+                                icon={fieldIcon}
+                                style={{ backgroundColor: "#f0f5ff" }}
+                              />
+                            }
+                            title={
+                              <div>
+                                {field.name}
+                                {field.required && (
+                                  <Tag
+                                    color="red"
+                                    style={{ marginLeft: 8, fontSize: "0.8em" }}
+                                  >
+                                    Required
+                                  </Tag>
+                                )}
+                              </div>
+                            }
+                            description={
+                              <div style={{ padding: "8px 0" }}>
+                                {fieldValue || (
+                                  <Text type="secondary">Not provided</Text>
+                                )}
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      );
+                    }}
+                  />
+                ) : (
+                  <Empty
+                    description="No category details available"
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     style={{ margin: "40px 0" }}
                   />
@@ -705,13 +979,10 @@ const CauseDetailsPage = () => {
                 marginBottom: 16,
               }}
             >
+              {" "}
               <Avatar
                 size={64}
-                src={
-                  cause.creator_avatar
-                    ? `/uploads/${cause.creator_avatar}`
-                    : null
-                }
+                src={cause.creator_avatar || null}
                 icon={!cause.creator_avatar && <UserOutlined />}
               />
               <div style={{ marginLeft: 16 }}>
@@ -768,9 +1039,10 @@ const CauseDetailsPage = () => {
                             flexShrink: 0,
                           }}
                         >
+                          {" "}
                           {similarCause.image ? (
                             <img
-                              src={`/uploads/${similarCause.image}`}
+                              src={similarCause.image}
                               alt={similarCause.title}
                               style={{
                                 width: "100%",

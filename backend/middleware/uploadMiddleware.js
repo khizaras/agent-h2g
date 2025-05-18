@@ -1,10 +1,11 @@
 const multer = require("multer");
 const path = require("path");
+const { uploadFile } = require("../utils/imageKitService");
 
-// Set storage engine
-const storage = multer.diskStorage({
+// Set temporary storage for multer
+const tempStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "backend/uploads/");
+    cb(null, "backend/uploads/temp/");
   },
   filename: (req, file, cb) => {
     // Use a unique filename with the original extension
@@ -33,10 +34,49 @@ const fileFilter = (req, file, cb) => {
 
 // Initialize upload
 const upload = multer({
-  storage,
+  storage: tempStorage,
   limits: { fileSize: 5000000 }, // 5MB limit
   fileFilter,
 });
+
+// ImageKit upload middleware for causes
+const uploadToImageKit = async (req, res, next) => {
+  try {
+    console.log("uploadToImageKit middleware called");
+    console.log("Request file before ImageKit:", req.file);
+
+    // If there's a file and it was successfully uploaded by multer
+    if (req.file) {
+      console.log("Uploading file to ImageKit:", {
+        path: req.file.path,
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+      });
+
+      // Upload to ImageKit
+      const uploadResult = await uploadFile(req.file, "causes");
+      console.log("ImageKit upload result:", uploadResult);
+
+      // Store the ImageKit URL in the request for use in controllers
+      req.file.imagekit = {
+        url: uploadResult.url,
+        fileId: uploadResult.fileId,
+        name: uploadResult.name,
+      };
+
+      console.log("Request file after ImageKit:", req.file);
+    } else {
+      console.log("No file to upload to ImageKit");
+    }
+    next();
+  } catch (error) {
+    console.error("ImageKit upload error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to upload image to cloud storage",
+    });
+  }
+};
 
 // Handle multer errors
 const handleUploadError = (err, req, res, next) => {
@@ -60,4 +100,4 @@ const handleUploadError = (err, req, res, next) => {
   next();
 };
 
-module.exports = { upload, handleUploadError };
+module.exports = { upload, uploadToImageKit, handleUploadError };

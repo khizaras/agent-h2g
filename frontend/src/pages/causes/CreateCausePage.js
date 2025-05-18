@@ -79,18 +79,21 @@ const CreateCausePage = () => {
   const onFinish = (values) => {
     const formData = new FormData();
 
+    // Helper function to safely handle date formatting
+    const safelyFormatDate = (dateValue) => {
+      return dateValue && moment.isMoment(dateValue) && dateValue.isValid()
+        ? dateValue.format("YYYY-MM-DD")
+        : "";
+    };
+
     // Add all form values to formData
     Object.keys(values).forEach((key) => {
       // Skip dynamic fields, they'll be handled separately
       if (key.startsWith("dynamic_")) {
         return;
       }
-
       if (key === "end_date") {
-        formData.append(
-          key,
-          values[key] ? values[key].format("YYYY-MM-DD") : ""
-        );
+        formData.append(key, safelyFormatDate(values[key]));
       } else if (values[key] !== undefined && values[key] !== null) {
         formData.append(key, values[key]);
       }
@@ -113,11 +116,12 @@ const CreateCausePage = () => {
 
           // Handle array values (checkbox groups)
           if (Array.isArray(fieldValue)) {
-            fieldValue = fieldValue.join(",");
+            fieldValue = JSON.stringify(fieldValue);
           }
 
           categoryFieldValues.push({
             field_id: field.id,
+            category_id: selectedCategoryId,
             value: fieldValue !== null ? String(fieldValue) : "",
           });
         }
@@ -150,12 +154,13 @@ const CreateCausePage = () => {
     }
 
     if (file.status === "done") {
-      setImageFile(file.originFileObj);
+      // Set the file for form submission
+      setImageFile(file.originFileObj || file);
 
       // Create a preview URL
       const reader = new FileReader();
       reader.addEventListener("load", () => setPreviewImage(reader.result));
-      reader.readAsDataURL(file.originFileObj);
+      reader.readAsDataURL(file.originFileObj || file);
     }
   };
 
@@ -262,7 +267,6 @@ const CreateCausePage = () => {
                     />
                   </Form.Item>
                 );
-
               case "date":
                 return (
                   <Form.Item
@@ -276,7 +280,11 @@ const CreateCausePage = () => {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} />
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      format="YYYY-MM-DD"
+                      placeholder={field.placeholder || `Select ${field.name}`}
+                    />
                   </Form.Item>
                 );
 
@@ -405,7 +413,6 @@ const CreateCausePage = () => {
       <div className="upload-text">Upload Image</div>
     </div>
   );
-
   // Custom file upload props
   const fileUploadProps = {
     name: "image",
@@ -422,6 +429,9 @@ const CreateCausePage = () => {
         message.error("Image must be smaller than 5MB!");
         return false;
       }
+
+      // Set the image file directly here
+      setImageFile(file);
 
       return false; // Prevent automatic upload
     },
@@ -585,7 +595,6 @@ const CreateCausePage = () => {
                   />
                 </Form.Item>
               </Col>
-
               <Col xs={24} md={12}>
                 <Form.Item name="food_goal" label="Food Items Goal">
                   <InputNumber
@@ -599,11 +608,10 @@ const CreateCausePage = () => {
                     className="custom-input-number"
                   />
                 </Form.Item>
-              </Col>
+              </Col>{" "}
             </Row>{" "}
             <Card className="upload-card mt-3 mb-3">
               <Form.Item
-                name="image"
                 label="Cause Image"
                 extra="Add a high-quality image that represents your cause. This will be displayed on your cause page."
               >

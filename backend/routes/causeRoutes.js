@@ -14,7 +14,11 @@ const {
   unfollowCause,
 } = require("../controllers/causeController");
 const { protect } = require("../middleware/authMiddleware");
-const { upload, handleUploadError } = require("../middleware/uploadMiddleware");
+const {
+  upload,
+  uploadToImageKit,
+  handleUploadError,
+} = require("../middleware/uploadMiddleware");
 const {
   causeValidation,
   contributionValidation,
@@ -42,6 +46,7 @@ router.post(
   protect,
   upload.single("image"),
   handleUploadError,
+  uploadToImageKit,
   causeValidation,
   createCause
 );
@@ -50,6 +55,7 @@ router.put(
   protect,
   upload.single("image"),
   handleUploadError,
+  uploadToImageKit,
   causeValidation,
   updateCause
 );
@@ -63,5 +69,12 @@ router.post(
 router.post("/:id/feedback", protect, feedbackValidation, addFeedback);
 router.post("/:id/follow", protect, followCause);
 router.post("/:id/unfollow", protect, unfollowCause);
+// Add a POST route for contributions
+router.post(
+  "/:id/contributions",
+  protect,
+  contributionValidation,
+  addContribution
+);
 
 module.exports = router;
