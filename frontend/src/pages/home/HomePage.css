@@ -71,13 +71,13 @@
 
 /* Hero Section */
 .hero-section {
-  min-height: 80vh; /* Taller hero for impact */
+  min-height: 30vh; /* Taller hero for impact */
   padding: 0; /* Remove padding, using flex centering instead */
   display: flex;
   align-items: center;
   justify-content: center;
   background-size: cover;
-  background-position: center;
+  background-position: bottom;
   color: #fff;
   text-align: center;
   position: relative;
