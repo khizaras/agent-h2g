@@ -262,7 +262,6 @@ class Cause {
       throw new Error(`Error getting cause contributions: ${error.message}`);
     }
   }
-
   // Get cause feedback/ratings
   static async getFeedback(causeId) {
     try {
@@ -279,6 +278,41 @@ class Cause {
       return rows;
     } catch (error) {
       throw new Error(`Error getting cause feedback: ${error.message}`);
+    }
+  }
+  // Get cause updates
+  static async getUpdates(causeId) {
+    try {
+      // Check if the updates table exists
+      const [tables] = await pool.query(
+        `SELECT TABLE_NAME 
+         FROM information_schema.TABLES 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'updates'`
+      );
+
+      // If updates table doesn't exist, return an empty array
+      if (tables.length === 0) {
+        console.log("Updates table doesn't exist yet. Returning empty array.");
+        return [];
+      }
+
+      // If table exists, fetch the updates
+      const [rows] = await pool.query(
+        `SELECT u.id, u.content, u.created_at,
+          usr.id as user_id, usr.name as user_name, usr.avatar as user_avatar
+         FROM updates u
+         LEFT JOIN users usr ON u.user_id = usr.id
+         WHERE u.cause_id = ?
+         ORDER BY u.created_at DESC`,
+        [causeId]
+      );
+
+      return rows;
+    } catch (error) {
+      console.error(`Error getting cause updates: ${error.message}`);
+      // Return empty array instead of throwing error
+      return [];
     }
   }
 

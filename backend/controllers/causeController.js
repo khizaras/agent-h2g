@@ -114,7 +114,6 @@ const getCauses = async (req, res) => {
 const getCauseById = async (req, res) => {
   try {
     const cause = await Cause.findById(req.params.id);
-
     if (cause) {
       // Check if user is following (if authenticated)
       let isFollowing = false;
@@ -125,12 +124,16 @@ const getCauseById = async (req, res) => {
       // Get feedback for this cause
       const feedback = await Cause.getFeedback(cause.id);
 
+      // Get updates for this cause
+      const updates = await Cause.getUpdates(cause.id);
+
       res.json({
         success: true,
         cause: {
           ...cause,
           isFollowing,
           feedback: feedback || [], // Add feedback to the cause object
+          updates: updates || [], // Add updates to the cause object
         },
       });
     } else {

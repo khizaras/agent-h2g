@@ -25,7 +25,38 @@ connectDB().then(() => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(helmet()); // Security headers
+
+// Customize Helmet's security settings to allow cross-origin images
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://*.unsplash.com",
+          "https://ik.imagekit.io",
+          "https://*.imagekit.io",
+          "https://ik.imagekit.io/",
+          "https://images.unsplash.com",
+          "*",
+        ],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        fontSrc: ["'self'", "data:"],
+        connectSrc: [
+          "'self'",
+          "https://ik.imagekit.io",
+          "https://*.imagekit.io",
+        ],
+      },
+    },
+  })
+);
+
 app.use(compression()); // Compress responses
 
 // Logging in development mode
@@ -48,10 +79,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Serve static assets in production
 if (process.env.NODE_ENV === "production") {
   // Set static folder
-  app.use(express.static(path.join(__dirname, "../frontend/build")));
+  app.use(express.static(path.join(__dirname, "../build")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../frontend", "build", "index.html"));
+    res.sendFile(path.resolve(__dirname, "../", "build", "index.html"));
   });
 }
 

@@ -627,10 +627,11 @@ const CauseDetailsPage = () => {
           {/* Tabs for Additional Information */}
           <Card className="card-elevated">
             <Tabs defaultActiveKey="1" size="large">
+              {" "}
               <TabPane
                 tab={
                   <span>
-                    <HistoryOutlined />
+                    <HistoryOutlined style={{ marginRight: 8 }} />
                     Updates
                   </span>
                 }
@@ -674,12 +675,11 @@ const CauseDetailsPage = () => {
                     style={{ margin: "40px 0" }}
                   />
                 )}
-              </TabPane>
-
+              </TabPane>{" "}
               <TabPane
                 tab={
                   <span>
-                    <CommentOutlined />
+                    <CommentOutlined style={{ marginRight: 8 }} />
                     Feedback
                   </span>
                 }
@@ -761,12 +761,11 @@ const CauseDetailsPage = () => {
                     style={{ margin: "40px 0" }}
                   />
                 )}
-              </TabPane>
-
+              </TabPane>{" "}
               <TabPane
                 tab={
                   <span>
-                    <FileTextOutlined />
+                    <FileTextOutlined style={{ marginRight: 8 }} />
                     Category Details
                   </span>
                 }
