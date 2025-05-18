@@ -4,13 +4,25 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
 }
 
 .cause-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.cause-card .ant-card-body {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.cause-card .ant-card-meta-title {
+  white-space: normal;
+  margin-bottom: 12px;
 }
 
 .cause-image-container {
@@ -84,6 +96,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
