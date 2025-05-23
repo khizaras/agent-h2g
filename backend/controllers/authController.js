@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
+const fetch = require("node-fetch");
 const User = require("../models/User");
 
 // Google OAuth client
@@ -130,13 +131,16 @@ const googleAuth = async (req, res) => {
   try {
     const { token } = req.body;
 
-    // Verify Google token
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    // Verify Google access token
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`
+    );
 
-    const { email, name, picture, sub } = ticket.getPayload();
+    if (!response.ok) {
+      throw new Error("Failed to verify Google token");
+    }
+
+    const { email, name, picture, sub } = await response.json();
 
     // Check if user exists
     let user = await User.findByEmail(email);

@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Typography, Card, Alert } from "antd";
-import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Typography, Card, Alert, Divider } from "antd";
+import {
+  UserOutlined,
+  LockOutlined,
+  MailOutlined,
+  GoogleOutlined,
+} from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { register, reset } from "../../redux/slices/authSlice";
+import { useGoogleLogin } from "@react-oauth/google";
+import { register, reset, googleLogin } from "../../redux/slices/authSlice";
+import { trackRegistration, trackEvent } from "../../utils/analytics";
 
 const { Title } = Typography;
 
@@ -17,6 +24,31 @@ const RegisterPage = () => {
   );
 
   const [error, setError] = useState(null);
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Get token and send to backend
+        const accessToken = tokenResponse.access_token;
+        dispatch(googleLogin(accessToken));
+        // Track successful registration with Google
+        trackRegistration("google");
+      } catch (error) {
+        setError("Google login failed. Please try again.");
+        // Track failed registration attempt
+        trackEvent("User", "Registration Failed", "Google", error?.message);
+      }
+    },
+    onError: (error) => {
+      setError("Google login failed. Please try again.");
+      // Track error
+      trackEvent(
+        "User",
+        "Registration Failed",
+        "Google",
+        error?.message || "Unknown error"
+      );
+    },
+  });
 
   useEffect(() => {
     if (isError) {
@@ -41,8 +73,9 @@ const RegisterPage = () => {
       email: values.email,
       password: values.password,
     };
-
     dispatch(register(userData));
+    // Track successful registration with email
+    trackRegistration("email");
   };
 
   return (
@@ -68,7 +101,6 @@ const RegisterPage = () => {
           >
             <Input prefix={<UserOutlined />} placeholder="Name" size="large" />
           </Form.Item>
-
           <Form.Item
             name="email"
             rules={[
@@ -78,7 +110,6 @@ const RegisterPage = () => {
           >
             <Input prefix={<MailOutlined />} placeholder="Email" size="large" />
           </Form.Item>
-
           <Form.Item
             name="password"
             rules={[{ required: true, message: "Please input your password!" }]}
@@ -89,7 +120,6 @@ const RegisterPage = () => {
               size="large"
             />
           </Form.Item>
-
           <Form.Item
             name="confirmPassword"
             rules={[
@@ -102,7 +132,6 @@ const RegisterPage = () => {
               size="large"
             />
           </Form.Item>
-
           <Form.Item>
             <Button
               type="primary"
@@ -113,8 +142,20 @@ const RegisterPage = () => {
             >
               Register
             </Button>
-          </Form.Item>
+          </Form.Item>{" "}
         </Form>
+
+        <Divider plain>Or</Divider>
+
+        <Button
+          icon={<GoogleOutlined />}
+          size="large"
+          onClick={() => handleGoogleLogin()}
+          block
+          style={{ marginBottom: 16 }}
+        >
+          Sign up with Google
+        </Button>
 
         <div style={{ textAlign: "center" }}>
           Already have an account? <Link to="/login">Login</Link>

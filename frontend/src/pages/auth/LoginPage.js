@@ -13,7 +13,9 @@ import {
   message,
 } from "antd";
 import { UserOutlined, LockOutlined, GoogleOutlined } from "@ant-design/icons";
+import { useGoogleLogin } from "@react-oauth/google";
 import { login, reset, googleLogin } from "../../redux/slices/authSlice";
+import { trackLogin, trackEvent } from "../../utils/analytics";
 
 const { Title, Text } = Typography;
 
@@ -44,26 +46,36 @@ const LoginPage = () => {
 
     dispatch(reset());
   }, [user, isSuccess, isError, errorMessage, navigate, dispatch, messageApi]);
-
   const onFinish = (values) => {
     dispatch(login(values));
+    // Track successful login with email
+    trackLogin("email");
   };
-
-  const handleGoogleLogin = async () => {
-    // Implementation would depend on your Google auth setup
-    // This is a placeholder for where you would trigger Google OAuth flow
-    try {
-      // In a real implementation, this would trigger the Google OAuth flow
-      // and then call the googleLogin action with the received token
-      alert("Google login would be implemented here with a real OAuth flow");
-
-      // Simulating a successful login for demo purposes
-      // const token = await getGoogleToken();
-      // dispatch(googleLogin(token));
-    } catch (error) {
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Get token and send to backend
+        const accessToken = tokenResponse.access_token;
+        dispatch(googleLogin(accessToken));
+        // Track successful login with Google
+        trackLogin("google");
+      } catch (error) {
+        messageApi.error("Google login failed. Please try again.");
+        // Track failed login attempt
+        trackEvent("User", "Login Failed", "Google", error.message);
+      }
+    },
+    onError: (error) => {
       messageApi.error("Google login failed. Please try again.");
-    }
-  };
+      // Track error
+      trackEvent(
+        "User",
+        "Login Failed",
+        "Google",
+        error?.message || "Unknown error"
+      );
+    },
+  });
 
   return (
     <div
@@ -80,7 +92,6 @@ const LoginPage = () => {
           <Title level={2}>Welcome Back</Title>
           <Text type="secondary">Sign in to your Hands2gether account</Text>
         </div>
-
         <Form form={form} name="login" onFinish={onFinish} layout="vertical">
           <Form.Item
             name="email"
@@ -121,19 +132,16 @@ const LoginPage = () => {
             </Button>
           </Form.Item>
         </Form>
-
-        <Divider plain>Or</Divider>
-
+        <Divider plain>Or</Divider>{" "}
         <Button
           icon={<GoogleOutlined />}
           size="large"
-          onClick={handleGoogleLogin}
+          onClick={() => handleGoogleLogin()}
           block
           style={{ marginBottom: 16 }}
         >
           Continue with Google
         </Button>
-
         <div style={{ textAlign: "center", marginTop: 16 }}>
           <Text>Don't have an account? </Text>
           <Link to="/register">Sign up</Link>

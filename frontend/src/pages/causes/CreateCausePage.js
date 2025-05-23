@@ -23,6 +23,11 @@ import {
   Empty,
 } from "antd";
 import {
+  trackCauseCreation,
+  trackFormSubmission,
+  trackEvent,
+} from "../../utils/analytics";
+import {
   UploadOutlined,
   EnvironmentOutlined,
   UserOutlined,
@@ -127,7 +132,6 @@ const CreateCausePage = () => {
         }
       });
     }
-
     dispatch(createCause(formData))
       .unwrap()
       .then((cause) => {
@@ -140,6 +144,16 @@ const CreateCausePage = () => {
             })
           );
         }
+
+        // Track successful cause creation
+        trackCauseCreation(cause.id);
+        trackFormSubmission("create_cause");
+        trackEvent(
+          "Cause",
+          "Created",
+          cause.title || "Unnamed cause",
+          selectedCategoryId
+        );
 
         message.success("Cause created successfully!");
         navigate(`/causes/${cause.id}`);
