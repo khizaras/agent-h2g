@@ -9,6 +9,7 @@ import {
   CommentOutlined,
   RobotOutlined,
   UserOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import {
   toggleChatbot,
@@ -17,6 +18,9 @@ import {
   addUserMessage,
   sendMessage,
   clearMessages,
+  startNewSession,
+  resetChatError,
+  fetchChatHistory,
 } from "../../redux/slices/chatbotSlice";
 import "./Chatbot.css";
 
@@ -25,9 +29,17 @@ const Chatbot = () => {
   const navigate = useNavigate();
   const messageEndRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  const { isOpen, messages, isLoading, isError, message } = useSelector(
-    (state) => state.chatbot
-  );
+  const {
+    isOpen,
+    messages,
+    isLoading,
+    isError,
+    message,
+    sessionId,
+    remainingMessages,
+    isApproachingLimit,
+    limitReached,
+  } = useSelector((state) => state.chatbot);
 
   const [userInput, setUserInput] = useState("");
 
@@ -37,6 +49,15 @@ const Chatbot = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // First, add a useEffect hook to check session on component mount
+  useEffect(() => {
+    if (user && !sessionId) {
+      // If user is logged in and no active session, start a new one
+      dispatch(resetChatError());
+    }
+  }, [dispatch, user, sessionId]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!userInput.trim()) return;
@@ -92,18 +113,73 @@ const Chatbot = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  // Add a function to render the message limit warning
+  const renderMessageLimitWarning = () => {
+    if (!user) return null;
+
+    if (limitReached) {
+      return (
+        <Alert
+          type="warning"
+          message="Daily message limit reached"
+          description="You've reached your daily limit of 20 messages. Please try again tomorrow."
+          showIcon
+          className="chat-limit-alert"
+          style={{ margin: "8px 12px" }}
+        />
+      );
+    } else if (isApproachingLimit) {
+      return (
+        <Alert
+          type="info"
+          message={`${remainingMessages} messages remaining today`}
+          description="You're approaching your daily chat limit. Each user can send up to 20 messages per day."
+          showIcon
+          className="chat-limit-alert"
+          style={{ margin: "8px 12px" }}
+        />
+      );
+    }
+
+    return null;
+  };
   return (
     <div className="chatbot-container">
       {isOpen ? (
         <Card
           className="chatbot-card"
-          title="Hands2gether Assistant"
+          title={
+            <div className="chatbot-header">
+              <span>Hands2gether Assistant</span>
+              {user && remainingMessages < 20 && (
+                <Badge
+                  count={remainingMessages}
+                  style={{
+                    backgroundColor: isApproachingLimit ? "#faad14" : "#52c41a",
+                    marginLeft: "8px",
+                  }}
+                  title={`${remainingMessages} messages remaining today`}
+                />
+              )}
+            </div>
+          }
           extra={
-            <Button
-              type="text"
-              icon={<CloseOutlined />}
-              onClick={handleToggleChatbot}
-            />
+            <div style={{ display: "flex", gap: "8px" }}>
+              {user && (
+                <Tooltip title="View chat history">
+                  <Button
+                    type="text"
+                    icon={<HistoryOutlined />}
+                    onClick={() => navigate("/chat-history")}
+                  />
+                </Tooltip>
+              )}
+              <Button
+                type="text"
+                icon={<CloseOutlined />}
+                onClick={handleToggleChatbot}
+              />
+            </div>
           }
         >
           <div className="chatbot-messages">
@@ -189,22 +265,28 @@ const Chatbot = () => {
                 <Alert type="error" message={message} showIcon />
               </div>
             )}
-            <div ref={messageEndRef} />
+            {renderMessageLimitWarning()} <div ref={messageEndRef} />
           </div>
+
+          {/* Display limit warning if needed */}
+          {renderMessageLimitWarning()}
 
           <form onSubmit={handleSubmit} className="chatbot-input">
             <Input
               placeholder="Type your message..."
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              disabled={isLoading || !user}
+              disabled={isLoading || !user || limitReached}
               autoFocus
-            />
+            />{" "}
             <Button
               type="primary"
               icon={<SendOutlined />}
               onClick={handleSubmit}
-              disabled={isLoading || !userInput.trim() || !user}
+              disabled={isLoading || !userInput.trim() || !user || limitReached}
+              title={
+                limitReached ? "Daily message limit reached" : "Send message"
+              }
             />
           </form>
           {!user && (

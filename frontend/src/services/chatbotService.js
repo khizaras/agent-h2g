@@ -4,7 +4,7 @@ import { handleApiError } from "../utils/errorHandler";
 const API_URL = "/api/chatbot/";
 
 // Send message to chatbot
-const sendMessage = async (messageData, causes, token) => {
+const sendMessage = async (messageData, causes, token, sessionId = null) => {
   try {
     const config = {
       headers: {
@@ -26,11 +26,10 @@ const sendMessage = async (messageData, causes, token) => {
     const contextCauses = activeCauses.length > 0 ? activeCauses : causes;
 
     // Limit to max 10 causes to prevent context overflow
-    const limitedCauses = contextCauses.slice(0, 10);
-
-    // Prepare context data about causes
+    const limitedCauses = contextCauses.slice(0, 10); // Prepare context data about causes
     const contextData = {
       message: messageData,
+      session_id: sessionId, // Include session ID if available
       causes: limitedCauses.map((cause) => ({
         id: cause.id,
         title: cause.title,
@@ -48,7 +47,7 @@ const sendMessage = async (messageData, causes, token) => {
     };
 
     const response = await axios.post(API_URL, contextData, config);
-    return response.data.reply;
+    return response.data;
   } catch (error) {
     console.error("Chatbot error:", error);
     const errorMessage = handleApiError(error);
@@ -56,8 +55,44 @@ const sendMessage = async (messageData, causes, token) => {
   }
 };
 
+// Get user's chat history
+const getChatHistory = async (token) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response = await axios.get(`${API_URL}history`, config);
+    return response.data;
+  } catch (error) {
+    const errorMessage = handleApiError(error);
+    throw new Error(errorMessage || "Failed to fetch chat history");
+  }
+};
+
+// Get messages for a specific session
+const getSessionMessages = async (sessionId, token) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response = await axios.get(`${API_URL}history/${sessionId}`, config);
+    return response.data;
+  } catch (error) {
+    const errorMessage = handleApiError(error);
+    throw new Error(errorMessage || "Failed to fetch session messages");
+  }
+};
+
 const chatbotService = {
   sendMessage,
+  getChatHistory,
+  getSessionMessages,
 };
 
 export default chatbotService;

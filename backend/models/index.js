@@ -3,6 +3,7 @@ const Category = require("./Category");
 const Cause = require("./Cause");
 const Notification = require("./Notification");
 const User = require("./User");
+const ChatConversation = require("./ChatConversation");
 
 module.exports = {
   Activity,
@@ -10,4 +11,5 @@ module.exports = {
   Cause,
   Notification,
   User,
+  ChatConversation,
 };

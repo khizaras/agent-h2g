@@ -1,15 +1,33 @@
 const asyncHandler = require("express-async-handler");
 const axios = require("axios");
+const { v4: uuidv4 } = require("uuid");
+const { ChatConversation } = require("../models");
+
+// Maximum number of chats allowed per user per day
+const DAILY_CHAT_LIMIT = 20;
 
 // @desc    Send message to chatbot
 // @route   POST /api/chatbot
 // @access  Private
 const sendMessage = asyncHandler(async (req, res) => {
-  const { message, causes } = req.body;
+  const { message, causes, session_id } = req.body;
+  const userId = req.user.id;
 
   if (!message) {
     res.status(400);
     throw new Error("Please provide a message");
+  }
+
+  // Check if user has reached the daily chat limit
+  const dailyCount = await ChatConversation.getUserDailyCount(userId);
+
+  if (dailyCount >= DAILY_CHAT_LIMIT) {
+    return res.status(429).json({
+      success: false,
+      reply:
+        "You've reached your daily chat limit (20 messages). Please try again tomorrow or contact support if you need immediate assistance.",
+      limitReached: true,
+    });
   }
 
   try {
@@ -91,14 +109,30 @@ You're an AI assistant focused only on Hands2gether platform features and causes
           "Content-Type": "application/json",
         },
       }
-    );
-
-    // Extract the assistant's response
+    ); // Extract the assistant's response
     const botReply = response.data.choices[0].message.content;
+
+    // Generate or use existing session ID
+    const sessionId = session_id || uuidv4();
+
+    // Save the conversation to the database
+    await ChatConversation.create({
+      user_id: userId,
+      message: message,
+      response: botReply,
+      session_id: sessionId,
+    });
+
+    // Calculate remaining messages for the day
+    const remainingMessages = DAILY_CHAT_LIMIT - (dailyCount + 1);
+    const isApproachingLimit = remainingMessages <= 5;
 
     res.status(200).json({
       success: true,
       reply: botReply,
+      session_id: sessionId,
+      remaining_messages: remainingMessages,
+      isApproachingLimit,
     });
   } catch (error) {
     console.error("Chatbot API Error:", error.response?.data || error.message);
@@ -132,6 +166,137 @@ You're an AI assistant focused only on Hands2gether platform features and causes
   }
 });
 
+// @desc    Get conversations for admin dashboard
+// @route   GET /api/chatbot/admin/conversations
+// @access  Admin
+const getAdminConversations = asyncHandler(async (req, res) => {
+  // Check if user is admin
+  if (!req.user.is_admin) {
+    res.status(403);
+    throw new Error("Not authorized to access admin resources");
+  }
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+
+  try {
+    const result = await ChatConversation.getAllSessionsWithDetails(
+      page,
+      limit
+    );
+
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    console.error("Error fetching conversations:", error);
+    res.status(500);
+    throw new Error("Failed to fetch conversation data");
+  }
+});
+
+// @desc    Get conversation messages by session ID
+// @route   GET /api/chatbot/admin/conversations/:sessionId
+// @access  Admin
+const getConversationBySessionId = asyncHandler(async (req, res) => {
+  // Check if user is admin
+  if (!req.user.is_admin) {
+    res.status(403);
+    throw new Error("Not authorized to access admin resources");
+  }
+
+  const { sessionId } = req.params;
+
+  try {
+    const messages = await ChatConversation.getSessionMessages(sessionId);
+
+    if (messages.length === 0) {
+      res.status(404);
+      throw new Error("Conversation not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      sessionId,
+      messages,
+    });
+  } catch (error) {
+    console.error(`Error fetching conversation ${sessionId}:`, error);
+
+    // If we already set a status code, use that, otherwise 500
+    if (!res.statusCode || res.statusCode === 200) {
+      res.status(500);
+    }
+
+    throw new Error(error.message || "Failed to fetch conversation data");
+  }
+});
+
+// @desc    Get user's chat history
+// @route   GET /api/chatbot/history
+// @access  Private
+const getUserChatHistory = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const sessions = await ChatConversation.getUserConversationsBySession(
+      userId
+    );
+
+    res.status(200).json({
+      success: true,
+      sessions,
+    });
+  } catch (error) {
+    console.error("Error fetching user chat history:", error);
+    res.status(500);
+    throw new Error("Failed to fetch chat history");
+  }
+});
+
+// @desc    Get messages for a specific session
+// @route   GET /api/chatbot/history/:sessionId
+// @access  Private
+const getUserSessionMessages = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { sessionId } = req.params;
+
+  try {
+    const messages = await ChatConversation.getSessionMessages(sessionId);
+
+    // Verify this session belongs to the requesting user
+    if (messages.length > 0 && messages[0].user_id !== userId) {
+      res.status(403);
+      throw new Error("Not authorized to access this conversation");
+    }
+
+    if (messages.length === 0) {
+      res.status(404);
+      throw new Error("Conversation not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      sessionId,
+      messages,
+    });
+  } catch (error) {
+    console.error(`Error fetching session ${sessionId}:`, error);
+
+    // If we already set a status code, use that, otherwise 500
+    if (!res.statusCode || res.statusCode === 200) {
+      res.status(500);
+    }
+
+    throw new Error(error.message || "Failed to fetch conversation data");
+  }
+});
+
 module.exports = {
   sendMessage,
+  getAdminConversations,
+  getConversationBySessionId,
+  getUserChatHistory,
+  getUserSessionMessages,
 };

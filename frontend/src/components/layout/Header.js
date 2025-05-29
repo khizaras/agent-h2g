@@ -27,6 +27,7 @@ import {
   SettingOutlined,
   AppstoreOutlined,
   FormOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { isMobile } from "../../utils/responsive";
 import { logout } from "../../redux/slices/authSlice";
@@ -56,7 +57,6 @@ const Header = () => {
     dispatch(logout());
     navigate("/");
   };
-
   const userMenuItems = [
     {
       key: "profile",
@@ -72,6 +72,11 @@ const Header = () => {
       key: "followed",
       label: <Link to="/followed-causes">Followed Causes</Link>,
       icon: <HeartOutlined />,
+    },
+    {
+      key: "chat-history",
+      label: <Link to="/chat-history">Chat History</Link>,
+      icon: <MessageOutlined />,
     },
     {
       type: "divider",
@@ -363,6 +368,18 @@ const Header = () => {
                         onClick={() => setMobileMenuVisible(false)}
                       >
                         Followed Causes
+                      </Link>
+                    ),
+                  },
+                  {
+                    key: "chat-history",
+                    icon: <MessageOutlined />,
+                    label: (
+                      <Link
+                        to="/chat-history"
+                        onClick={() => setMobileMenuVisible(false)}
+                      >
+                        Chat History
                       </Link>
                     ),
                   },

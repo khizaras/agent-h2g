@@ -22,10 +22,12 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import MyContributionsPage from "./pages/profile/MyContributionsPage";
 import MyFollowedCausesPage from "./pages/profile/MyFollowedCausesPage";
+import ChatHistoryPage from "./pages/ChatHistoryPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminCausesPage from "./pages/admin/AdminCausesPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminChatHistoryPage from "./pages/admin/AdminChatHistoryPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Auth components
@@ -96,11 +98,12 @@ const App = () => {
                     <Route
                       path="/my-contributions"
                       element={<MyContributionsPage />}
-                    />
+                    />{" "}
                     <Route
                       path="/followed-causes"
                       element={<MyFollowedCausesPage />}
                     />
+                    <Route path="/chat-history" element={<ChatHistoryPage />} />
                   </Route>{" "}
                   {/* Admin routes */}
                   <Route element={<AdminRoute />}>
@@ -110,6 +113,10 @@ const App = () => {
                     <Route
                       path="/admin/categories"
                       element={<AdminCategoriesPage />}
+                    />
+                    <Route
+                      path="/admin/chat-history"
+                      element={<AdminChatHistoryPage />}
                     />
                   </Route>
                   {/* 404 route */}

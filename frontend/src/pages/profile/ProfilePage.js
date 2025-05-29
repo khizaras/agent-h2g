@@ -31,6 +31,7 @@ import {
   HeartOutlined,
   BellOutlined,
   HomeOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
@@ -294,6 +295,17 @@ const ProfilePage = () => {
                       icon={<HeartOutlined />}
                     >
                       Followed Causes
+                    </Button>
+                  </Link>{" "}
+                </li>
+                <li>
+                  <Link to="/chat-history">
+                    <Button
+                      type="link"
+                      style={{ padding: "4px 0" }}
+                      icon={<MessageOutlined />}
+                    >
+                      Chat History
                     </Button>
                   </Link>
                 </li>
