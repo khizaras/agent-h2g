@@ -14,6 +14,7 @@ Hands2gether is a web and mobile application designed to connect people who want
 - Donate to causes and track contributions
 - Rate and provide feedback on causes
 - Admin dashboard for moderation and analytics
+- AI-powered chatbot assistant to answer questions about causes and the platform
 
 ## Tech Stack
 
@@ -22,6 +23,7 @@ Hands2gether is a web and mobile application designed to connect people who want
 - **Authentication:** JWT, Google OAuth
 - **File Upload:** Multer, ImageKit (cloud storage)
 - **Email Notifications:** Nodemailer
+- **AI Assistant:** OpenRouter.ai with MistralAI integration
 
 ## Getting Started
 

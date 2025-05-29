@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Form,
@@ -33,11 +33,15 @@ const LoginPage = () => {
     isError,
     message: errorMessage,
   } = useSelector((state) => state.auth);
+  // Check for location state to see if redirected from chatbot
+  const location = useLocation();
+  const fromChatbot = location.state?.from === "chatbot";
 
   // Redirect if logged in
   useEffect(() => {
     if (isSuccess || user) {
-      navigate("/");
+      // If redirected from chatbot, go back to the page where the chatbot was opened
+      navigate(fromChatbot ? -1 : "/");
     }
 
     if (isError) {
@@ -45,7 +49,16 @@ const LoginPage = () => {
     }
 
     dispatch(reset());
-  }, [user, isSuccess, isError, errorMessage, navigate, dispatch, messageApi]);
+  }, [
+    user,
+    isSuccess,
+    isError,
+    errorMessage,
+    navigate,
+    dispatch,
+    messageApi,
+    fromChatbot,
+  ]);
   const onFinish = (values) => {
     dispatch(login(values));
     // Track successful login with email
@@ -86,12 +99,21 @@ const LoginPage = () => {
         minHeight: "calc(100vh - 64px - 70px - 48px)",
       }}
     >
-      {contextHolder}
+      {contextHolder}{" "}
       <Card style={{ width: 400, boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <Title level={2}>Welcome Back</Title>
           <Text type="secondary">Sign in to your Hands2gether account</Text>
         </div>
+        {fromChatbot && (
+          <Alert
+            message="Login Required for Chatbot"
+            description="You need to be logged in to use our chatbot assistant."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
         <Form form={form} name="login" onFinish={onFinish} layout="vertical">
           <Form.Item
             name="email"

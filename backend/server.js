@@ -72,6 +72,7 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/admin/categories", require("./routes/adminCategoryRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 
 // Serve uploads as static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

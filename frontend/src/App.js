@@ -9,6 +9,7 @@ import { AnalyticsProvider } from "./context/AnalyticsContext";
 // Layout components
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import Chatbot from "./components/chatbot/Chatbot";
 
 // Pages
 import HomePage from "./pages/home/HomePage";
@@ -116,7 +117,7 @@ const App = () => {
                 </Routes>
               </div>
             </Content>{" "}
-            <Footer />{" "}
+            <Footer /> <Chatbot />
           </Layout>
         </Router>
       </AnalyticsProvider>
