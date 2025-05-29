@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+} from "react-router-dom";
 import { Layout } from "antd";
 import { useSelector } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -33,6 +38,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 // Auth components
 import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
+import AdminLayout from "./components/layout/AdminLayout";
 
 // Analytics
 import PageTracker from "./components/analytics/PageTracker";
@@ -107,17 +113,28 @@ const App = () => {
                   </Route>{" "}
                   {/* Admin routes */}
                   <Route element={<AdminRoute />}>
-                    <Route path="/admin" element={<AdminDashboardPage />} />
-                    <Route path="/admin/users" element={<AdminUsersPage />} />
-                    <Route path="/admin/causes" element={<AdminCausesPage />} />
                     <Route
-                      path="/admin/categories"
-                      element={<AdminCategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/chat-history"
-                      element={<AdminChatHistoryPage />}
-                    />
+                      element={
+                        <AdminLayout>
+                          <Outlet />
+                        </AdminLayout>
+                      }
+                    >
+                      <Route path="/admin" element={<AdminDashboardPage />} />
+                      <Route path="/admin/users" element={<AdminUsersPage />} />
+                      <Route
+                        path="/admin/causes"
+                        element={<AdminCausesPage />}
+                      />
+                      <Route
+                        path="/admin/categories"
+                        element={<AdminCategoriesPage />}
+                      />
+                      <Route
+                        path="/admin/chat-history"
+                        element={<AdminChatHistoryPage />}
+                      />
+                    </Route>
                   </Route>
                   {/* 404 route */}
                   <Route path="*" element={<NotFoundPage />} />
