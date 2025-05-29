@@ -293,10 +293,94 @@ const getUserSessionMessages = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get user chat statistics
+// @route   GET /api/chatbot/stats/user/:userId
+// @access  Admin or Self
+const getUserChatStats = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Check if user is admin or requesting their own stats
+  if (!req.user.is_admin && req.user.id !== parseInt(userId)) {
+    res.status(403);
+    throw new Error("Not authorized to access these statistics");
+  }
+
+  try {
+    const stats = await ChatConversation.getUserStats(userId);
+    res.status(200).json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error("Error fetching user chat stats:", error);
+    res.status(500);
+    throw new Error("Failed to fetch user statistics");
+  }
+});
+
+// @desc    Get platform-wide chat statistics
+// @route   GET /api/chatbot/stats/platform
+// @access  Admin
+const getPlatformStats = asyncHandler(async (req, res) => {
+  // Check if user is admin
+  if (!req.user.is_admin) {
+    res.status(403);
+    throw new Error("Not authorized to access platform statistics");
+  }
+
+  try {
+    const stats = await ChatConversation.getPlatformStats();
+    res.status(200).json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error("Error fetching platform stats:", error);
+    res.status(500);
+    throw new Error("Failed to fetch platform statistics");
+  }
+});
+
+// @desc    Get session analytics
+// @route   GET /api/chatbot/stats/session/:sessionId
+// @access  Admin or Session Owner
+const getSessionAnalytics = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const messages = await ChatConversation.getSessionMessages(sessionId);
+
+    if (messages.length === 0) {
+      res.status(404);
+      throw new Error("Session not found");
+    }
+
+    // Check authorization - only admin or session owner can access
+    if (!req.user.is_admin && messages[0].user_id !== req.user.id) {
+      res.status(403);
+      throw new Error("Not authorized to access this session's analytics");
+    }
+
+    const analytics = await ChatConversation.getSessionAnalytics(sessionId);
+    res.status(200).json({
+      success: true,
+      analytics,
+    });
+  } catch (error) {
+    if (!res.statusCode || res.statusCode === 200) {
+      res.status(500);
+    }
+    throw new Error(error.message || "Failed to fetch session analytics");
+  }
+});
+
 module.exports = {
   sendMessage,
   getAdminConversations,
   getConversationBySessionId,
   getUserChatHistory,
   getUserSessionMessages,
+  getUserChatStats,
+  getPlatformStats,
+  getSessionAnalytics,
 };

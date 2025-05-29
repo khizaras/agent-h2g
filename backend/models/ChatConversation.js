@@ -153,7 +153,7 @@ class ChatConversation {
     }
   }
 
-  // Get detailed user chat statistics
+  // Get extended user chat statistics with detailed analytics
   static async getUserStats(userId) {
     try {
       const [totalMessages] = await pool.query(
@@ -166,7 +166,9 @@ class ChatConversation {
           COUNT(DISTINCT session_id) as total_sessions,
           COUNT(*) / COUNT(DISTINCT session_id) as avg_messages_per_session,
           MAX(created_at) as last_activity,
-          MIN(created_at) as first_activity
+          MIN(created_at) as first_activity,
+          AVG(CHAR_LENGTH(message)) as avg_message_length,
+          MAX(CHAR_LENGTH(message)) as max_message_length
         FROM chat_conversations 
         WHERE user_id = ?`,
         [userId]
@@ -183,17 +185,48 @@ class ChatConversation {
         [userId]
       );
 
+      // Get response time analytics
+      const [responseTimeStats] = await pool.query(
+        `SELECT 
+          AVG(TIMESTAMPDIFF(SECOND, c1.created_at, c2.created_at)) as avg_response_time,
+          MIN(TIMESTAMPDIFF(SECOND, c1.created_at, c2.created_at)) as min_response_time,
+          MAX(TIMESTAMPDIFF(SECOND, c1.created_at, c2.created_at)) as max_response_time
+        FROM chat_conversations c1
+        JOIN chat_conversations c2 ON c1.session_id = c2.session_id 
+          AND c1.user_id = ? 
+          AND c2.created_at > c1.created_at
+        WHERE TIMESTAMPDIFF(SECOND, c1.created_at, c2.created_at) < 3600`, // Exclude gaps > 1 hour
+        [userId]
+      );
+
+      // Get daily activity pattern
+      const [dailyActivity] = await pool.query(
+        `SELECT 
+          DATE(created_at) as date,
+          COUNT(*) as message_count
+        FROM chat_conversations 
+        WHERE user_id = ?
+          AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC`,
+        [userId]
+      );
+
       return {
         totalMessages: totalMessages[0].total,
         ...sessionStats[0],
-        timeDistribution
+        timeDistribution,
+        responseTimeStats: responseTimeStats[0],
+        dailyActivity,
+        avgMessageLength: Math.round(sessionStats[0].avg_message_length),
+        maxMessageLength: sessionStats[0].max_message_length,
       };
     } catch (error) {
       throw new Error(`Error getting user statistics: ${error.message}`);
     }
   }
 
-  // Get platform-wide chat statistics
+  // Get platform-wide chat statistics with enhanced analytics
   static async getPlatformStats() {
     try {
       const [generalStats] = await pool.query(
@@ -201,12 +234,15 @@ class ChatConversation {
           COUNT(*) as total_messages,
           COUNT(DISTINCT session_id) as total_sessions,
           COUNT(DISTINCT user_id) as total_users,
-          COUNT(*) / COUNT(DISTINCT session_id) as avg_messages_per_session
+          COUNT(*) / COUNT(DISTINCT session_id) as avg_messages_per_session,
+          AVG(CHAR_LENGTH(message)) as avg_message_length
         FROM chat_conversations`
       );
 
       const [activeToday] = await pool.query(
-        `SELECT COUNT(DISTINCT user_id) as active_users_today
+        `SELECT 
+          COUNT(DISTINCT user_id) as active_users_today,
+          COUNT(*) as messages_today
         FROM chat_conversations 
         WHERE DATE(created_at) = CURDATE()`
       );
@@ -216,7 +252,8 @@ class ChatConversation {
           c.user_id,
           u.name as user_name,
           COUNT(*) as message_count,
-          COUNT(DISTINCT c.session_id) as session_count
+          COUNT(DISTINCT c.session_id) as session_count,
+          AVG(CHAR_LENGTH(c.message)) as avg_message_length
         FROM chat_conversations c
         JOIN users u ON c.user_id = u.id
         GROUP BY c.user_id, u.name
@@ -227,7 +264,8 @@ class ChatConversation {
       const [hourlyDistribution] = await pool.query(
         `SELECT 
           HOUR(created_at) as hour,
-          COUNT(*) as message_count
+          COUNT(*) as message_count,
+          COUNT(DISTINCT user_id) as unique_users
         FROM chat_conversations 
         GROUP BY HOUR(created_at)
         ORDER BY hour`
@@ -237,26 +275,42 @@ class ChatConversation {
         `SELECT 
           DATE(created_at) as date,
           COUNT(*) as message_count,
-          COUNT(DISTINCT user_id) as active_users
+          COUNT(DISTINCT user_id) as active_users,
+          COUNT(DISTINCT session_id) as sessions_count
         FROM chat_conversations 
         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
         GROUP BY DATE(created_at)
         ORDER BY date DESC`
       );
 
+      // Calculate platform growth stats
+      const [growthStats] = await pool.query(
+        `SELECT
+          WEEK(created_at) as week,
+          YEAR(created_at) as year,
+          COUNT(DISTINCT user_id) as new_users,
+          COUNT(*) as messages
+        FROM chat_conversations
+        GROUP BY WEEK(created_at), YEAR(created_at)
+        ORDER BY year DESC, week DESC
+        LIMIT 12`
+      );
+
       return {
         ...generalStats[0],
         active_users_today: activeToday[0].active_users_today,
+        messages_today: activeToday[0].messages_today,
         top_users: topUsers,
         hourly_distribution: hourlyDistribution,
-        daily_stats: dailyStats
+        daily_stats: dailyStats,
+        growth_stats: growthStats,
       };
     } catch (error) {
       throw new Error(`Error getting platform statistics: ${error.message}`);
     }
   }
 
-  // Get session analytics
+  // Get detailed session analytics
   static async getSessionAnalytics(sessionId) {
     try {
       const [sessionStats] = await pool.query(
@@ -265,7 +319,9 @@ class ChatConversation {
           MAX(created_at) as end_time,
           TIMESTAMPDIFF(MINUTE, MIN(created_at), MAX(created_at)) as duration_minutes,
           COUNT(*) as message_count,
-          user_id
+          user_id,
+          AVG(CHAR_LENGTH(message)) as avg_message_length,
+          MAX(CHAR_LENGTH(message)) as max_message_length
         FROM chat_conversations 
         WHERE session_id = ?
         GROUP BY session_id, user_id`,
@@ -273,20 +329,53 @@ class ChatConversation {
       );
 
       if (sessionStats.length === 0) {
-        throw new Error('Session not found');
+        throw new Error("Session not found");
       }
 
+      // Get message sequence with timing analysis
       const [messages] = await pool.query(
-        `SELECT message, response, created_at
-        FROM chat_conversations 
+        `SELECT 
+          message,
+          response,
+          created_at,
+          CHAR_LENGTH(message) as message_length,
+          CHAR_LENGTH(response) as response_length,
+          @prev_time := @curr_time as prev_time,
+          @curr_time := created_at as curr_time,
+          CASE 
+            WHEN @prev_time IS NOT NULL 
+            THEN TIMESTAMPDIFF(SECOND, @prev_time, created_at)
+            ELSE NULL 
+          END as time_since_last_message
+        FROM chat_conversations,
+        (SELECT @curr_time := NULL, @prev_time := NULL) as vars
         WHERE session_id = ?
         ORDER BY created_at ASC`,
         [sessionId]
       );
 
+      // Calculate message timing patterns
+      const messageTimings = messages.filter(
+        (m) => m.time_since_last_message != null
+      );
+      const avgTimeBetweenMessages =
+        messageTimings.length > 0
+          ? messageTimings.reduce(
+              (sum, m) => sum + m.time_since_last_message,
+              0
+            ) / messageTimings.length
+          : 0;
+
       return {
         ...sessionStats[0],
-        messages
+        messages,
+        timing_analysis: {
+          avg_time_between_messages: Math.round(avgTimeBetweenMessages),
+          message_timings: messageTimings.map((m) => ({
+            timestamp: m.created_at,
+            gap_seconds: m.time_since_last_message,
+          })),
+        },
       };
     } catch (error) {
       throw new Error(`Error getting session analytics: ${error.message}`);
