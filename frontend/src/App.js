@@ -8,6 +8,7 @@ import {
 import { Layout } from "antd";
 import { useSelector } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { HelmetProvider } from "react-helmet-async";
 import { initGA } from "./utils/analytics";
 import { AnalyticsProvider } from "./context/AnalyticsContext";
 
@@ -76,75 +77,83 @@ const App = () => {
   }
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
-      <AnalyticsProvider>
-        <Router>
-          <PageTracker />
-          <Layout className="layout">
-            <Header />
-            <Content className="page-content">
-              <div className="container">
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/causes" element={<CausesPage />} />
-                  <Route path="/causes/:id" element={<CauseDetailsPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  {/* Private routes */}
-                  <Route element={<PrivateRoute />}>
-                    <Route
-                      path="/causes/create"
-                      element={<CreateCausePage />}
-                    />
-                    <Route
-                      path="/causes/:id/edit"
-                      element={<EditCausePage />}
-                    />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route
-                      path="/my-contributions"
-                      element={<MyContributionsPage />}
-                    />{" "}
-                    <Route
-                      path="/followed-causes"
-                      element={<MyFollowedCausesPage />}
-                    />
-                    <Route path="/chat-history" element={<ChatHistoryPage />} />
-                  </Route>{" "}
-                  {/* Admin routes */}
-                  <Route element={<AdminRoute />}>
-                    <Route
-                      element={
-                        <AdminLayout>
-                          <Outlet />
-                        </AdminLayout>
-                      }
-                    >
-                      <Route path="/admin" element={<AdminDashboardPage />} />
-                      <Route path="/admin/users" element={<AdminUsersPage />} />
+      <HelmetProvider>
+        <AnalyticsProvider>
+          <Router>
+            <PageTracker />
+            <Layout className="layout">
+              <Header />
+              <Content className="page-content">
+                <div className="container">
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/causes" element={<CausesPage />} />
+                    <Route path="/causes/:id" element={<CauseDetailsPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    {/* Private routes */}
+                    <Route element={<PrivateRoute />}>
                       <Route
-                        path="/admin/causes"
-                        element={<AdminCausesPage />}
+                        path="/causes/create"
+                        element={<CreateCausePage />}
                       />
                       <Route
-                        path="/admin/categories"
-                        element={<AdminCategoriesPage />}
+                        path="/causes/:id/edit"
+                        element={<EditCausePage />}
+                      />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route
+                        path="/my-contributions"
+                        element={<MyContributionsPage />}
+                      />{" "}
+                      <Route
+                        path="/followed-causes"
+                        element={<MyFollowedCausesPage />}
                       />
                       <Route
-                        path="/admin/chat-history"
-                        element={<AdminChatHistoryPage />}
+                        path="/chat-history"
+                        element={<ChatHistoryPage />}
                       />
+                    </Route>{" "}
+                    {/* Admin routes */}
+                    <Route element={<AdminRoute />}>
+                      <Route
+                        element={
+                          <AdminLayout>
+                            <Outlet />
+                          </AdminLayout>
+                        }
+                      >
+                        <Route path="/admin" element={<AdminDashboardPage />} />
+                        <Route
+                          path="/admin/users"
+                          element={<AdminUsersPage />}
+                        />
+                        <Route
+                          path="/admin/causes"
+                          element={<AdminCausesPage />}
+                        />
+                        <Route
+                          path="/admin/categories"
+                          element={<AdminCategoriesPage />}
+                        />
+                        <Route
+                          path="/admin/chat-history"
+                          element={<AdminChatHistoryPage />}
+                        />
+                      </Route>
                     </Route>
-                  </Route>
-                  {/* 404 route */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </div>
-            </Content>{" "}
-            <Footer /> <Chatbot />
-          </Layout>
-        </Router>
-      </AnalyticsProvider>
+                    {/* 404 route */}
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </div>
+              </Content>{" "}
+              <Footer /> <Chatbot />
+            </Layout>
+          </Router>{" "}
+        </AnalyticsProvider>
+      </HelmetProvider>
     </GoogleOAuthProvider>
   );
 };

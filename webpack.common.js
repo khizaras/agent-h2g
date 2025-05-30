@@ -30,7 +30,7 @@ module.exports = {
         use: ["style-loader", "css-loader", "less-loader"],
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/,
+        test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
         use: ["file-loader"],
       },
       {
@@ -43,6 +43,7 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: "./frontend/public/index.html",
+      favicon: "./frontend/public/favicon.ico", // Add this line
     }),
   ],
   resolve: {

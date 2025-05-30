@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import SEO from "../../components/seo/SEO";
 import {
   Row,
   Col,
@@ -132,8 +133,31 @@ const HomePage = () => {
       rating: 5,
     },
   ];
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Hands2gether",
+    url: "https://hands2gether.org",
+    logo: "https://hands2gether.org/logo.png",
+    description:
+      "A community-driven platform connecting people in need with donors. Support local causes, make donations, and create meaningful impact in your community.",
+    sameAs: [
+      "https://facebook.com/hands2gether",
+      "https://twitter.com/hands2gether",
+      "https://instagram.com/hands2gether",
+      "https://linkedin.com/company/hands2gether",
+    ],
+  };
+
   return (
     <div className="homepage-container">
+      <SEO
+        title="Empowering Communities Through Collective Action"
+        description="Join Hands2gether to discover, support, or create causes that bring positive change to people's lives around the world. Make a difference in your community today."
+        keywords="community help, donations, charity, fundraising, social impact, causes, community support, charitable giving, nonprofit, humanitarian aid"
+        url="/"
+        schemaData={organizationSchema}
+      />
       {/* Hero Section - Modernized with gradient overlay */}
       <section
         className="hero-section"
