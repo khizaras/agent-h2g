@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Customize Helmet's security settings to allow cross-origin images
+// Customize Helmet's security settings
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -61,18 +61,51 @@ app.use(
           "https://*.unsplash.com",
           "https://ik.imagekit.io",
           "https://*.imagekit.io",
-          "https://ik.imagekit.io/",
           "https://images.unsplash.com",
+          "https://*.google.com",
+          "https://*.googleapis.com",
+          "https://*.gstatic.com",
           "*",
         ],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        fontSrc: ["'self'", "data:"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://accounts.google.com",
+          "https://*.googletagmanager.com",
+          "https://*.google.com",
+          "https://*.googleapis.com",
+          "https://*.gstatic.com",
+          "https://apis.google.com",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://*.gstatic.com",
+        ],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc: [
           "'self'",
           "https://ik.imagekit.io",
           "https://*.imagekit.io",
+          "https://accounts.google.com",
+          "https://www.google-analytics.com",
+          "https://*.googletagmanager.com",
+          "https://*.google.com",
+          "https://*.googleapis.com",
+          "https://www.googleapis.com",
         ],
+        frameSrc: [
+          "'self'",
+          "https://accounts.google.com",
+          "https://*.google.com",
+          "https://*.gstatic.com",
+        ],
+        objectSrc: ["'none'"],
+        manifestSrc: ["'self'"],
+        mediaSrc: ["'self'"],
+        childSrc: ["'self'", "blob:"],
       },
     },
   })

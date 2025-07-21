@@ -76,7 +76,15 @@ const App = () => {
     );
   }
   return (
-    <GoogleOAuthProvider clientId={googleClientId}>
+    <GoogleOAuthProvider
+      clientId={googleClientId}
+      onScriptLoadError={(error) => {
+        console.error("Google Sign-In script failed to load:", error);
+      }}
+      onScriptLoadSuccess={() => {
+        console.log("Google Sign-In script loaded successfully");
+      }}
+    >
       <HelmetProvider>
         <AnalyticsProvider>
           <Router>

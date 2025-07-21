@@ -12,6 +12,11 @@ export const initGA = () => {
       gaOptions: {
         cookieFlags: "SameSite=None;Secure",
         cookieUpdate: true,
+        anonymizeIp: true,
+        cookieDomain: "auto",
+      },
+      gtagOptions: {
+        send_page_view: false, // We'll handle this manually for better control
       },
     });
     return true;
