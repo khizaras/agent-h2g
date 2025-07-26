@@ -1,0 +1,488 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id                   Int       @id @default(autoincrement())
+  name                 String    @db.VarChar(100)
+  email                String    @unique @db.VarChar(100)
+  password             String?   @db.VarChar(255) // Nullable for OAuth users
+  avatar               String?   @db.VarChar(255)
+  bio                  String?   @db.Text
+  phone                String?   @db.VarChar(20)
+  address              String?   @db.Text
+  isAdmin              Boolean   @default(false) @map("is_admin")
+  isVerified           Boolean   @default(false) @map("is_verified")
+  emailNotifications   Boolean   @default(true) @map("email_notifications")
+  pushNotifications    Boolean   @default(true) @map("push_notifications")
+  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret      String?   @db.VarChar(255) @map("two_factor_secret")
+  emailVerifyToken     String?   @db.VarChar(255) @map("email_verify_token")
+  passwordResetToken   String?   @db.VarChar(255) @map("password_reset_token")
+  passwordResetExpires DateTime? @map("password_reset_expires")
+  lastLogin            DateTime? @map("last_login")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  causes              Cause[]
+  activities          Activity[]
+  comments            Comment[]
+  notifications       Notification[]
+  interactions        UserInteraction[]
+  registrations       Registration[]
+  chatConversations   ChatConversation[]
+  mediaUploads        Media[]           @relation("UploadedBy")
+  accounts            Account[]
+  sessions            Session[]
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// NextAuth.js Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int     @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Category Model
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50) // 'food', 'clothes', 'education'
+  displayName String   @db.VarChar(100) @map("display_name")
+  description String?  @db.Text
+  icon        String?  @db.VarChar(50)
+  color       String?  @db.VarChar(7) // Hex color code
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  causes Cause[]
+
+  @@map("categories")
+}
+
+// Cause Model
+model Cause {
+  id                   Int      @id @default(autoincrement())
+  title                String   @db.VarChar(255)
+  description          String   @db.Text
+  shortDescription     String?  @db.VarChar(500) @map("short_description")
+  categoryId           Int      @map("category_id")
+  userId               Int      @map("user_id")
+  location             String   @db.VarChar(255)
+  latitude             Decimal? @db.Decimal(10, 8)
+  longitude            Decimal? @db.Decimal(11, 8)
+  image                String?  @db.VarChar(255)
+  gallery              Json?    // Array of image URLs
+  status               String   @default("pending") @db.VarChar(20) // 'active', 'pending', 'completed', 'suspended', 'archived'
+  priority             String   @default("medium") @db.VarChar(20) // 'low', 'medium', 'high', 'urgent'
+  isFeatured           Boolean  @default(false) @map("is_featured")
+  viewCount            Int      @default(0) @map("view_count")
+  likeCount            Int      @default(0) @map("like_count")
+  shareCount           Int      @default(0) @map("share_count")
+  tags                 Json?    // Array of tags
+  contactPhone         String?  @db.VarChar(20) @map("contact_phone")
+  contactEmail         String?  @db.VarChar(100) @map("contact_email")
+  contactPerson        String?  @db.VarChar(100) @map("contact_person")
+  availabilityHours    String?  @db.VarChar(255) @map("availability_hours")
+  specialInstructions  String?  @db.Text @map("special_instructions")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  expiresAt            DateTime? @map("expires_at")
+  completedAt          DateTime? @map("completed_at")
+
+  // Relations
+  user            User             @relation(fields: [userId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+  foodDetails     FoodDetails?
+  clothesDetails  ClothesDetails?
+  educationDetails EducationDetails?
+  activities      Activity[]
+  comments        Comment[]
+  notifications   Notification[]
+  interactions    UserInteraction[]
+  media           Media[]
+
+  @@index([categoryId])
+  @@index([userId])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([createdAt])
+  @@fulltext([title, description])
+  @@map("causes")
+}
+
+// Food Details Model
+model FoodDetails {
+  id                     Int      @id @default(autoincrement())
+  causeId                Int      @unique @map("cause_id")
+  foodType               String   @db.VarChar(50) @map("food_type") // 'perishable', 'non-perishable', 'prepared', 'raw', 'beverages', 'snacks'
+  cuisineType            String?  @db.VarChar(100) @map("cuisine_type")
+  quantity               Int
+  unit                   String   @default("servings") @db.VarChar(20) // 'kg', 'lbs', 'servings', 'portions', 'items', 'packages'
+  servingSize            Int?     @map("serving_size")
+  dietaryRestrictions    Json?    @map("dietary_restrictions") // Array: ['vegetarian', 'vegan', 'gluten-free', etc.]
+  allergens              Json?    // Array of allergens
+  expirationDate         DateTime? @map("expiration_date") @db.Date
+  preparationDate        DateTime? @map("preparation_date") @db.Date
+  storageRequirements    String?  @db.Text @map("storage_requirements")
+  temperatureRequirements String  @default("room-temp") @db.VarChar(20) @map("temperature_requirements") // 'frozen', 'refrigerated', 'room-temp', 'hot'
+  pickupInstructions     String?  @db.Text @map("pickup_instructions")
+  deliveryAvailable      Boolean  @default(false) @map("delivery_available")
+  deliveryRadius         Int?     @map("delivery_radius") // in kilometers
+  isUrgent               Boolean  @default(false) @map("is_urgent")
+  nutritionalInfo        Json?    @map("nutritional_info") // Structured nutrition data
+  ingredients            String?  @db.Text
+  packagingDetails       String?  @db.Text @map("packaging_details")
+  halal                  Boolean  @default(false)
+  kosher                 Boolean  @default(false)
+  organic                Boolean  @default(false)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  cause Cause @relation(fields: [causeId], references: [id], onDelete: Cascade)
+
+  @@index([foodType])
+  @@index([expirationDate])
+  @@index([isUrgent])
+  @@map("food_details")
+}
+
+// Clothes Details Model
+model ClothesDetails {
+  id                  Int      @id @default(autoincrement())
+  causeId             Int      @unique @map("cause_id")
+  clothesType         String   @db.VarChar(20) @map("clothes_type") // 'men', 'women', 'children', 'unisex', 'infant', 'maternity'
+  category            String   @db.VarChar(20) // 'tops', 'bottoms', 'dresses', 'outerwear', 'underwear', 'shoes', 'accessories', 'uniforms'
+  ageGroup            String   @default("adult") @db.VarChar(20) @map("age_group") // 'infant', 'toddler', 'child', 'teen', 'adult', 'senior'
+  sizeRange           Json     @map("size_range") // Array of sizes: ['S', 'M', 'L', 'XL']
+  condition           String   @db.VarChar(20) // 'new', 'like-new', 'gently-used', 'used', 'needs-repair'
+  season              String   @default("all-season") @db.VarChar(20) // 'all-season', 'summer', 'winter', 'spring', 'fall'
+  quantity            Int
+  colors              Json?    // Array of colors
+  brands              Json?    // Array of brand names
+  materialComposition String?  @db.Text @map("material_composition")
+  careInstructions    String?  @db.Text @map("care_instructions")
+  specialRequirements String?  @db.Text @map("special_requirements")
+  pickupInstructions  String?  @db.Text @map("pickup_instructions")
+  deliveryAvailable   Boolean  @default(false) @map("delivery_available")
+  deliveryRadius      Int?     @map("delivery_radius")
+  isUrgent            Boolean  @default(false) @map("is_urgent")
+  isCleaned           Boolean  @default(false) @map("is_cleaned")
+  donationReceipt     Boolean  @default(false) @map("donation_receipt")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  cause Cause @relation(fields: [causeId], references: [id], onDelete: Cascade)
+
+  @@index([clothesType])
+  @@index([category])
+  @@index([condition])
+  @@index([isUrgent])
+  @@map("clothes_details")
+}
+
+// Education Details Model
+model EducationDetails {
+  id                      Int      @id @default(autoincrement())
+  causeId                 Int      @unique @map("cause_id")
+  educationType           String   @db.VarChar(20) @map("education_type") // 'course', 'workshop', 'seminar', 'mentoring', 'tutoring', 'certification', 'bootcamp'
+  skillLevel              String   @default("all-levels") @db.VarChar(20) @map("skill_level") // 'beginner', 'intermediate', 'advanced', 'expert', 'all-levels'
+  topics                  Json     // Array of topics/subjects
+  maxTrainees             Int      @map("max_trainees")
+  currentTrainees         Int      @default(0) @map("current_trainees")
+  durationHours           Int      @map("duration_hours")
+  numberOfDays            Int      @map("number_of_days")
+  prerequisites           String?  @db.Text
+  learningObjectives      Json?    @map("learning_objectives") // Array of learning outcomes
+  startDate               DateTime @map("start_date") @db.Date
+  endDate                 DateTime @map("end_date") @db.Date
+  registrationDeadline    DateTime? @map("registration_deadline") @db.Date
+  schedule                Json     // Structured schedule data
+  deliveryMethod          String   @db.VarChar(20) @map("delivery_method") // 'online', 'in-person', 'hybrid'
+  locationDetails         String?  @db.Text @map("location_details")
+  meetingPlatform         String?  @db.VarChar(100) @map("meeting_platform") // Zoom, Teams, etc.
+  meetingLink             String?  @db.VarChar(500) @map("meeting_link")
+  meetingId               String?  @db.VarChar(100) @map("meeting_id")
+  meetingPassword         String?  @db.VarChar(100) @map("meeting_password")
+  instructorName          String   @db.VarChar(100) @map("instructor_name")
+  instructorEmail         String?  @db.VarChar(100) @map("instructor_email")
+  instructorBio           String?  @db.Text @map("instructor_bio")
+  instructorQualifications String? @db.Text @map("instructor_qualifications")
+  instructorRating        Decimal  @default(0.00) @db.Decimal(3, 2) @map("instructor_rating")
+  certification           Boolean  @default(false)
+  certificationBody       String?  @db.VarChar(100) @map("certification_body")
+  materialsProvided       Json?    @map("materials_provided") // Array of materials
+  equipmentRequired       Json?    @map("equipment_required") // Array of required equipment
+  softwareRequired        Json?    @map("software_required") // Array of required software
+  price                   Decimal  @default(0.00) @db.Decimal(10, 2)
+  isFree                  Boolean  @default(true) @map("is_free")
+  courseLanguage          String   @default("English") @db.VarChar(50) @map("course_language")
+  subtitlesAvailable      Json?    @map("subtitles_available") // Array of subtitle languages
+  difficultyRating        Int      @default(1) @map("difficulty_rating") // 1-5 scale
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  cause         Cause          @relation(fields: [causeId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([educationType])
+  @@index([skillLevel])
+  @@index([startDate])
+  @@index([deliveryMethod])
+  @@index([isFree])
+  @@map("education_details")
+}
+
+// Course Registrations Model
+model Registration {
+  id                   Int      @id @default(autoincrement())
+  educationId          Int      @map("education_id")
+  userId               Int      @map("user_id")
+  status               String   @default("pending") @db.VarChar(20) // 'pending', 'approved', 'declined', 'waitlisted', 'completed', 'dropped', 'no-show'
+  registrationDate     DateTime @default(now()) @map("registration_date")
+  approvalDate         DateTime? @map("approval_date")
+  completionDate       DateTime? @map("completion_date")
+  attendancePercentage Decimal  @default(0.00) @db.Decimal(5, 2) @map("attendance_percentage")
+  finalGrade           String?  @db.VarChar(10) @map("final_grade")
+  certificateIssued    Boolean  @default(false) @map("certificate_issued")
+  certificateUrl       String?  @db.VarChar(500) @map("certificate_url")
+  feedbackRating       Int?     @map("feedback_rating") // 1-5 stars
+  feedbackComment      String?  @db.Text @map("feedback_comment")
+  notes                String?  @db.Text // Admin notes
+  reminderSent         Boolean  @default(false) @map("reminder_sent")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id])
+  education EducationDetails @relation(fields: [educationId], references: [id])
+
+  @@unique([educationId, userId])
+  @@index([status])
+  @@index([registrationDate])
+  @@map("registrations")
+}
+
+// Activity Model (Legacy support + new features)
+model Activity {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  causeId     Int      @map("cause_id")
+  type        String   @db.VarChar(50) // 'donation', 'volunteer', 'share', 'comment', 'like', 'follow'
+  description String?  @db.Text
+  quantity    Int?
+  unit        String?  @db.VarChar(20)
+  value       Decimal? @db.Decimal(10, 2)
+  metadata    Json?    // Additional structured data
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  cause Cause @relation(fields: [causeId], references: [id])
+
+  @@index([userId])
+  @@index([causeId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+// Comments Model
+model Comment {
+  id          Int      @id @default(autoincrement())
+  causeId     Int      @map("cause_id")
+  userId      Int      @map("user_id")
+  parentId    Int?     @map("parent_id") // For nested comments
+  commentType String   @default("feedback") @db.VarChar(20) @map("comment_type") // 'feedback', 'question', 'update', 'review'
+  content     String   @db.Text
+  rating      Int?     // 1-5 stars (for reviews)
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
+  isApproved  Boolean  @default(true) @map("is_approved")
+  isPinned    Boolean  @default(false) @map("is_pinned")
+  likeCount   Int      @default(0) @map("like_count")
+  replyCount  Int      @default(0) @map("reply_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  cause   Cause     @relation(fields: [causeId], references: [id])
+  user    User      @relation(fields: [userId], references: [id])
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([causeId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("comments")
+}
+
+// Notifications Model
+model Notification {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  title         String   @db.VarChar(255)
+  message       String   @db.Text
+  type          String   @db.VarChar(50) // 'cause_update', 'registration', 'reminder', 'completion', 'admin', 'system'
+  relatedCauseId Int?    @map("related_cause_id")
+  relatedUserId Int?     @map("related_user_id")
+  actionUrl     String?  @db.VarChar(500) @map("action_url")
+  isRead        Boolean  @default(false) @map("is_read")
+  isSent        Boolean  @default(false) @map("is_sent")
+  sendEmail     Boolean  @default(true) @map("send_email")
+  sendPush      Boolean  @default(true) @map("send_push")
+  scheduledAt   DateTime? @map("scheduled_at")
+  sentAt        DateTime? @map("sent_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user         User   @relation(fields: [userId], references: [id])
+  relatedCause Cause? @relation(fields: [relatedCauseId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([scheduledAt])
+  @@map("notifications")
+}
+
+// User Interactions Model
+model UserInteraction {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  causeId         Int      @map("cause_id")
+  interactionType String   @db.VarChar(20) @map("interaction_type") // 'view', 'like', 'share', 'follow', 'contact'
+  metadata        Json?    // Additional interaction data
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  cause Cause @relation(fields: [causeId], references: [id])
+
+  @@index([userId, causeId])
+  @@index([interactionType])
+  @@index([createdAt])
+  @@map("user_interactions")
+}
+
+// Media/Attachments Model
+model Media {
+  id          Int      @id @default(autoincrement())
+  relatedType String   @db.VarChar(20) @map("related_type") // 'cause', 'user', 'education', 'comment'
+  relatedId   Int      @map("related_id")
+  fileType    String   @db.VarChar(20) @map("file_type") // 'image', 'video', 'document', 'audio'
+  fileName    String   @db.VarChar(255) @map("file_name")
+  fileUrl     String   @db.VarChar(500) @map("file_url")
+  fileSize    Int?     @map("file_size") // in bytes
+  mimeType    String?  @db.VarChar(100) @map("mime_type")
+  altText     String?  @db.VarChar(255) @map("alt_text")
+  caption     String?  @db.Text
+  sortOrder   Int      @default(0) @map("sort_order")
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  uploadedBy  Int      @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  uploader User   @relation("UploadedBy", fields: [uploadedBy], references: [id])
+  cause    Cause? @relation(fields: [relatedId], references: [id])
+
+  @@index([relatedType, relatedId])
+  @@index([fileType])
+  @@index([uploadedBy])
+  @@map("media")
+}
+
+// Analytics Events Model
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id") // NULL for anonymous users
+  sessionId String   @db.VarChar(100) @map("session_id")
+  eventType String   @db.VarChar(100) @map("event_type")
+  eventData Json?    @map("event_data")
+  pageUrl   String?  @db.VarChar(500) @map("page_url")
+  userAgent String?  @db.Text @map("user_agent")
+  ipAddress String?  @db.VarChar(45) @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+// Chat Conversations Model (Enhanced)
+model ChatConversation {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  sessionId   String   @db.VarChar(100) @map("session_id")
+  messages    Json     // Array of message objects
+  context     Json?    // Conversation context and metadata
+  isActive    Boolean  @default(true) @map("is_active")
+  rating      Int?     // User feedback rating
+  feedback    String?  @db.Text // User feedback text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("chat_conversations")
+}

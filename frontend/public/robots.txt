@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /profile/
-Disallow: /chat-history/
-Sitemap: https://hands2gether.org/sitemap.xml
