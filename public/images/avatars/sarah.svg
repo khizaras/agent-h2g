@@ -1,0 +1,5 @@
+<!-- Placeholder for sarah.jpg -->
+<svg width="150" height="150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="150" height="150" fill="#f0f0f0"/>
+  <text x="75" y="75" text-anchor="middle" dy="0.3em" font-family="Arial" font-size="12" fill="#666">Sarah Avatar</text>
+</svg>

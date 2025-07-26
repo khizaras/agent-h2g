@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html>
+<head><title>Avatar Placeholder</title></head>
+<body style="margin:0; background:#f0f0f0; display:flex; align-items:center; justify-content:center; width:150px; height:150px; font-family:Arial;">
+<div style="text-align:center; color:#666;">Sarah Avatar</div>
+</body>
+</html>

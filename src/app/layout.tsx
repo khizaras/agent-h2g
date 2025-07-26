@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
-import { ConfigProvider, App as AntApp } from 'antd';
-import { Provider } from 'react-redux';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ThemeProvider } from 'next-themes';
-import { SessionProvider } from 'next-auth/react';
-import { Toaster } from 'sonner';
-import { store } from '@/store';
-import { antdTheme } from '@/config/theme';
-import { MotionConfig } from 'framer-motion';
-import '@/styles/globals.css';
-
+import React from "react";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { ConfigProvider, App as AntApp } from "antd";
+import { Provider } from "react-redux";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "next-themes";
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
+import { store } from "@/store";
+import { antdTheme } from "@/config/theme";
+import { MotionConfig } from "framer-motion";
+import "antd/dist/reset.css";
+import "@/styles/globals.css";
 const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-plus-jakarta',
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-plus-jakarta",
 });
 
 const queryClient = new QueryClient({
@@ -45,8 +45,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html 
-      lang="en" 
+    <html
+      lang="en"
       className={`${inter.variable} ${plusJakarta.variable}`}
       suppressHydrationWarning
     >
@@ -55,7 +55,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link rel="preconnect" href="https://ik.imagekit.io" />
       </head>
       <body className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 antialiased">
@@ -75,13 +79,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         type: "spring",
                         damping: 25,
                         stiffness: 120,
-                        mass: 0.8
+                        mass: 0.8,
                       }}
                       reducedMotion="user"
                     >
                       <div className="relative">
                         {children}
-                        <Toaster 
+                        <Toaster
                           position="top-right"
                           theme="light"
                           richColors
@@ -94,8 +98,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   </AntApp>
                 </ConfigProvider>
               </ThemeProvider>
-              <ReactQueryDevtools 
-                initialIsOpen={false} 
+              <ReactQueryDevtools
+                initialIsOpen={false}
                 position="bottom-right"
                 buttonPosition="bottom-right"
               />

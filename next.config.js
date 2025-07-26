@@ -2,10 +2,9 @@
 const nextConfig = {
   serverExternalPackages: ["mysql2", "@prisma/client"],
   experimental: {
-    optimizePackageImports: ["antd", "lucide-react", "@heroicons/react"],
+    optimizePackageImports: ["lucide-react", "@heroicons/react"],
   },
   images: {
-    domains: ["ik.imagekit.io", "lh3.googleusercontent.com"],
     formats: ["image/webp", "image/avif"],
     remotePatterns: [
       {
@@ -15,6 +14,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
   },

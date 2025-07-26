@@ -1,24 +1,45 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import { combineReducers } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
+import { persistStore, persistReducer } from "redux-persist";
+import { combineReducers } from "redux";
+import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+
+// Create noop storage for SSR compatibility
+const createNoopStorage = () => {
+  return {
+    getItem(_key: string) {
+      return Promise.resolve(null);
+    },
+    setItem(_key: string, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: string) {
+      return Promise.resolve();
+    },
+  };
+};
+
+// Use web storage if available, otherwise use noop storage
+const storage =
+  typeof window !== "undefined"
+    ? createWebStorage("local")
+    : createNoopStorage();
 
 // Import slices
-import authSlice from './slices/authSlice';
-import causesSlice from './slices/causesSlice';
-import categoriesSlice from './slices/categoriesSlice';
-import adminSlice from './slices/adminSlice';
-import notificationsSlice from './slices/notificationsSlice';
-import uiSlice from './slices/uiSlice';
-import chatbotSlice from './slices/chatbotSlice';
-import userSlice from './slices/userSlice';
+import authSlice from "./slices/authSlice";
+import causesSlice from "./slices/causesSlice";
+import categoriesSlice from "./slices/categoriesSlice";
+import adminSlice from "./slices/adminSlice";
+import notificationsSlice from "./slices/notificationsSlice";
+import uiSlice from "./slices/uiSlice";
+import chatbotSlice from "./slices/chatbotSlice";
+import userSlice from "./slices/userSlice";
 
 // Persist configuration
 const persistConfig = {
-  key: 'hands2gether',
+  key: "hands2gether",
   storage,
-  whitelist: ['auth', 'ui'], // Only persist auth and UI state
-  blacklist: ['causes', 'admin', 'notifications'], // Don't persist these (refetch on reload)
+  whitelist: ["auth", "ui"], // Only persist auth and UI state
+  blacklist: ["causes", "admin", "notifications"], // Don't persist these (refetch on reload)
 };
 
 // Root reducer
@@ -42,11 +63,11 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-        ignoredPaths: ['register', 'rehydrate'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredPaths: ["register", "rehydrate"],
       },
     }),
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: process.env.NODE_ENV !== "production",
 });
 
 // Persistor
@@ -57,6 +78,6 @@ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 // Typed hooks
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

@@ -1,98 +1,175 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Card, Row, Col, Typography, Button, Space, Statistic } from 'antd';
-import { 
+import React from "react";
+import { motion } from "framer-motion";
+import { Card, Row, Col, Typography, Button, Space, Statistic } from "antd";
+import {
   HeartOutlined,
   BookOutlined,
   UserOutlined,
   ArrowRightOutlined,
   GlobalOutlined,
   TeamOutlined,
-  GiftOutlined
-} from '@ant-design/icons';
-import { useInView } from 'react-intersection-observer';
-import Link from 'next/link';
+  GiftOutlined,
+} from "@ant-design/icons";
+import { useInView } from "react-intersection-observer";
+import Link from "next/link";
+import Image from "next/image";
+import { unsplashImages, getCategoryImage } from "@/services/unsplashService";
 
 const { Title, Paragraph } = Typography;
 
 const categories = [
   {
-    id: 'food',
-    title: 'Food Assistance',
-    description: 'Share meals and food supplies with those in need. From prepared meals to grocery donations.',
+    id: "emergency-relief",
+    title: "Emergency Relief",
+    description:
+      "Immediate food assistance and emergency support for families in crisis situations.",
     icon: <HeartOutlined className="text-4xl" />,
-    color: 'from-red-500 to-pink-500',
-    bgColor: 'bg-red-50',
+    color: "from-red-500 to-pink-500",
+    bgColor: "bg-red-50",
     stats: { causes: 1247, helped: 8942 },
-    features: ['Emergency Food Relief', 'Community Kitchens', 'Grocery Donations', 'School Meal Programs'],
-    image: '/images/food-category.jpg'
+    features: [
+      "Emergency Food Relief",
+      "Crisis Support",
+      "Disaster Response",
+      "Immediate Aid",
+    ],
+    image: unsplashImages.categories["emergency-relief"],
   },
   {
-    id: 'clothes',
-    title: 'Clothing Donations',
-    description: 'Donate and request clothing items for all ages and seasons. Clean, quality clothes for everyone.',
-    icon: <UserOutlined className="text-4xl" />,
-    color: 'from-blue-500 to-cyan-500',
-    bgColor: 'bg-blue-50',
+    id: "food-banks",
+    title: "Food Banks",
+    description:
+      "Organized food distribution centers providing consistent support to community members.",
+    icon: <GlobalOutlined className="text-4xl" />,
+    color: "from-blue-500 to-cyan-500",
+    bgColor: "bg-blue-50",
     stats: { causes: 856, helped: 5634 },
-    features: ['Seasonal Collections', 'Work Attire', 'Children\'s Clothing', 'Shoe Donations'],
-    image: '/images/clothes-category.jpg'
+    features: [
+      "Food Pantries",
+      "Bulk Distribution",
+      "Regular Support",
+      "Community Centers",
+    ],
+    image: unsplashImages.categories["food-banks"],
   },
   {
-    id: 'education',
-    title: 'Education & Training',
-    description: 'Share knowledge through courses, workshops, and mentoring. Empower communities with skills.',
-    icon: <BookOutlined className="text-4xl" />,
-    color: 'from-purple-500 to-indigo-500',
-    bgColor: 'bg-purple-50',
+    id: "community-kitchens",
+    title: "Community Kitchens",
+    description:
+      "Shared cooking spaces and meal preparation programs bringing communities together.",
+    icon: <TeamOutlined className="text-4xl" />,
+    color: "from-green-500 to-emerald-500",
+    bgColor: "bg-green-50",
     stats: { causes: 423, helped: 3251 },
-    features: ['Skills Workshops', 'Career Mentoring', 'Language Classes', 'Tech Training'],
-    image: '/images/education-category.jpg'
-  }
+    features: [
+      "Shared Meals",
+      "Cooking Classes",
+      "Community Spaces",
+      "Cultural Exchange",
+    ],
+    image: unsplashImages.categories["community-kitchens"],
+  },
+  {
+    id: "school-meals",
+    title: "School Programs",
+    description:
+      "Supporting children's nutrition through school meal programs and educational initiatives.",
+    icon: <BookOutlined className="text-4xl" />,
+    color: "from-purple-500 to-indigo-500",
+    bgColor: "bg-purple-50",
+    stats: { causes: 312, helped: 2876 },
+    features: [
+      "Breakfast Programs",
+      "Lunch Support",
+      "Nutrition Education",
+      "Weekend Bags",
+    ],
+    image: unsplashImages.categories["school-meals"],
+  },
+  {
+    id: "senior-support",
+    title: "Senior Support",
+    description:
+      "Specialized meal delivery and nutrition programs for elderly community members.",
+    icon: <UserOutlined className="text-4xl" />,
+    color: "from-orange-500 to-amber-500",
+    bgColor: "bg-orange-50",
+    stats: { causes: 234, helped: 1892 },
+    features: [
+      "Meal Delivery",
+      "Senior Centers",
+      "Health Programs",
+      "Social Connection",
+    ],
+    image: unsplashImages.categories["senior-support"],
+  },
+  {
+    id: "holiday-meals",
+    title: "Holiday Programs",
+    description:
+      "Special holiday meal programs ensuring no one goes without during celebrations.",
+    icon: <GiftOutlined className="text-4xl" />,
+    color: "from-pink-500 to-rose-500",
+    bgColor: "bg-pink-50",
+    stats: { causes: 189, helped: 1456 },
+    features: [
+      "Holiday Dinners",
+      "Food Baskets",
+      "Community Celebrations",
+      "Family Support",
+    ],
+    image: unsplashImages.categories["holiday-meals"],
+  },
 ];
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+  },
 };
 
 const staggerContainer = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.2
-    }
-  }
+      staggerChildren: 0.2,
+    },
+  },
 };
 
 const cardHover = {
   hover: {
     y: -8,
     scale: 1.02,
-    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-  }
+    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+  },
 };
 
 export function CategoryShowcase() {
   const [ref, inView] = useInView({
     threshold: 0.1,
-    triggerOnce: true
+    triggerOnce: true,
   });
 
   return (
-    <section ref={ref} className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
+    <section
+      ref={ref}
+      className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden"
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="grid grid-cols-8 gap-4 transform -rotate-12 scale-150">
             {[...Array(64)].map((_, i) => (
-              <div key={i} className="w-2 h-2 bg-blue-600 rounded-full opacity-20" />
+              <div
+                key={i}
+                className="w-2 h-2 bg-blue-600 rounded-full opacity-20"
+              />
             ))}
           </div>
         </div>
@@ -106,11 +183,15 @@ export function CategoryShowcase() {
           className="text-center mb-16"
         >
           <motion.div variants={fadeInUp}>
-            <Title level={2} className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <Title
+              level={2}
+              className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            >
               Three Ways to Make a Difference
             </Title>
             <Paragraph className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Choose your impact area and join thousands of community members already making a difference
+              Choose your impact area and join thousands of community members
+              already making a difference
             </Paragraph>
           </motion.div>
         </motion.div>
@@ -133,36 +214,46 @@ export function CategoryShowcase() {
                     bodyStyle={{ padding: 0 }}
                   >
                     {/* Header with Icon and Stats */}
-                    <div className={`bg-gradient-to-r ${category.color} p-8 text-white relative overflow-hidden`}>
+                    <div
+                      className={`bg-gradient-to-r ${category.color} p-8 text-white relative overflow-hidden`}
+                    >
                       <div className="absolute top-0 right-0 opacity-10">
                         <div className="text-8xl transform rotate-12">
                           {category.icon}
                         </div>
                       </div>
-                      
+
                       <div className="relative z-10">
                         <div className="flex items-center justify-between mb-4">
-                          <div className="text-white/90">
-                            {category.icon}
-                          </div>
-                          <Space direction="vertical" size={0} className="text-right">
+                          <div className="text-white/90">{category.icon}</div>
+                          <Space
+                            direction="vertical"
+                            size={0}
+                            className="text-right"
+                          >
                             <Statistic
                               value={category.stats.causes}
-                              valueStyle={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}
+                              valueStyle={{
+                                color: "white",
+                                fontSize: "1.5rem",
+                                fontWeight: "bold",
+                              }}
                               suffix="causes"
                             />
                             <div className="text-white/80 text-sm">active</div>
                           </Space>
                         </div>
-                        
+
                         <Title level={3} className="text-white mb-2">
                           {category.title}
                         </Title>
-                        
+
                         <div className="flex items-center space-x-4 text-white/90">
                           <div className="flex items-center space-x-1">
                             <TeamOutlined />
-                            <span className="text-sm">{category.stats.helped.toLocaleString()} helped</span>
+                            <span className="text-sm">
+                              {category.stats.helped.toLocaleString()} helped
+                            </span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <GlobalOutlined />
@@ -171,6 +262,20 @@ export function CategoryShowcase() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Professional Category Image */}
+                    {category.image && (
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          src={category.image.url}
+                          alt={category.image.alt}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      </div>
+                    )}
 
                     {/* Content */}
                     <div className="p-8">
@@ -185,7 +290,10 @@ export function CategoryShowcase() {
                         </Title>
                         <div className="grid grid-cols-2 gap-2">
                           {category.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-center space-x-2 text-sm text-gray-600">
+                            <div
+                              key={idx}
+                              className="flex items-center space-x-2 text-sm text-gray-600"
+                            >
                               <GiftOutlined className="text-xs text-blue-500" />
                               <span>{feature}</span>
                             </div>
@@ -194,8 +302,15 @@ export function CategoryShowcase() {
                       </div>
 
                       {/* Action Buttons */}
-                      <Space direction="vertical" size="middle" className="w-full">
-                        <Link href={`/causes?category=${category.id}`} className="w-full">
+                      <Space
+                        direction="vertical"
+                        size="middle"
+                        className="w-full"
+                      >
+                        <Link
+                          href={`/causes?category=${category.id}`}
+                          className="w-full"
+                        >
                           <Button
                             type="primary"
                             size="large"
@@ -205,8 +320,11 @@ export function CategoryShowcase() {
                             Explore {category.title}
                           </Button>
                         </Link>
-                        
-                        <Link href={`/causes/create?category=${category.id}`} className="w-full">
+
+                        <Link
+                          href={`/causes/create?category=${category.id}`}
+                          className="w-full"
+                        >
                           <Button
                             size="large"
                             className="w-full h-10 border-2 border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-500 transition-all duration-300"
@@ -239,7 +357,8 @@ export function CategoryShowcase() {
                 Ready to Make an Impact?
               </Title>
               <Paragraph className="text-blue-100 mb-6 text-lg">
-                Join our community of changemakers and start helping your neighbors today
+                Join our community of changemakers and start helping your
+                neighbors today
               </Paragraph>
               <Space size="large">
                 <Link href="/causes">

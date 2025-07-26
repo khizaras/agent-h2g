@@ -37,7 +37,7 @@ const testimonials: Testimonial[] = [
     name: "Maria Gonzalez",
     role: "Community Volunteer",
     location: "Los Angeles, CA",
-    avatar: "/images/avatars/maria.jpg",
+    avatar: "MG",
     rating: 5,
     quote:
       "This platform transformed how I help my community. I've been able to provide meals to over 200 families through coordinated food drives.",
@@ -55,7 +55,7 @@ const testimonials: Testimonial[] = [
     name: "James Peterson",
     role: "Single Father",
     location: "Denver, CO",
-    avatar: "/images/avatars/james.jpg",
+    avatar: "JP",
     rating: 5,
     quote:
       "When I lost my job, this community stepped up immediately. Within 48 hours, I had groceries, warm clothes for my kids, and even job leads.",
@@ -73,7 +73,7 @@ const testimonials: Testimonial[] = [
     name: "Dr. Sarah Kim",
     role: "Skills Trainer",
     location: "Seattle, WA",
-    avatar: "/images/avatars/sarah-kim.jpg",
+    avatar: "SK",
     rating: 5,
     quote:
       "I've taught digital literacy to over 150 seniors through this platform. Seeing them connect with family via video calls is priceless.",
@@ -91,7 +91,7 @@ const testimonials: Testimonial[] = [
     name: "Ahmed Rahman",
     role: "Small Business Owner",
     location: "Chicago, IL",
-    avatar: "/images/avatars/ahmed.jpg",
+    avatar: "AR",
     rating: 5,
     quote:
       "The business mentorship I received here helped me grow my restaurant from struggling to thriving. Now I provide free meals to those in need.",
@@ -109,7 +109,7 @@ const testimonials: Testimonial[] = [
     name: "Lisa Thompson",
     role: "Retired Teacher",
     location: "Austin, TX",
-    avatar: "/images/avatars/lisa-thompson.jpg",
+    avatar: "LT",
     rating: 5,
     quote:
       "Teaching literacy to adult learners through this platform has been the most rewarding part of my retirement. We've helped 80+ adults read to their children.",
@@ -184,6 +184,11 @@ export function TestimonialsSection() {
 
   const currentTestimonial = testimonials[currentIndex];
 
+  // Safety check for testimonial
+  if (!currentTestimonial) {
+    return null;
+  }
+
   return (
     <section
       ref={ref}
@@ -251,7 +256,16 @@ export function TestimonialsSection() {
                       {/* Header */}
                       <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center space-x-4">
-                          <Avatar size={64} src={currentTestimonial.avatar} />
+                          <Avatar
+                            size={64}
+                            style={{
+                              backgroundColor: "#1890ff",
+                              fontSize: "20px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {currentTestimonial.avatar}
+                          </Avatar>
                           <div>
                             <div className="flex items-center space-x-2">
                               <Text className="text-lg font-semibold text-gray-800">
