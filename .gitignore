@@ -9,6 +9,8 @@ build/
 oldapp/
 .next/
 .claude/
+.env.local
+.env.development.local
 # Optional npm cache directory
 .npm
 
