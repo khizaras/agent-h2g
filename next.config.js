@@ -1,20 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['mysql2', '@prisma/client'],
+  serverExternalPackages: ["mysql2", "@prisma/client"],
   experimental: {
-    optimizePackageImports: ['antd', 'lucide-react', '@heroicons/react'],
+    optimizePackageImports: ["antd", "lucide-react", "@heroicons/react"],
   },
   images: {
-    domains: ['ik.imagekit.io', 'lh3.googleusercontent.com'],
-    formats: ['image/webp', 'image/avif'],
+    domains: ["ik.imagekit.io", "lh3.googleusercontent.com"],
+    formats: ["image/webp", "image/avif"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'ik.imagekit.io',
+        protocol: "https",
+        hostname: "ik.imagekit.io",
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },
@@ -31,14 +31,14 @@ const nextConfig = {
     config.module.rules.push({
       test: /\.(png|jpe?g|gif|svg)$/,
       use: {
-        loader: 'file-loader',
+        loader: "file-loader",
         options: {
-          publicPath: '/_next/static/images/',
-          outputPath: 'static/images/',
+          publicPath: "/_next/static/images/",
+          outputPath: "static/images/",
         },
       },
     });
-    
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -47,33 +47,33 @@ const nextConfig = {
         tls: false,
       };
     }
-    
+
     return config;
   },
   async rewrites() {
     return [
       {
-        source: '/api/v1/:path*',
-        destination: '/api/:path*',
+        source: "/api/v1/:path*",
+        destination: "/api/:path*",
       },
     ];
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
           },
         ],
       },
