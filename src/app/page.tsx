@@ -51,9 +51,17 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+    
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const features = [
@@ -163,63 +171,137 @@ export default function HomePage() {
   return (
     <MainLayout>
       <div className="modern-home-page">
-        {/* Hero Section */}
-        <section className="modern-hero">
-          <div className="modern-hero-content">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="hero-text"
-            >
-              <Title level={1} className="modern-hero-title">
-                Building stronger communities,
-                <span className="title-highlight"> together</span>
-              </Title>
-              
-              <Paragraph className="modern-hero-subtitle">
-                Connect with your community to fight hunger and create lasting change. 
-                Every contribution matters, every action counts.
-              </Paragraph>
-
-              <div className="hero-actions">
-                <Link href="/causes">
-                  <Button type="primary" size="large" className="modern-btn-primary">
-                    <FiHeart style={{ marginRight: 8 }} />
-                    Explore Causes
-                  </Button>
-                </Link>
-                <Link href="/causes/create">
-                  <Button size="large" className="modern-btn-secondary">
-                    Create a Cause
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Trust Indicators */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="trust-indicators"
-            >
-              <Space size="large">
-                <div className="trust-item">
-                  <FiShield size={20} />
-                  <span>Secure Platform</span>
-                </div>
-                <div className="trust-item">
-                  <FiCheckCircle size={20} />
-                  <span>Verified Causes</span>
-                </div>
-                <div className="trust-item">
-                  <FiGlobe size={20} />
-                  <span>Global Community</span>
-                </div>
-              </Space>
-            </motion.div>
+        {/* Hero Section with Parallax */}
+        <section className="parallax-hero">
+          {/* Parallax Background */}
+          <div className="parallax-bg">
+            <motion.div 
+              className="parallax-image"
+              style={{
+                backgroundImage: 'url("https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2070&auto=format&fit=crop")',
+                transform: `translateY(${scrollY * 0.5}px)`,
+              }}
+            />
+            <div className="parallax-overlay" />
           </div>
+
+          {/* Hero Content */}
+          <div className="parallax-hero-content">
+            <div className="container">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="hero-text-center"
+              >
+                <Title level={1} className="parallax-hero-title">
+                  Building stronger communities,
+                  <span className="title-gradient"> together</span>
+                </Title>
+                
+                <Paragraph className="parallax-hero-subtitle">
+                  Connect with your community to fight hunger and create lasting change. 
+                  Every contribution matters, every action counts.
+                </Paragraph>
+
+                <motion.div 
+                  className="hero-actions"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  <Link href="/causes">
+                    <Button type="primary" size="large" className="hero-btn-primary">
+                      <FiHeart style={{ marginRight: 8 }} />
+                      Explore Causes
+                    </Button>
+                  </Link>
+                  <Link href="/causes/create">
+                    <Button size="large" className="hero-btn-secondary">
+                      Create a Cause
+                      <FiArrowRight style={{ marginLeft: 8 }} />
+                    </Button>
+                  </Link>
+                </motion.div>
+
+                {/* Trust Indicators */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  className="hero-trust-indicators"
+                >
+                  <div className="trust-grid">
+                    <div className="trust-item">
+                      <div className="trust-icon">
+                        <FiShield size={24} />
+                      </div>
+                      <span>Secure Platform</span>
+                    </div>
+                    <div className="trust-item">
+                      <div className="trust-icon">
+                        <FiCheckCircle size={24} />
+                      </div>
+                      <span>Verified Causes</span>
+                    </div>
+                    <div className="trust-item">
+                      <div className="trust-icon">
+                        <FiGlobe size={24} />
+                      </div>
+                      <span>Global Community</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Floating Elements */}
+              <motion.div 
+                className="floating-elements"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.6 }}
+              >
+                <motion.div 
+                  className="floating-element element-1"
+                  animate={{ y: [-10, 10, -10] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <FiHeart size={32} />
+                </motion.div>
+                <motion.div 
+                  className="floating-element element-2"
+                  animate={{ y: [10, -10, 10] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <FiUsers size={28} />
+                </motion.div>
+                <motion.div 
+                  className="floating-element element-3"
+                  animate={{ y: [-5, 15, -5] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <FiTarget size={24} />
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Scroll Indicator */}
+          <motion.div 
+            className="scroll-indicator"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1 }}
+          >
+            <motion.div 
+              className="scroll-arrow"
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <FiArrowRight style={{ transform: 'rotate(90deg)' }} size={20} />
+            </motion.div>
+            <span>Scroll to explore</span>
+          </motion.div>
         </section>
 
         {/* Statistics Section */}

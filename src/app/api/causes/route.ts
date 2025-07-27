@@ -118,6 +118,11 @@ export async function POST(request: NextRequest) {
       ...categorySpecificData
     } = body;
 
+    // Debug: Log the category specific data for education
+    if (category === 'education') {
+      console.log('Education categorySpecificData:', JSON.stringify(categorySpecificData, null, 2));
+    }
+
     // Validate required fields
     if (!title || !description || !category || !location || !contactEmail) {
       return NextResponse.json(
@@ -252,39 +257,50 @@ export async function POST(request: NextRequest) {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        await connection.execute(educationQuery, [
+        const educationParams = [
           causeId,
-          categorySpecificData.educationType || null,
-          categorySpecificData.skillLevel || 'all-levels',
-          JSON.stringify(categorySpecificData.topics || []),
-          categorySpecificData.maxTrainees || null,
-          categorySpecificData.durationHours || null,
-          categorySpecificData.numberOfDays || null,
-          categorySpecificData.prerequisites || null,
-          JSON.stringify(categorySpecificData.learningObjectives || []),
-          categorySpecificData.startDate || null,
-          categorySpecificData.endDate || null,
-          categorySpecificData.registrationDeadline || null,
-          JSON.stringify(categorySpecificData.schedule || {}),
-          categorySpecificData.deliveryMethod || null,
-          categorySpecificData.locationDetails || null,
-          categorySpecificData.meetingPlatform || null,
-          categorySpecificData.meetingLink || null,
-          categorySpecificData.instructorName || null,
-          categorySpecificData.instructorEmail || null,
-          categorySpecificData.instructorBio || null,
-          categorySpecificData.instructorQualifications || null,
-          Boolean(categorySpecificData.certification) || false,
-          categorySpecificData.certificationBody || null,
-          JSON.stringify(categorySpecificData.materialsProvided || []),
-          JSON.stringify(categorySpecificData.equipmentRequired || []),
-          JSON.stringify(categorySpecificData.softwareRequired || []),
-          categorySpecificData.price || 0,
-          Boolean(categorySpecificData.isFree) || false,
-          categorySpecificData.courseLanguage || 'English',
-          JSON.stringify(categorySpecificData.subtitlesAvailable || []),
-          categorySpecificData.difficultyRating || 1,
-        ]);
+          categorySpecificData.educationType ?? null,
+          categorySpecificData.skillLevel ?? 'all-levels',
+          JSON.stringify(categorySpecificData.topics ?? []),
+          categorySpecificData.maxTrainees ?? null,
+          categorySpecificData.durationHours ?? null,
+          categorySpecificData.numberOfDays ?? null,
+          categorySpecificData.prerequisites ?? null,
+          JSON.stringify(categorySpecificData.learningObjectives ?? []),
+          categorySpecificData.startDate ?? null,
+          categorySpecificData.endDate ?? null,
+          categorySpecificData.registrationDeadline ?? null,
+          JSON.stringify(categorySpecificData.schedule ?? {}),
+          categorySpecificData.deliveryMethod ?? null,
+          categorySpecificData.locationDetails ?? null,
+          categorySpecificData.meetingPlatform ?? null,
+          categorySpecificData.meetingLink ?? null,
+          categorySpecificData.instructorName ?? null,
+          categorySpecificData.instructorEmail ?? null,
+          categorySpecificData.instructorBio ?? null,
+          categorySpecificData.instructorQualifications ?? null,
+          categorySpecificData.certification ? true : false,
+          categorySpecificData.certificationBody ?? null,
+          JSON.stringify(categorySpecificData.materialsProvided ?? []),
+          JSON.stringify(categorySpecificData.equipmentRequired ?? []),
+          JSON.stringify(categorySpecificData.softwareRequired ?? []),
+          categorySpecificData.price ?? 0,
+          categorySpecificData.isFree ? true : false,
+          categorySpecificData.courseLanguage ?? 'English',
+          JSON.stringify(categorySpecificData.subtitlesAvailable ?? []),
+          categorySpecificData.difficultyRating ?? 1,
+        ];
+
+        // Debug: Check for undefined values
+        const undefinedParams = educationParams.map((param, index) => ({ index, param, isUndefined: param === undefined }))
+          .filter(item => item.isUndefined);
+        
+        if (undefinedParams.length > 0) {
+          console.error('Found undefined parameters:', undefinedParams);
+          throw new Error(`Undefined parameters found at indices: ${undefinedParams.map(p => p.index).join(', ')}`);
+        }
+
+        await connection.execute(educationQuery, educationParams);
       }
 
       return { causeId };

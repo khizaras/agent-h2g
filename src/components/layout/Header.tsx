@@ -24,30 +24,19 @@ import {
   HiOutlineUser,
   HiOutlineCog,
   HiOutlineLogout,
+  HiOutlineLogin,
 } from "react-icons/hi";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
 
-interface HeaderProps {
-  isAuthenticated?: boolean;
-  userAvatar?: string;
-  userName?: string;
-  notificationCount?: number;
-  onSignIn?: () => void;
-  onSignOut?: () => void;
-}
-
-export function Header({
-  isAuthenticated = false,
-  userAvatar,
-  userName = "User",
-  notificationCount = 0,
-  onSignIn,
-  onSignOut,
-}: HeaderProps) {
+export function Header() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigationItems = [
@@ -125,18 +114,27 @@ export function Header({
       key: "logout",
       label: "Sign Out",
       icon: <HiOutlineLogout size={16} />,
-      onClick: onSignOut,
+      onClick: () => signOut({ callbackUrl: "/" }),
     },
   ];
+
+  const handleSignIn = () => {
+    router.push("/auth/signin");
+  };
 
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const isAuthenticated = !!session;
+  const userName = session?.user?.name || "User";
+  const userAvatar = session?.user?.image;
+
   return (
     <>
-      <AntHeader className="header-modern">
-        <div className="header-container">
+      {/* Main Header */}
+      <AntHeader className="main-header">
+        <div className="main-header-container">
           {/* Brand Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -146,21 +144,11 @@ export function Header({
           >
             <Link href="/" className="brand-link">
               <div className="brand-icon">
-                <HiOutlineHeart size={20} />
+                <HiOutlineHeart size={24} />
               </div>
               <Text className="brand-text">Hands2gether</Text>
             </Link>
           </motion.div>
-
-          {/* Desktop Navigation */}
-          <nav className="nav-desktop">
-            <Menu
-              mode="horizontal"
-              selectedKeys={[]}
-              items={navigationItems}
-              className="nav-menu"
-            />
-          </nav>
 
           {/* User Actions */}
           <div className="header-actions">
@@ -171,7 +159,7 @@ export function Header({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Badge count={notificationCount} size="small">
+                  <Badge count={0} size="small">
                     <Button
                       type="text"
                       icon={<HiOutlineBell size={20} />}
@@ -195,7 +183,7 @@ export function Header({
                         <Avatar
                           src={userAvatar}
                           icon={<HiOutlineUser />}
-                          size="small"
+                          size="default"
                         />
                         <Text className="user-name">{userName}</Text>
                       </Space>
@@ -207,14 +195,15 @@ export function Header({
               <Space className="auth-actions">
                 <Button
                   type="text"
-                  onClick={onSignIn}
+                  onClick={handleSignIn}
+                  icon={<HiOutlineLogin size={18} />}
                   className="auth-btn auth-btn-signin"
                 >
                   Sign In
                 </Button>
                 <Button
                   type="primary"
-                  onClick={onSignIn}
+                  onClick={handleSignIn}
                   className="auth-btn auth-btn-signup"
                 >
                   Get Started
@@ -230,6 +219,21 @@ export function Header({
               className="mobile-menu-btn"
             />
           </div>
+        </div>
+      </AntHeader>
+
+      {/* Sub Navigation */}
+      <AntHeader className="sub-header">
+        <div className="sub-header-container">
+          {/* Desktop Navigation */}
+          <nav className="nav-desktop">
+            <Menu
+              mode="horizontal"
+              selectedKeys={[]}
+              items={navigationItems}
+              className="nav-menu"
+            />
+          </nav>
         </div>
       </AntHeader>
 
@@ -271,6 +275,18 @@ export function Header({
                 size="large"
                 style={{ width: "100%" }}
               >
+                <div className="mobile-user-info">
+                  <Avatar
+                    src={userAvatar}
+                    icon={<HiOutlineUser />}
+                    size="large"
+                  />
+                  <div className="mobile-user-details">
+                    <Text strong>{userName}</Text>
+                    <Text type="secondary">{session?.user?.email}</Text>
+                  </div>
+                </div>
+                
                 <Button
                   type="text"
                   icon={<HiOutlineBell size={18} />}
@@ -278,26 +294,37 @@ export function Header({
                   block
                 >
                   Notifications
-                  {notificationCount > 0 && (
-                    <Badge
-                      count={notificationCount}
-                      size="small"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
                 </Button>
-                <Button
-                  type="text"
-                  icon={<HiOutlineUser size={18} />}
-                  className="mobile-action-btn"
-                  block
-                >
-                  Profile
-                </Button>
+                
+                <Link href="/profile" onClick={handleMobileMenuToggle}>
+                  <Button
+                    type="text"
+                    icon={<HiOutlineUser size={18} />}
+                    className="mobile-action-btn"
+                    block
+                  >
+                    Profile
+                  </Button>
+                </Link>
+                
+                <Link href="/settings" onClick={handleMobileMenuToggle}>
+                  <Button
+                    type="text"
+                    icon={<HiOutlineCog size={18} />}
+                    className="mobile-action-btn"
+                    block
+                  >
+                    Settings
+                  </Button>
+                </Link>
+                
                 <Button
                   type="primary"
                   danger
-                  onClick={onSignOut}
+                  onClick={() => {
+                    signOut({ callbackUrl: "/" });
+                    handleMobileMenuToggle();
+                  }}
                   className="mobile-signout-btn"
                   block
                 >
@@ -312,7 +339,11 @@ export function Header({
               >
                 <Button
                   type="text"
-                  onClick={onSignIn}
+                  onClick={() => {
+                    handleSignIn();
+                    handleMobileMenuToggle();
+                  }}
+                  icon={<HiOutlineLogin size={18} />}
                   className="mobile-auth-btn mobile-signin"
                   block
                 >
@@ -320,7 +351,10 @@ export function Header({
                 </Button>
                 <Button
                   type="primary"
-                  onClick={onSignIn}
+                  onClick={() => {
+                    handleSignIn();
+                    handleMobileMenuToggle();
+                  }}
                   className="mobile-auth-btn mobile-signup"
                   block
                 >

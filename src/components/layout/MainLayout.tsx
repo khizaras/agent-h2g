@@ -79,9 +79,9 @@ export function MainLayout({
   const shouldShowHeader = showHeader && !isFullPageApp;
   const shouldShowFooter = showFooter && !isAuthPage && !isAdminPage && !isFullPageApp;
 
-  // Calculate content padding based on header
+  // Calculate content padding based on header (now we have two headers: 64px each = 128px total)
   const contentStyle = {
-    minHeight: shouldShowHeader ? 'calc(100vh - 64px)' : '100vh',
+    minHeight: shouldShowHeader ? 'calc(100vh - 128px)' : '100vh',
     paddingTop: shouldShowHeader ? '0' : '0',
   };
 
