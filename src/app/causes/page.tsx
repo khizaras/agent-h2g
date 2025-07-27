@@ -21,19 +21,19 @@ import {
   Slider,
 } from "antd";
 import {
-  HeartOutlined,
-  EnvironmentOutlined,
-  ClockCircleOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  SortAscendingOutlined,
-  UserOutlined,
-  EyeOutlined,
-  ShareAltOutlined,
-  BookOutlined,
-  CalendarOutlined,
-  DollarOutlined,
-} from "@ant-design/icons";
+  FiHeart,
+  FiMapPin,
+  FiClock,
+  FiSearch,
+  FiFilter,
+  FiTrendingUp,
+  FiUser,
+  FiEye,
+  FiShare2,
+  FiBookmark,
+  FiCalendar,
+  FiDollarSign,
+} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -388,9 +388,9 @@ export default function CausesPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, var(--color-bg-section) 0%, var(--color-bg) 50%, #f0f8ff 100%)' }}>
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white py-16 relative overflow-hidden">
+        <div style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, #722ed1 50%, #1d4ed8 100%)', color: 'white', padding: '4rem 0', position: 'relative', overflow: 'hidden' }}>
           <div className="absolute inset-0 bg-black/20" />
           <div className="container mx-auto px-6 relative z-10">
             <motion.div
@@ -435,7 +435,7 @@ export default function CausesPage() {
                   <Button
                     type="primary"
                     size="large"
-                    icon={<HeartOutlined />}
+                    icon={<FiHeart />}
                     className="bg-white text-blue-600 border-white hover:bg-blue-50 hover:text-blue-700 font-semibold px-8 h-12"
                   >
                     Start a Cause
@@ -468,7 +468,7 @@ export default function CausesPage() {
                   <Search
                     placeholder="Search by title, location, or tags..."
                     allowClear
-                    enterButton={<SearchOutlined />}
+                    enterButton={<FiSearch />}
                     size="large"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -527,7 +527,7 @@ export default function CausesPage() {
                   <div className="flex items-center gap-3">
                     <Button
                       type={showFilters ? "primary" : "default"}
-                      icon={<FilterOutlined />}
+                      icon={<FiFilter />}
                       onClick={() => setShowFilters(!showFilters)}
                       size="large"
                     >
@@ -722,16 +722,16 @@ export default function CausesPage() {
                               {/* Meta Information */}
                               <div className="space-y-2 mb-4">
                                 <div className="flex items-center text-gray-500 text-sm">
-                                  <EnvironmentOutlined className="mr-2 text-blue-500" />
+                                  <FiMapPin style={{ marginRight: '0.5rem', color: 'var(--color-primary)' }} />
                                   {cause.location}
                                 </div>
                                 <div className="flex items-center text-gray-500 text-sm">
-                                  <UserOutlined className="mr-2 text-blue-500" />
+                                  <FiUser style={{ marginRight: '0.5rem', color: 'var(--color-primary)' }} />
                                   {cause.volunteers_joined}/
                                   {cause.volunteers_needed} volunteers
                                 </div>
                                 <div className="flex items-center text-gray-500 text-sm">
-                                  <CalendarOutlined className="mr-2 text-blue-500" />
+                                  <FiCalendar style={{ marginRight: '0.5rem', color: 'var(--color-primary)' }} />
                                   Created {formatDate(cause.created_at)}
                                 </div>
                               </div>
@@ -740,15 +740,15 @@ export default function CausesPage() {
                               <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                                   <span className="flex items-center hover:text-red-500 transition-colors cursor-pointer">
-                                    <HeartOutlined className="mr-1" />
+                                    <FiHeart style={{ marginRight: '0.25rem' }} />
                                     {cause.like_count}
                                   </span>
                                   <span className="flex items-center">
-                                    <EyeOutlined className="mr-1" />
+                                    <FiEye style={{ marginRight: '0.25rem' }} />
                                     {cause.view_count}
                                   </span>
                                   <span className="flex items-center hover:text-blue-500 transition-colors cursor-pointer">
-                                    <BookOutlined className="mr-1" />
+                                    <FiBookmark style={{ marginRight: '0.25rem' }} />
                                     {cause.saved_count}
                                   </span>
                                 </div>
@@ -756,7 +756,7 @@ export default function CausesPage() {
                                 <div className="flex items-center space-x-2">
                                   <Button
                                     type="text"
-                                    icon={<ShareAltOutlined />}
+                                    icon={<FiShare2 />}
                                     size="small"
                                     className="text-gray-400 hover:text-blue-500"
                                   />

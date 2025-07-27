@@ -1,8 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Layout, Row, Col, Typography, Space, Button, Divider, Input } from 'antd';
-import { 
+import React from "react";
+import {
+  Layout,
+  Row,
+  Col,
+  Typography,
+  Space,
+  Button,
+  Divider,
+  Input,
+} from "antd";
+import {
   HeartOutlined,
   TwitterOutlined,
   FacebookOutlined,
@@ -12,10 +21,11 @@ import {
   MailOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
-  ArrowUpOutlined
-} from '@ant-design/icons';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
+  ArrowUpOutlined,
+} from "@ant-design/icons";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import NewsletterSignup from "@/components/ui/NewsletterSignup";
 
 const { Footer: AntFooter } = Layout;
 const { Title, Paragraph, Text } = Typography;
@@ -23,61 +33,82 @@ const { Search } = Input;
 
 const footerLinks = {
   platform: [
-    { label: 'Browse Causes', href: '/causes' },
-    { label: 'Create Cause', href: '/causes/create' },
-    { label: 'Education', href: '/education' },
-    { label: 'How It Works', href: '/how-it-works' },
+    { label: "Browse Causes", href: "/causes" },
+    { label: "Create Cause", href: "/causes/create" },
+    { label: "Education", href: "/education" },
+    { label: "How It Works", href: "/how-it-works" },
   ],
   community: [
-    { label: 'Success Stories', href: '/stories' },
-    { label: 'Community Guidelines', href: '/guidelines' },
-    { label: 'Volunteer', href: '/volunteer' },
-    { label: 'Partner Organizations', href: '/partners' },
+    { label: "Success Stories", href: "/stories" },
+    { label: "Community Guidelines", href: "/guidelines" },
+    { label: "Volunteer", href: "/volunteer" },
+    { label: "Partner Organizations", href: "/partners" },
   ],
   support: [
-    { label: 'Help Center', href: '/help' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'Safety', href: '/safety' },
-    { label: 'Trust & Security', href: '/security' },
+    { label: "Help Center", href: "/help" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Safety", href: "/safety" },
+    { label: "Trust & Security", href: "/security" },
   ],
   company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Press', href: '/press' },
-    { label: 'Blog', href: '/blog' },
+    { label: "About Us", href: "/about" },
+    { label: "Careers", href: "/careers" },
+    { label: "Press", href: "/press" },
+    { label: "Blog", href: "/blog" },
   ],
   legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
-    { label: 'Accessibility', href: '/accessibility' },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy", href: "/cookies" },
+    { label: "Accessibility", href: "/accessibility" },
   ],
 };
 
 const socialLinks = [
-  { icon: <TwitterOutlined />, href: 'https://twitter.com/hands2gether', label: 'Twitter' },
-  { icon: <FacebookOutlined />, href: 'https://facebook.com/hands2gether', label: 'Facebook' },
-  { icon: <InstagramOutlined />, href: 'https://instagram.com/hands2gether', label: 'Instagram' },
-  { icon: <LinkedinOutlined />, href: 'https://linkedin.com/company/hands2gether', label: 'LinkedIn' },
-  { icon: <GithubOutlined />, href: 'https://github.com/hands2gether', label: 'GitHub' },
+  {
+    icon: <TwitterOutlined />,
+    href: "https://twitter.com/hands2gether",
+    label: "Twitter",
+  },
+  {
+    icon: <FacebookOutlined />,
+    href: "https://facebook.com/hands2gether",
+    label: "Facebook",
+  },
+  {
+    icon: <InstagramOutlined />,
+    href: "https://instagram.com/hands2gether",
+    label: "Instagram",
+  },
+  {
+    icon: <LinkedinOutlined />,
+    href: "https://linkedin.com/company/hands2gether",
+    label: "LinkedIn",
+  },
+  {
+    icon: <GithubOutlined />,
+    href: "https://github.com/hands2gether",
+    label: "GitHub",
+  },
 ];
 
 const contactInfo = [
-  { icon: <MailOutlined />, text: 'hello@hands2gether.com', href: 'mailto:hello@hands2gether.com' },
-  { icon: <PhoneOutlined />, text: '+1 (555) 123-4567', href: 'tel:+15551234567' },
-  { icon: <EnvironmentOutlined />, text: 'San Francisco, CA', href: '#' },
+  {
+    icon: <MailOutlined />,
+    text: "hello@hands2gether.com",
+    href: "mailto:hello@hands2gether.com",
+  },
+  {
+    icon: <PhoneOutlined />,
+    text: "+1 (555) 123-4567",
+    href: "tel:+15551234567",
+  },
+  { icon: <EnvironmentOutlined />, text: "San Francisco, CA", href: "#" },
 ];
 
 export function Footer() {
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleNewsletterSubmit = (value: string) => {
-    if (value.trim()) {
-      // TODO: Implement newsletter subscription
-      console.log('Newsletter subscription:', value);
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -87,7 +118,10 @@ export function Footer() {
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="grid grid-cols-12 gap-4 transform rotate-12 scale-150">
             {[...Array(144)].map((_, i) => (
-              <div key={i} className="w-2 h-2 bg-white rounded-full opacity-20" />
+              <div
+                key={i}
+                className="w-2 h-2 bg-white rounded-full opacity-20"
+              />
             ))}
           </div>
         </div>
@@ -114,8 +148,8 @@ export function Footer() {
               </div>
 
               <Paragraph className="text-blue-100 mb-6 text-lg leading-relaxed">
-                Connecting communities through compassion. Building a world where everyone has 
-                access to food, clothing, and education.
+                Connecting communities through compassion. Building a world
+                where everyone has access to food, clothing, and education.
               </Paragraph>
 
               {/* Social Links */}
@@ -126,9 +160,9 @@ export function Footer() {
                     whileHover={{ scale: 1.2, y: -2 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Link 
-                      href={social.href} 
-                      target="_blank" 
+                    <Link
+                      href={social.href}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-200 hover:text-white transition-colors"
                       title={social.label}
@@ -147,7 +181,7 @@ export function Footer() {
               {/* Contact Info */}
               <div className="mt-8 space-y-3">
                 {contactInfo.map((contact, index) => (
-                  <Link 
+                  <Link
                     key={index}
                     href={contact.href}
                     className="flex items-center space-x-3 text-blue-200 hover:text-white transition-colors"
@@ -174,7 +208,7 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.platform.map((link, index) => (
                   <li key={index}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-blue-200 hover:text-white transition-colors hover:underline"
                     >
@@ -200,7 +234,7 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.community.map((link, index) => (
                   <li key={index}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-blue-200 hover:text-white transition-colors hover:underline"
                     >
@@ -226,7 +260,7 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.support.map((link, index) => (
                   <li key={index}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-blue-200 hover:text-white transition-colors hover:underline"
                     >
@@ -242,7 +276,7 @@ export function Footer() {
               <ul className="space-y-3">
                 {footerLinks.company.map((link, index) => (
                   <li key={index}>
-                    <Link 
+                    <Link
                       href={link.href}
                       className="text-blue-200 hover:text-white transition-colors hover:underline"
                     >
@@ -262,34 +296,15 @@ export function Footer() {
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
             >
-              <Title level={4} className="text-white mb-6">
-                Stay Connected
-              </Title>
-              <Paragraph className="text-blue-200 mb-6">
-                Get the latest updates on new causes, success stories, and community events.
-              </Paragraph>
-
-              <Search
-                placeholder="Enter your email"
-                enterButton="Subscribe"
-                size="large"
-                onSearch={handleNewsletterSubmit}
-                className="newsletter-search mb-6"
-                style={{
-                  '& .ant-input': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'white',
-                  },
-                  '& .ant-input::placeholder': {
-                    color: 'rgba(255, 255, 255, 0.6)',
-                  },
-                }}
+              <NewsletterSignup
+                variant="inline"
+                theme="dark"
+                showBenefits={true}
               />
 
-              <Paragraph className="text-blue-300 text-sm">
-                By subscribing, you agree to our Privacy Policy and consent to receive updates 
-                from our team.
+              <Paragraph className="text-blue-300 text-sm mt-4">
+                By subscribing, you agree to our Privacy Policy and consent to
+                receive updates from our team.
               </Paragraph>
 
               {/* App Download Buttons */}
@@ -298,7 +313,10 @@ export function Footer() {
                   Download Our App
                 </Title>
                 <div className="flex flex-col space-y-3">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button
                       size="large"
                       className="bg-black text-white border-0 hover:bg-gray-800 rounded-lg w-full"
@@ -312,8 +330,11 @@ export function Footer() {
                       </div>
                     </Button>
                   </motion.div>
-                  
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button
                       size="large"
                       className="bg-black text-white border-0 hover:bg-gray-800 rounded-lg w-full"
@@ -322,7 +343,9 @@ export function Footer() {
                         <div className="text-xl">🤖</div>
                         <div className="text-left">
                           <div className="text-xs">Get it on</div>
-                          <div className="text-sm font-semibold">Google Play</div>
+                          <div className="text-sm font-semibold">
+                            Google Play
+                          </div>
                         </div>
                       </div>
                     </Button>
@@ -337,17 +360,22 @@ export function Footer() {
         <Divider className="border-blue-800/50 my-12" />
 
         {/* Bottom Footer */}
-        <Row justify="space-between" align="middle" className="flex-col md:flex-row space-y-4 md:space-y-0">
+        <Row
+          justify="space-between"
+          align="middle"
+          className="flex-col md:flex-row space-y-4 md:space-y-0"
+        >
           <Col>
             <Paragraph className="text-blue-300 mb-0">
-              © 2024 Hands2gether. All rights reserved. Made with ❤️ for communities worldwide.
+              © 2024 Hands2gether. All rights reserved. Made with ❤️ for
+              communities worldwide.
             </Paragraph>
           </Col>
 
           <Col>
             <Space size="large" className="flex-wrap">
               {footerLinks.legal.map((link, index) => (
-                <Link 
+                <Link
                   key={index}
                   href={link.href}
                   className="text-blue-300 hover:text-white transition-colors text-sm"
@@ -359,10 +387,7 @@ export function Footer() {
           </Col>
 
           <Col>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Button
                 type="primary"
                 shape="circle"
@@ -385,19 +410,27 @@ export function Footer() {
         >
           <Row gutter={[32, 16]} justify="center">
             <Col xs={12} sm={6} className="text-center">
-              <Title level={3} className="text-white mb-2">12,847</Title>
+              <Title level={3} className="text-white mb-2">
+                12,847
+              </Title>
               <Text className="text-blue-200">Active Members</Text>
             </Col>
             <Col xs={12} sm={6} className="text-center">
-              <Title level={3} className="text-white mb-2">8,432</Title>
+              <Title level={3} className="text-white mb-2">
+                8,432
+              </Title>
               <Text className="text-blue-200">Lives Impacted</Text>
             </Col>
             <Col xs={12} sm={6} className="text-center">
-              <Title level={3} className="text-white mb-2">2,567</Title>
+              <Title level={3} className="text-white mb-2">
+                2,567
+              </Title>
               <Text className="text-blue-200">Active Causes</Text>
             </Col>
             <Col xs={12} sm={6} className="text-center">
-              <Title level={3} className="text-white mb-2">34</Title>
+              <Title level={3} className="text-white mb-2">
+                34
+              </Title>
               <Text className="text-blue-200">Countries</Text>
             </Col>
           </Row>

@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
         <link rel="preconnect" href="https://ik.imagekit.io" />
       </head>
-      <body className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 antialiased">
+      <body style={{ minHeight: "100vh", background: "var(--color-bg)" }}>
         <SessionProvider>
           <Provider store={store}>
             <QueryClientProvider client={queryClient}>
@@ -73,29 +73,27 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 disableTransitionOnChange={false}
               >
                 <ConfigProvider theme={antdTheme}>
-                  <AntApp>
-                    <MotionConfig
-                      transition={{
-                        type: "spring",
-                        damping: 25,
-                        stiffness: 120,
-                        mass: 0.8,
-                      }}
-                      reducedMotion="user"
-                    >
-                      <div className="relative">
-                        {children}
-                        <Toaster
-                          position="top-right"
-                          theme="light"
-                          richColors
-                          closeButton
-                          duration={4000}
-                          visibleToasts={5}
-                        />
-                      </div>
-                    </MotionConfig>
-                  </AntApp>
+                  <MotionConfig
+                    transition={{
+                      type: "spring",
+                      damping: 25,
+                      stiffness: 120,
+                      mass: 0.8,
+                    }}
+                    reducedMotion="user"
+                  >
+                    <div className="relative">
+                      {children}
+                      <Toaster
+                        position="top-right"
+                        theme="light"
+                        richColors
+                        closeButton
+                        duration={4000}
+                        visibleToasts={5}
+                      />
+                    </div>
+                  </MotionConfig>
                 </ConfigProvider>
               </ThemeProvider>
               <ReactQueryDevtools

@@ -86,7 +86,7 @@ export function MainLayout({
   };
 
   return (
-    <Layout className={`min-h-screen ${className}`}>
+    <Layout className={className} style={{ minHeight: '100vh' }}>
       {/* Header */}
       <AnimatePresence mode="wait">
         {shouldShowHeader && (
@@ -111,7 +111,7 @@ export function MainLayout({
             exit="out"
             variants={pageVariants}
             transition={pageTransition}
-            className="w-full"
+            style={{ width: '100%' }}
           >
             {children}
           </motion.div>
@@ -119,8 +119,17 @@ export function MainLayout({
 
         {/* Scroll Progress Indicator */}
         <motion.div
-          className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 origin-left z-50"
-          style={{ scaleX: 0 }}
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: 'linear-gradient(90deg, var(--color-primary), #722ed1)',
+            transformOrigin: 'left',
+            zIndex: 50,
+            scaleX: 0
+          }}
           whileInView={{ scaleX: 1 }}
           viewport={{ once: false, amount: 0 }}
           transition={{ duration: 0.3 }}

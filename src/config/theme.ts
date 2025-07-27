@@ -6,32 +6,32 @@ const { defaultAlgorithm, darkAlgorithm } = theme;
 export const antdTheme: ThemeConfig = {
   algorithm: defaultAlgorithm,
   token: {
-    // Professional color palette - Microsoft/Apple/Google inspired
-    colorPrimary: "#0066CC", // Clean blue like Microsoft
-    colorSuccess: "#107C10", // Natural green
-    colorWarning: "#FF8C00", // Warm orange
-    colorError: "#D13438", // Clear red
-    colorInfo: "#0078D4", // Information blue
+    // Professional color palette
+    colorPrimary: "#2563EB",
+    colorSuccess: "#059669",
+    colorWarning: "#D97706",
+    colorError: "#DC2626",
+    colorInfo: "#0891B2",
 
-    // Typography - Modern, clean typeface
+    // Typography
     fontFamily:
-      'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontSizeHeading1: 48,
-    fontSizeHeading2: 36,
-    fontSizeHeading3: 28,
-    fontSizeHeading4: 24,
-    fontSizeHeading5: 20,
+      'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSizeHeading1: 56,
+    fontSizeHeading2: 48,
+    fontSizeHeading3: 36,
+    fontSizeHeading4: 28,
+    fontSizeHeading5: 22,
     fontSize: 16,
     fontSizeSM: 14,
-    fontSizeXL: 18,
+    fontSizeXL: 20,
 
-    // Layout - Clean borders and spacing
-    borderRadius: 8,
-    borderRadiusLG: 12,
-    borderRadiusSM: 6,
-    borderRadiusXS: 4,
+    // Layout
+    borderRadius: 12,
+    borderRadiusLG: 16,
+    borderRadiusSM: 8,
+    borderRadiusXS: 6,
 
-    // Spacing - Consistent and clean
+    // Spacing
     padding: 16,
     paddingLG: 24,
     paddingXL: 32,
@@ -41,86 +41,69 @@ export const antdTheme: ThemeConfig = {
     marginXL: 32,
     marginXS: 8,
 
-    // Controls - Professional heights
-    controlHeight: 44,
-    controlHeightSM: 36,
-    controlHeightLG: 52,
+    // Controls
+    controlHeight: 48,
+    controlHeightSM: 40,
+    controlHeightLG: 56,
 
-    // Colors - Minimal, clean palette
+    // Colors
     colorBgContainer: "#FFFFFF",
     colorBgElevated: "#FFFFFF",
-    colorBgLayout: "#FAFAFA", // Very light grey
-    colorBorder: "#E1E1E1", // Subtle borders
-    colorBorderSecondary: "#F5F5F5",
+    colorBgLayout: "#FAFAFA",
+    colorBorder: "#E5E7EB",
+    colorBorderSecondary: "#F3F4F6",
 
-    // Text - High contrast, professional
-    colorText: "#323130", // Microsoft's text color
-    colorTextSecondary: "#605E5C", // Secondary text
-    colorTextTertiary: "#8A8886", // Tertiary text
-    colorTextQuaternary: "#C8C6C4", // Quaternary text
+    // Text
+    colorText: "#111827",
+    colorTextSecondary: "#4B5563",
+    colorTextTertiary: "#6B7280",
+    colorTextQuaternary: "#9CA3AF",
 
-    // Links - Professional blue
-    colorLink: "#0066CC",
-    colorLinkHover: "#004B87",
+    // Links
+    colorLink: "#2563EB",
+    colorLinkHover: "#1D4ED8",
 
-    // Shadows - Subtle, professional
+    // Shadows
     boxShadow:
-      "0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)",
+      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     boxShadowSecondary:
-      "0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08)",
-    boxShadowTertiary:
-      "0 8px 16px rgba(0, 0, 0, 0.16), 0 4px 8px rgba(0, 0, 0, 0.12)",
+      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
   },
   components: {
     Button: {
-      borderRadius: 8,
-      controlHeight: 44,
-      fontWeight: 500,
-      primaryShadow: "0 2px 4px rgba(0, 102, 204, 0.2)",
+      borderRadius: 12,
+      controlHeight: 48,
+      fontWeight: 600,
+      primaryShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
     },
     Card: {
-      borderRadius: 12,
+      borderRadius: 16,
       headerBg: "transparent",
       bodyPadding: 24,
-      boxShadowTertiary: "0 4px 12px rgba(0, 0, 0, 0.08)",
     },
     Input: {
-      borderRadius: 8,
-      controlHeight: 44,
+      borderRadius: 12,
+      controlHeight: 48,
       paddingInline: 16,
     },
     Select: {
-      borderRadius: 8,
-      controlHeight: 44,
+      borderRadius: 12,
+      controlHeight: 48,
     },
     Modal: {
-      borderRadius: 12,
+      borderRadius: 20,
       headerBg: "transparent",
     },
     Table: {
-      borderRadius: 8,
-      headerBg: "#FAFAFA",
-      headerColor: "#323130",
+      borderRadius: 12,
+      headerBg: "#F9FAFB",
+      headerColor: "#111827",
     },
     Tabs: {
-      borderRadius: 8,
-      inkBarColor: "#0066CC",
-      itemActiveColor: "#0066CC",
-      itemHoverColor: "#004B87",
-    },
-    Menu: {
-      borderRadius: 8,
-      itemBorderRadius: 6,
-      itemActiveBg: "#F3F2F1",
-      itemSelectedBg: "#E1DFDD",
-      itemSelectedColor: "#323130",
-      itemHoverBg: "#F8F7F6",
-      subMenuItemBg: "#FFFFFF",
-      popupBg: "#FFFFFF",
-    },
-    Dropdown: {
-      borderRadius: 8,
-      boxShadowSecondary: "0 4px 12px rgba(0, 0, 0, 0.12)",
+      borderRadius: 12,
+      inkBarColor: "#2563EB",
+      itemActiveColor: "#2563EB",
+      itemHoverColor: "#1D4ED8",
     },
   },
 };
@@ -142,17 +125,16 @@ export const darkTheme: ThemeConfig = {
   },
 };
 
-// CSS variables for custom styling - refined palette
+// CSS variables for custom styling
 export const cssVariables = {
-  "--primary-gradient": "linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)",
+  "--primary-gradient": "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
   "--success-gradient": "linear-gradient(135deg, #059669 0%, #047857 100%)",
   "--warning-gradient": "linear-gradient(135deg, #D97706 0%, #B45309 100%)",
   "--error-gradient": "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
-  "--neutral-gradient": "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)",
-  "--glass-bg": "rgba(255, 255, 255, 0.9)",
-  "--glass-border": "rgba(226, 232, 240, 0.3)",
-  "--shadow-glass": "0 8px 32px 0 rgba(15, 23, 42, 0.08)",
-  "--backdrop-blur": "blur(16px)",
+  "--glass-bg": "rgba(255, 255, 255, 0.8)",
+  "--glass-border": "rgba(255, 255, 255, 0.2)",
+  "--shadow-glass": "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+  "--backdrop-blur": "blur(12px)",
 };
 
 export const getThemeConfig = (

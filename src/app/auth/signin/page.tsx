@@ -15,11 +15,11 @@ import {
   Checkbox,
 } from "antd";
 import {
-  UserOutlined,
-  LockOutlined,
-  GoogleOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiLock,
+  FiMail,
+} from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -68,7 +68,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f8ff 0%, var(--color-bg) 50%, #f8f0ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export default function SignInPage() {
               ]}
             >
               <Input
-                prefix={<MailOutlined className="text-gray-400" />}
+                prefix={<FiMail style={{ color: 'var(--color-text-muted)' }} />}
                 placeholder="Enter your email"
                 className="h-12 rounded-xl"
               />
@@ -124,7 +124,7 @@ export default function SignInPage() {
               ]}
             >
               <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+                prefix={<FiLock style={{ color: 'var(--color-text-muted)' }} />}
                 placeholder="Enter your password"
                 className="h-12 rounded-xl"
               />
@@ -164,7 +164,7 @@ export default function SignInPage() {
 
           <Button
             size="large"
-            icon={<GoogleOutlined />}
+            icon={<FcGoogle />}
             loading={googleLoading}
             onClick={handleGoogleSignIn}
             className="w-full h-12 mb-6 rounded-xl border-gray-300 hover:border-blue-400"

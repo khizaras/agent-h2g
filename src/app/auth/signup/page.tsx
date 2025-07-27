@@ -16,13 +16,13 @@ import {
   Steps,
 } from "antd";
 import {
-  UserOutlined,
-  LockOutlined,
-  GoogleOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
-} from "@ant-design/icons";
+  FiUser,
+  FiLock,
+  FiMail,
+  FiPhone,
+  FiMapPin,
+} from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
