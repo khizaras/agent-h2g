@@ -14,11 +14,7 @@ import {
   message,
   Checkbox,
 } from "antd";
-import {
-  FiUser,
-  FiLock,
-  FiMail,
-} from "react-icons/fi";
+import { FiUser, FiLock, FiMail } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -68,32 +64,32 @@ export default function SignInPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f8ff 0%, var(--color-bg) 50%, #f8f0ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+    <div className="auth-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="auth-container"
       >
         {/* Logo and Brand */}
-        <div className="text-center mb-8">
+        <div className="auth-header">
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4"
+            className="auth-logo"
           >
-            <span className="text-white text-2xl font-bold">H2G</span>
+            <span className="auth-logo-text">H2G</span>
           </motion.div>
-          <Title level={2} className="text-gray-800 mb-2">
+          <Title level={2} className="auth-title">
             Welcome Back
           </Title>
-          <Text className="text-gray-600">
+          <Text className="auth-subtitle">
             Sign in to continue making a difference
           </Text>
         </div>
 
-        <Card className="shadow-xl border-0" style={{ borderRadius: "24px" }}>
+        <Card className="auth-card">
           <Form
             name="signin"
             onFinish={onFinish}
@@ -110,9 +106,9 @@ export default function SignInPage() {
               ]}
             >
               <Input
-                prefix={<FiMail style={{ color: 'var(--color-text-muted)' }} />}
+                prefix={<FiMail className="input-icon" />}
                 placeholder="Enter your email"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -124,34 +120,31 @@ export default function SignInPage() {
               ]}
             >
               <Input.Password
-                prefix={<FiLock style={{ color: 'var(--color-text-muted)' }} />}
+                prefix={<FiLock className="input-icon" />}
                 placeholder="Enter your password"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="auth-form-row">
               <Form.Item
                 name="remember"
                 valuePropName="checked"
-                className="mb-0"
+                className="auth-checkbox"
               >
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
-              <Link
-                href="/auth/forgot-password"
-                className="text-blue-600 hover:text-blue-700"
-              >
+              <Link href="/auth/forgot-password" className="auth-link">
                 Forgot password?
               </Link>
             </div>
 
-            <Form.Item className="mb-4">
+            <Form.Item className="auth-submit">
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
-                className="w-full h-12 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 border-0"
+                className="auth-btn-primary"
               >
                 Sign In
               </Button>
@@ -167,18 +160,15 @@ export default function SignInPage() {
             icon={<FcGoogle />}
             loading={googleLoading}
             onClick={handleGoogleSignIn}
-            className="w-full h-12 mb-6 rounded-xl border-gray-300 hover:border-blue-400"
+            className="auth-btn-google"
           >
             Continue with Google
           </Button>
 
-          <div className="text-center">
+          <div className="auth-footer">
             <Text type="secondary">
               Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
+              <Link href="/auth/signup" className="auth-link">
                 Sign up
               </Link>
             </Text>
@@ -190,16 +180,16 @@ export default function SignInPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="mt-8 text-center"
+          className="auth-features"
         >
           <Space direction="vertical" size="small">
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               🤝 Connect with your community
             </Text>
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               💝 Make meaningful contributions
             </Text>
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               🌟 Track your impact
             </Text>
           </Space>

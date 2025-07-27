@@ -1,523 +1,291 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
-import mysql2 from 'mysql2';
+import mysql from "mysql2/promise";
 
-// Database configuration
-const sequelize = new Sequelize({
-  dialect: 'mysql',
-  dialectModule: mysql2,
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'hands2gether',
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
-  pool: {
-    max: 20,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
-  define: {
-    timestamps: true,
-    underscored: true,
-    freezeTableName: true,
-  },
-});
-
-// User Model
-export class User extends Model {
-  declare id: number;
-  declare name: string;
-  declare email: string;
-  declare password?: string;
-  declare avatar?: string;
-  declare bio?: string;
-  declare phone?: string;
-  declare address?: string;
-  declare isAdmin: boolean;
-  declare isVerified: boolean;
-  declare emailNotifications: boolean;
-  declare pushNotifications: boolean;
-  declare lastLogin?: Date;
-  declare readonly createdAt: Date;
-  declare readonly updatedAt: Date;
-}
-
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true,
-      },
-    },
-    password: {
-      type: DataTypes.STRING(255),
-      allowNull: true, // Nullable for OAuth users
-    },
-    avatar: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    bio: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-    },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    isAdmin: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    emailNotifications: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    pushNotifications: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    lastLogin: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'User',
-    tableName: 'users',
-    indexes: [
-      {
-        fields: ['email'],
-      },
-      {
-        fields: ['created_at'],
-      },
-    ],
-  }
-);
-
-// Category Model
-export class Category extends Model {
-  declare id: number;
-  declare name: 'food' | 'clothes' | 'education';
-  declare displayName: string;
-  declare description?: string;
-  declare icon?: string;
-  declare color?: string;
-  declare isActive: boolean;
-  declare sortOrder: number;
-  declare readonly createdAt: Date;
-}
-
-Category.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.ENUM('food', 'clothes', 'education'),
-      allowNull: false,
-      unique: true,
-    },
-    displayName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    icon: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-    },
-    color: {
-      type: DataTypes.STRING(7),
-      allowNull: true,
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    sortOrder: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Category',
-    tableName: 'categories',
-  }
-);
-
-// Cause Model
-export class Cause extends Model {
-  declare id: number;
-  declare title: string;
-  declare description: string;
-  declare shortDescription?: string;
-  declare categoryId: number;
-  declare userId: number;
-  declare location: string;
-  declare latitude?: number;
-  declare longitude?: number;
-  declare image?: string;
-  declare gallery?: string[];
-  declare status: 'active' | 'pending' | 'completed' | 'suspended' | 'archived';
-  declare priority: 'low' | 'medium' | 'high' | 'urgent';
-  declare isFeatured: boolean;
-  declare viewCount: number;
-  declare likeCount: number;
-  declare shareCount: number;
-  declare tags?: string[];
-  declare contactPhone?: string;
-  declare contactEmail?: string;
-  declare contactPerson?: string;
-  declare availabilityHours?: string;
-  declare specialInstructions?: string;
-  declare expiresAt?: Date;
-  declare completedAt?: Date;
-  declare readonly createdAt: Date;
-  declare readonly updatedAt: Date;
-}
-
-Cause.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    title: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    shortDescription: {
-      type: DataTypes.STRING(500),
-      allowNull: true,
-    },
-    categoryId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'categories',
-        key: 'id',
-      },
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    location: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    latitude: {
-      type: DataTypes.DECIMAL(10, 8),
-      allowNull: true,
-    },
-    longitude: {
-      type: DataTypes.DECIMAL(11, 8),
-      allowNull: true,
-    },
-    image: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    gallery: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    status: {
-      type: DataTypes.ENUM('active', 'pending', 'completed', 'suspended', 'archived'),
-      defaultValue: 'pending',
-    },
-    priority: {
-      type: DataTypes.ENUM('low', 'medium', 'high', 'urgent'),
-      defaultValue: 'medium',
-    },
-    isFeatured: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    viewCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    likeCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    shareCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    tags: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    contactPhone: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-    },
-    contactEmail: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    contactPerson: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    availabilityHours: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    specialInstructions: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    expiresAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    completedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Cause',
-    tableName: 'causes',
-    indexes: [
-      {
-        fields: ['category_id'],
-      },
-      {
-        fields: ['user_id'],
-      },
-      {
-        fields: ['status'],
-      },
-      {
-        fields: ['latitude', 'longitude'],
-      },
-      {
-        fields: ['created_at'],
-      },
-      {
-        type: 'FULLTEXT',
-        fields: ['title', 'description'],
-      },
-    ],
-  }
-);
-
-// Food Details Model
-export class FoodDetails extends Model {
-  declare id: number;
-  declare causeId: number;
-  declare foodType: 'perishable' | 'non-perishable' | 'prepared' | 'raw' | 'beverages' | 'snacks';
-  declare cuisineType?: string;
-  declare quantity: number;
-  declare unit: 'kg' | 'lbs' | 'servings' | 'portions' | 'items' | 'packages';
-  declare servingSize?: number;
-  declare dietaryRestrictions?: string[];
-  declare allergens?: string[];
-  declare expirationDate?: Date;
-  declare preparationDate?: Date;
-  declare storageRequirements?: string;
-  declare temperatureRequirements: 'frozen' | 'refrigerated' | 'room-temp' | 'hot';
-  declare pickupInstructions?: string;
-  declare deliveryAvailable: boolean;
-  declare deliveryRadius?: number;
-  declare isUrgent: boolean;
-  declare nutritionalInfo?: Record<string, any>;
-  declare ingredients?: string;
-  declare packagingDetails?: string;
-  declare halal: boolean;
-  declare kosher: boolean;
-  declare organic: boolean;
-  declare readonly createdAt: Date;
-}
-
-FoodDetails.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    causeId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true,
-      references: {
-        model: 'causes',
-        key: 'id',
-      },
-    },
-    foodType: {
-      type: DataTypes.ENUM('perishable', 'non-perishable', 'prepared', 'raw', 'beverages', 'snacks'),
-      allowNull: false,
-    },
-    cuisineType: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    unit: {
-      type: DataTypes.ENUM('kg', 'lbs', 'servings', 'portions', 'items', 'packages'),
-      defaultValue: 'servings',
-    },
-    servingSize: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    dietaryRestrictions: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    allergens: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    expirationDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    preparationDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    storageRequirements: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    temperatureRequirements: {
-      type: DataTypes.ENUM('frozen', 'refrigerated', 'room-temp', 'hot'),
-      defaultValue: 'room-temp',
-    },
-    pickupInstructions: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    deliveryAvailable: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    deliveryRadius: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    isUrgent: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    nutritionalInfo: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    ingredients: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    packagingDetails: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    halal: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    kosher: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    organic: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'FoodDetails',
-    tableName: 'food_details',
-    indexes: [
-      {
-        fields: ['food_type'],
-      },
-      {
-        fields: ['expiration_date'],
-      },
-      {
-        fields: ['is_urgent'],
-      },
-    ],
-  }
-);
-
-// Define associations
-User.hasMany(Cause, { foreignKey: 'userId', as: 'causes' });
-Cause.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-
-Category.hasMany(Cause, { foreignKey: 'categoryId', as: 'causes' });
-Cause.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
-
-Cause.hasOne(FoodDetails, { foreignKey: 'causeId', as: 'foodDetails' });
-FoodDetails.belongsTo(Cause, { foreignKey: 'causeId', as: 'cause' });
-
-// Database connection and initialization
-export const connectDB = async (): Promise<void> => {
-  try {
-    await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
-    
-    if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database models synchronized.');
-    }
-  } catch (error) {
-    console.error('❌ Unable to connect to the database:', error);
-    throw error;
-  }
+// Database connection configuration
+const dbConfig = {
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "next_h2g",
+  port: parseInt(process.env.DB_PORT || "3306"),
+  charset: "utf8mb4",
+  supportBigNumbers: true,
+  bigNumberStrings: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 };
 
-export { sequelize };
-export default sequelize;
+// Create connection pool
+const pool = mysql.createPool(dbConfig);
+
+// Database helper class
+export class Database {
+  private static pool = pool;
+
+  // Get connection from pool
+  static async getConnection() {
+    return await this.pool.getConnection();
+  }
+
+  // Execute query with automatic connection handling
+  static async query(sql: string, params: any[] = []) {
+    const connection = await this.getConnection();
+    try {
+      const [rows] = await connection.execute(sql, params);
+      return rows;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Execute transaction
+  static async transaction(callback: (connection: any) => Promise<any>) {
+    const connection = await this.getConnection();
+    try {
+      await connection.beginTransaction();
+      const result = await callback(connection);
+      await connection.commit();
+      return result;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Health check
+  static async healthCheck() {
+    try {
+      await this.query("SELECT 1");
+      return { status: "healthy", timestamp: new Date().toISOString() };
+    } catch (error) {
+      return {
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+}
+
+// User service
+export class UserService {
+  static async findByEmail(email: string) {
+    const result = (await Database.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email],
+    )) as any[];
+    return result[0] || null;
+  }
+
+  static async findById(id: number) {
+    const result = (await Database.query("SELECT * FROM users WHERE id = ?", [
+      id,
+    ])) as any[];
+    return result[0] || null;
+  }
+
+  static async create(userData: {
+    name: string;
+    email: string;
+    password?: string;
+    avatar?: string;
+    isVerified?: boolean;
+  }) {
+    const {
+      name,
+      email,
+      password = null,
+      avatar = null,
+      isVerified = false,
+    } = userData;
+
+    const result = (await Database.query(
+      `INSERT INTO users (name, email, password, avatar, is_verified, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+      [name, email, password, avatar, isVerified],
+    )) as any;
+
+    return {
+      id: result.insertId,
+      name,
+      email,
+      avatar,
+      isVerified,
+      isAdmin: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  static async update(id: number, data: any) {
+    const fields = [];
+    const values = [];
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        // Convert camelCase to snake_case for database fields
+        const dbField = key.replace(
+          /[A-Z]/g,
+          (letter) => `_${letter.toLowerCase()}`,
+        );
+        fields.push(`${dbField} = ?`);
+        values.push(value);
+      }
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+
+    await Database.query(
+      `UPDATE users SET ${fields.join(", ")}, updated_at = NOW() WHERE id = ?`,
+      values,
+    );
+
+    return await this.findById(id);
+  }
+
+  static async updateLastLogin(id: number) {
+    await Database.query("UPDATE users SET last_login = NOW() WHERE id = ?", [
+      id,
+    ]);
+  }
+}
+
+// Account service for NextAuth
+export class AccountService {
+  static async create(accountData: {
+    userId: number;
+    type: string;
+    provider: string;
+    providerAccountId: string;
+    refreshToken?: string;
+    accessToken?: string;
+    expiresAt?: number;
+    tokenType?: string;
+    scope?: string;
+    idToken?: string;
+    sessionState?: string;
+  }) {
+    const {
+      userId,
+      type,
+      provider,
+      providerAccountId,
+      refreshToken = null,
+      accessToken = null,
+      expiresAt = null,
+      tokenType = null,
+      scope = null,
+      idToken = null,
+      sessionState = null,
+    } = accountData;
+
+    const id = `${provider}_${providerAccountId}_${Date.now()}`;
+
+    await Database.query(
+      `INSERT INTO accounts (id, user_id, type, provider, provider_account_id, 
+       refresh_token, access_token, expires_at, token_type, scope, id_token, session_state)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        userId,
+        type,
+        provider,
+        providerAccountId,
+        refreshToken,
+        accessToken,
+        expiresAt,
+        tokenType,
+        scope,
+        idToken,
+        sessionState,
+      ],
+    );
+
+    return { id, userId, type, provider, providerAccountId };
+  }
+
+  static async findByProvider(provider: string, providerAccountId: string) {
+    const result = (await Database.query(
+      "SELECT * FROM accounts WHERE provider = ? AND provider_account_id = ?",
+      [provider, providerAccountId],
+    )) as any[];
+    return result[0] || null;
+  }
+}
+
+// Session service for NextAuth
+export class SessionService {
+  static async create(sessionData: {
+    sessionToken: string;
+    userId: number;
+    expires: Date;
+  }) {
+    const { sessionToken, userId, expires } = sessionData;
+    const id = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    await Database.query(
+      "INSERT INTO sessions (id, session_token, user_id, expires) VALUES (?, ?, ?, ?)",
+      [id, sessionToken, userId, expires],
+    );
+
+    return { id, sessionToken, userId, expires };
+  }
+
+  static async findByToken(sessionToken: string) {
+    const result = (await Database.query(
+      "SELECT * FROM sessions WHERE session_token = ?",
+      [sessionToken],
+    )) as any[];
+    return result[0] || null;
+  }
+
+  static async update(sessionToken: string, data: any) {
+    const { expires } = data;
+    await Database.query(
+      "UPDATE sessions SET expires = ? WHERE session_token = ?",
+      [expires, sessionToken],
+    );
+  }
+
+  static async delete(sessionToken: string) {
+    await Database.query("DELETE FROM sessions WHERE session_token = ?", [
+      sessionToken,
+    ]);
+  }
+}
+
+// Verification token service for NextAuth
+export class VerificationTokenService {
+  static async create(data: {
+    identifier: string;
+    token: string;
+    expires: Date;
+  }) {
+    const { identifier, token, expires } = data;
+    await Database.query(
+      "INSERT INTO verificationtokens (identifier, token, expires) VALUES (?, ?, ?)",
+      [identifier, token, expires],
+    );
+    return { identifier, token, expires };
+  }
+
+  static async findByToken(token: string) {
+    const result = (await Database.query(
+      "SELECT * FROM verificationtokens WHERE token = ?",
+      [token],
+    )) as any[];
+    return result[0] || null;
+  }
+
+  static async delete(identifier: string, token: string) {
+    await Database.query(
+      "DELETE FROM verificationtokens WHERE identifier = ? AND token = ?",
+      [identifier, token],
+    );
+  }
+}
+
+export default Database;

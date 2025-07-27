@@ -15,13 +15,15 @@ import {
   Checkbox,
   Steps,
 } from "antd";
+import { FiUser, FiLock, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import {
-  FiUser,
-  FiLock,
-  FiMail,
-  FiPhone,
-  FiMapPin,
-} from "react-icons/fi";
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  LockOutlined,
+  GoogleOutlined,
+} from "@ant-design/icons";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -128,9 +130,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input
-                prefix={<UserOutlined className="text-gray-400" />}
+                prefix={<UserOutlined className="input-icon" />}
                 placeholder="Enter your first name"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -142,9 +144,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input
-                prefix={<UserOutlined className="text-gray-400" />}
+                prefix={<UserOutlined className="input-icon" />}
                 placeholder="Enter your last name"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
           </>
@@ -162,9 +164,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input
-                prefix={<MailOutlined className="text-gray-400" />}
+                prefix={<MailOutlined className="input-icon" />}
                 placeholder="Enter your email"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -176,9 +178,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input
-                prefix={<PhoneOutlined className="text-gray-400" />}
+                prefix={<PhoneOutlined className="input-icon" />}
                 placeholder="Enter your phone number"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -190,9 +192,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input
-                prefix={<EnvironmentOutlined className="text-gray-400" />}
+                prefix={<EnvironmentOutlined className="input-icon" />}
                 placeholder="City, State"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
           </>
@@ -210,9 +212,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+                prefix={<LockOutlined className="input-icon" />}
                 placeholder="Create a password"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -233,9 +235,9 @@ export default function SignUpPage() {
               ]}
             >
               <Input.Password
-                prefix={<LockOutlined className="text-gray-400" />}
+                prefix={<LockOutlined className="input-icon" />}
                 placeholder="Confirm your password"
-                className="h-12 rounded-xl"
+                className="auth-input"
               />
             </Form.Item>
 
@@ -255,17 +257,11 @@ export default function SignUpPage() {
             >
               <Checkbox>
                 I agree to the{" "}
-                <Link
-                  href="/terms"
-                  className="text-blue-600 hover:text-blue-700"
-                >
+                <Link href="/terms" className="auth-link">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link
-                  href="/privacy"
-                  className="text-blue-600 hover:text-blue-700"
-                >
+                <Link href="/privacy" className="auth-link">
                   Privacy Policy
                 </Link>
               </Checkbox>
@@ -285,33 +281,33 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="auth-page">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-lg"
+        className="auth-container auth-container-wide"
       >
         {/* Logo and Brand */}
-        <div className="text-center mb-8">
+        <div className="auth-header">
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4"
+            className="auth-logo"
           >
-            <span className="text-white text-2xl font-bold">H2G</span>
+            <span className="auth-logo-text">H2G</span>
           </motion.div>
-          <Title level={2} className="text-gray-800 mb-2">
+          <Title level={2} className="auth-title">
             Join Our Community
           </Title>
-          <Text className="text-gray-600">Start making a difference today</Text>
+          <Text className="auth-subtitle">Start making a difference today</Text>
         </div>
 
-        <Card className="shadow-xl border-0" style={{ borderRadius: "24px" }}>
+        <Card className="auth-card">
           {/* Progress Steps */}
-          <div className="mb-8">
-            <Steps current={currentStep} size="small" className="mb-4">
+          <div className="auth-steps">
+            <Steps current={currentStep} size="small" className="signup-steps">
               {steps.map((step, index) => (
                 <Step
                   key={index}
@@ -333,9 +329,13 @@ export default function SignUpPage() {
           >
             {renderStepContent()}
 
-            <div className="flex justify-between mt-8">
+            <div className="auth-form-navigation">
               {currentStep > 0 && (
-                <Button size="large" onClick={prevStep} className="rounded-xl">
+                <Button
+                  size="large"
+                  onClick={prevStep}
+                  className="auth-btn-secondary"
+                >
                   Previous
                 </Button>
               )}
@@ -345,7 +345,7 @@ export default function SignUpPage() {
                   type="primary"
                   size="large"
                   onClick={nextStep}
-                  className="ml-auto rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 border-0"
+                  className="auth-btn-primary auth-btn-next"
                 >
                   Next
                 </Button>
@@ -355,7 +355,7 @@ export default function SignUpPage() {
                   htmlType="submit"
                   loading={loading}
                   size="large"
-                  className="ml-auto rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 border-0"
+                  className="auth-btn-primary auth-btn-next"
                 >
                   Create Account
                 </Button>
@@ -371,23 +371,20 @@ export default function SignUpPage() {
 
               <Button
                 size="large"
-                icon={<GoogleOutlined />}
+                icon={<FcGoogle />}
                 loading={googleLoading}
                 onClick={handleGoogleSignUp}
-                className="w-full h-12 mb-6 rounded-xl border-gray-300 hover:border-blue-400"
+                className="auth-btn-google"
               >
                 Continue with Google
               </Button>
             </>
           )}
 
-          <div className="text-center">
+          <div className="auth-footer">
             <Text type="secondary">
               Already have an account?{" "}
-              <Link
-                href="/auth/signin"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
+              <Link href="/auth/signin" className="auth-link">
                 Sign in
               </Link>
             </Text>
@@ -399,16 +396,16 @@ export default function SignUpPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="mt-8 text-center"
+          className="auth-features"
         >
           <Space direction="vertical" size="small">
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               🚀 Create and share causes
             </Text>
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               💰 Secure donation processing
             </Text>
-            <Text type="secondary" className="text-sm">
+            <Text type="secondary" className="auth-feature-text">
               📊 Track your impact
             </Text>
           </Space>
