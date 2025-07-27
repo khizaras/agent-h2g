@@ -9,21 +9,14 @@ import {
   Progress,
   Space,
   Tag,
-  Divider,
   Row,
   Col,
   Modal,
   Input,
   message,
   Avatar,
-  List,
   Tabs,
-  Timeline,
-  Statistic,
-  Badge,
-  Tooltip,
   Breadcrumb,
-  Affix,
 } from "antd";
 import {
   HeartOutlined,
@@ -32,7 +25,6 @@ import {
   CalendarOutlined,
   EnvironmentOutlined,
   UserOutlined,
-  DollarOutlined,
   BookOutlined,
   MessageOutlined,
   LikeOutlined,
@@ -41,10 +33,8 @@ import {
   ClockCircleOutlined,
   EyeOutlined,
   SafetyCertificateOutlined,
-  PhoneOutlined,
-  MailOutlined,
 } from "@ant-design/icons";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { unsplashImages } from "@/services/unsplashService";
@@ -234,25 +224,6 @@ const mockCause: Cause = {
   ],
 };
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
-  },
-};
-
-const staggerChildren = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
 
 export default function CauseDetailsPage() {
   const params = useParams();
@@ -302,7 +273,7 @@ export default function CauseDetailsPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="page-container" style={{ padding: "80px 0", textAlign: "center" }}>
+        <div className="modern-loading">
           <Text>Loading cause details...</Text>
         </div>
       </MainLayout>
@@ -312,9 +283,9 @@ export default function CauseDetailsPage() {
   if (!cause) {
     return (
       <MainLayout>
-        <div className="page-container" style={{ padding: "80px 0", textAlign: "center" }}>
+        <div className="modern-not-found">
           <Title level={2}>Cause not found</Title>
-          <Button type="primary" onClick={() => router.push("/causes")}>
+          <Button type="primary" onClick={() => router.push("/causes")} className="modern-btn-primary">
             Back to Causes
           </Button>
         </div>
@@ -330,8 +301,8 @@ export default function CauseDetailsPage() {
       key: "1",
       label: "Story",
       children: (
-        <div>
-          <Paragraph className="cause-details-description">
+        <div className="story-content">
+          <Paragraph className="story-description">
             {cause.detailedDescription}
           </Paragraph>
         </div>
@@ -341,9 +312,9 @@ export default function CauseDetailsPage() {
       key: "2",
       label: `Updates (${cause.updates.length})`,
       children: (
-        <div>
+        <div className="updates-content">
           {cause.updates.map((update) => (
-            <div key={update.id} className="update-item">
+            <div key={update.id} className="modern-update-item">
               <div className="update-header">
                 <Title level={4} className="update-title">
                   {update.title}
@@ -351,9 +322,9 @@ export default function CauseDetailsPage() {
                 <div className="update-meta">
                   <Space>
                     <UserOutlined />
-                    <Text>{update.author}</Text>
+                    <span>{update.author}</span>
                     <CalendarOutlined />
-                    <Text>{formatDate(update.date)}</Text>
+                    <span>{formatDate(update.date)}</span>
                   </Space>
                 </div>
               </div>
@@ -378,33 +349,32 @@ export default function CauseDetailsPage() {
       key: "3",
       label: `Comments (${cause.comments.length})`,
       children: (
-        <div className="comments-section">
+        <div className="comments-content">
           {cause.comments.map((comment) => (
-            <div key={comment.id} className="comment-item">
+            <div key={comment.id} className="modern-comment-item">
               <div className="comment-header">
-                <Avatar src={comment.avatar} icon={<UserOutlined />} />
-                <div>
-                  <Text className="comment-author">{comment.author}</Text>
-                  <Text className="comment-date"> • {formatDate(comment.date)}</Text>
+                <Avatar src={comment.avatar} icon={<UserOutlined />} size={40} />
+                <div className="comment-author-info">
+                  <div className="comment-author">{comment.author}</div>
+                  <div className="comment-date">{formatDate(comment.date)}</div>
                 </div>
               </div>
               <Paragraph className="comment-content">
                 {comment.content}
               </Paragraph>
               <div className="comment-actions">
-                <div className="comment-like">
-                  <LikeOutlined />
-                  <Text>{comment.likes}</Text>
-                </div>
-                <Text className="comment-reply">Reply</Text>
+                <Button size="small" icon={<LikeOutlined />} className="like-btn">
+                  {comment.likes}
+                </Button>
+                <Button size="small" className="reply-btn">Reply</Button>
               </div>
               {comment.replies?.map((reply) => (
-                <div key={reply.id} className="reply-item">
+                <div key={reply.id} className="modern-reply-item">
                   <div className="comment-header">
-                    <Avatar icon={<UserOutlined />} size="small" />
-                    <div>
-                      <Text className="comment-author">{reply.author}</Text>
-                      <Text className="comment-date"> • {formatDate(reply.date)}</Text>
+                    <Avatar icon={<UserOutlined />} size={32} />
+                    <div className="comment-author-info">
+                      <div className="comment-author">{reply.author}</div>
+                      <div className="comment-date">{formatDate(reply.date)}</div>
                     </div>
                   </div>
                   <Paragraph className="comment-content">
@@ -421,155 +391,140 @@ export default function CauseDetailsPage() {
 
   return (
     <MainLayout>
-      <div className="page-container">
+      <div className="modern-cause-details-page">
         {/* Hero Section */}
-        <section className="cause-details-hero">
-          <div className="cause-details-bg">
+        <section className="modern-cause-hero">
+          <div className="hero-background">
             <img src={cause.imageUrl} alt={cause.title} />
+            <div className="hero-overlay" />
           </div>
-          <div className="cause-details-overlay" />
           
-          <div className="cause-details-content">
+          <div className="container">
             <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerChildren}
-              className="cause-details-container"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="hero-content"
             >
-              <motion.div variants={fadeInUp}>
-                <Breadcrumb className="cause-breadcrumb">
-                  <Breadcrumb.Item>
-                    <Link href="/">
-                      <HomeOutlined /> Home
-                    </Link>
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item>
-                    <Link href="/causes">Causes</Link>
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item>{cause.category}</Breadcrumb.Item>
-                </Breadcrumb>
-              </motion.div>
+              <Breadcrumb className="modern-breadcrumb">
+                <Breadcrumb.Item>
+                  <Link href="/">
+                    <HomeOutlined /> Home
+                  </Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link href="/causes">Causes</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>{cause.category}</Breadcrumb.Item>
+              </Breadcrumb>
 
-              <motion.div variants={fadeInUp}>
-                <div className="cause-tags">
-                  <Tag 
-                    className="cause-tag-urgency"
-                    style={{ backgroundColor: getUrgencyColor(cause.urgencyLevel) }}
-                  >
-                    {cause.urgencyLevel.toUpperCase()} PRIORITY
+              <div className="hero-tags">
+                <Tag 
+                  className={`urgency-tag urgency-${cause.urgencyLevel}`}
+                  style={{ backgroundColor: getUrgencyColor(cause.urgencyLevel) }}
+                >
+                  {cause.urgencyLevel.toUpperCase()} PRIORITY
+                </Tag>
+                <Tag className="category-tag">{cause.category}</Tag>
+                {cause.verified && (
+                  <Tag className="verified-tag">
+                    <CheckCircleOutlined /> Verified
                   </Tag>
-                  <Tag color="blue">{cause.category}</Tag>
-                  {cause.verified && (
-                    <Tag color="green">
-                      <CheckCircleOutlined /> Verified
-                    </Tag>
-                  )}
+                )}
+              </div>
+
+              <Title level={1} className="hero-title">
+                {cause.title}
+              </Title>
+
+              <div className="hero-meta">
+                <div className="meta-item">
+                  <EnvironmentOutlined />
+                  <span>{cause.location}</span>
                 </div>
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <Title level={1} className="cause-details-title">
-                  {cause.title}
-                </Title>
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <div className="cause-details-meta">
-                  <div className="cause-meta-item">
-                    <EnvironmentOutlined />
-                    <Text>{cause.location}</Text>
-                  </div>
-                  <div className="cause-meta-item">
-                    <CalendarOutlined />
-                    <Text>Created {formatDate(cause.createdAt)}</Text>
-                  </div>
-                  {cause.deadline && (
-                    <div className="cause-meta-item">
-                      <ClockCircleOutlined />
-                      <Text>{daysLeft} days left</Text>
-                    </div>
-                  )}
-                  <div className="cause-meta-item">
-                    <EyeOutlined />
-                    <Text>{cause.contributors.length} supporters</Text>
-                  </div>
+                <div className="meta-item">
+                  <CalendarOutlined />
+                  <span>Created {formatDate(cause.createdAt)}</span>
                 </div>
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <Paragraph className="cause-details-description">
-                  {cause.description}
-                </Paragraph>
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <div className="cause-details-actions">
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<HeartOutlined />}
-                    onClick={() => setDonateModalVisible(true)}
-                    className="cause-action-primary"
-                  >
-                    Donate Now
-                  </Button>
-                  <Button
-                    size="large"
-                    icon={<ShareAltOutlined />}
-                    className="cause-action-secondary"
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    size="large"
-                    icon={<TeamOutlined />}
-                    className="cause-action-secondary"
-                  >
-                    Volunteer
-                  </Button>
+                {cause.deadline && (
+                  <div className="meta-item">
+                    <ClockCircleOutlined />
+                    <span>{daysLeft} days left</span>
+                  </div>
+                )}
+                <div className="meta-item">
+                  <EyeOutlined />
+                  <span>{cause.contributors.length} supporters</span>
                 </div>
-              </motion.div>
+              </div>
+
+              <Paragraph className="hero-description">
+                {cause.description}
+              </Paragraph>
+
+              <div className="hero-actions">
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<HeartOutlined />}
+                  onClick={() => setDonateModalVisible(true)}
+                  className="modern-btn-primary"
+                >
+                  Donate Now
+                </Button>
+                <Button
+                  size="large"
+                  icon={<ShareAltOutlined />}
+                  className="modern-btn-secondary"
+                >
+                  Share
+                </Button>
+                <Button
+                  size="large"
+                  icon={<TeamOutlined />}
+                  className="modern-btn-secondary"
+                >
+                  Volunteer
+                </Button>
+              </div>
             </motion.div>
           </div>
         </section>
 
         {/* Main Content */}
-        <section className="cause-main-content">
-          <div className="page-content-container">
-            <Row gutter={[32, 32]}>
+        <section className="modern-content-section">
+          <div className="container">
+            <Row gutter={[40, 40]}>
               <Col xs={24} lg={16}>
                 <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  variants={staggerChildren}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  {/* Content Tabs */}
-                  <motion.div variants={fadeInUp}>
-                    <Tabs
-                      activeKey={activeTab}
-                      onChange={setActiveTab}
-                      items={tabItems}
-                      className="cause-content-tabs"
-                      size="large"
-                    />
-                  </motion.div>
+                  <Tabs
+                    activeKey={activeTab}
+                    onChange={setActiveTab}
+                    items={tabItems}
+                    className="modern-content-tabs"
+                    size="large"
+                  />
                 </motion.div>
               </Col>
 
               <Col xs={24} lg={8}>
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  variants={staggerChildren}
-                >
+                <div className="sidebar">
                   {/* Progress Card */}
-                  <motion.div variants={fadeInUp}>
-                    <Card className="cause-progress-card">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                  >
+                    <Card className="modern-progress-card">
                       <div className="progress-header">
-                        <div className="progress-amount">
+                        <div className="raised-amount">
                           ${cause.raisedAmount.toLocaleString()}
                         </div>
-                        <div className="progress-goal">
+                        <div className="goal-amount">
                           raised of ${cause.goalAmount.toLocaleString()} goal
                         </div>
                       </div>
@@ -577,42 +532,41 @@ export default function CauseDetailsPage() {
                       <Progress
                         percent={progressPercentage}
                         showInfo={false}
-                        strokeColor={{
-                          "0%": "#40a9ff",
-                          "100%": "#1890ff",
-                        }}
-                        className="progress-bar-large"
+                        strokeColor="#52c41a"
+                        className="modern-progress-bar"
                       />
 
                       <div className="progress-stats">
-                        <div className="progress-stat">
-                          <div className="progress-stat-value">{progressPercentage}%</div>
-                          <div className="progress-stat-label">Funded</div>
+                        <div className="stat-item">
+                          <div className="stat-value">{progressPercentage}%</div>
+                          <div className="stat-label">Funded</div>
                         </div>
-                        <div className="progress-stat">
-                          <div className="progress-stat-value">{cause.contributors.length}</div>
-                          <div className="progress-stat-label">Supporters</div>
+                        <div className="stat-item">
+                          <div className="stat-value">{cause.contributors.length}</div>
+                          <div className="stat-label">Supporters</div>
                         </div>
-                        <div className="progress-stat">
-                          <div className="progress-stat-value">{daysLeft || 0}</div>
-                          <div className="progress-stat-label">Days Left</div>
+                        <div className="stat-item">
+                          <div className="stat-value">{daysLeft || 0}</div>
+                          <div className="stat-label">Days Left</div>
                         </div>
                       </div>
 
                       <Button
                         type="primary"
+                        size="large"
                         icon={<HeartOutlined />}
                         onClick={() => setDonateModalVisible(true)}
-                        className="donate-button"
+                        className="modern-btn-primary"
+                        block
                       >
                         Donate Now
                       </Button>
 
-                      <div className="share-buttons">
-                        <Button icon={<ShareAltOutlined />} className="share-button">
+                      <div className="secondary-actions">
+                        <Button icon={<ShareAltOutlined />} className="action-btn">
                           Share
                         </Button>
-                        <Button icon={<BookOutlined />} className="share-button">
+                        <Button icon={<BookOutlined />} className="action-btn">
                           Save
                         </Button>
                       </div>
@@ -620,14 +574,17 @@ export default function CauseDetailsPage() {
                   </motion.div>
 
                   {/* Creator Card */}
-                  <motion.div variants={fadeInUp}>
-                    <Card className="creator-card">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  >
+                    <Card className="modern-creator-card">
                       <div className="creator-header">
                         <Avatar
-                          size={64}
+                          size={60}
                           src={cause.creator.avatar}
                           icon={<UserOutlined />}
-                          className="creator-avatar"
                         />
                         <div className="creator-info">
                           <div className="creator-name">{cause.creator.name}</div>
@@ -641,19 +598,19 @@ export default function CauseDetailsPage() {
                         {cause.creator.bio}
                       </Paragraph>
 
-                      <div className="creator-badges">
-                        {cause.creator.verified && (
-                          <Tag color="green">
+                      {cause.creator.verified && (
+                        <div className="creator-badge">
+                          <Tag className="verified-creator-tag">
                             <SafetyCertificateOutlined /> Verified Creator
                           </Tag>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
-                      <div className="creator-contact">
-                        <Button icon={<MessageOutlined />} className="contact-button">
+                      <div className="creator-actions">
+                        <Button icon={<MessageOutlined />} className="creator-btn">
                           Message
                         </Button>
-                        <Button icon={<UserOutlined />} className="contact-button">
+                        <Button icon={<UserOutlined />} className="creator-btn">
                           Profile
                         </Button>
                       </div>
@@ -661,38 +618,47 @@ export default function CauseDetailsPage() {
                   </motion.div>
 
                   {/* Recent Contributors */}
-                  <motion.div variants={fadeInUp}>
-                    <Card className="contributors-list">
-                      <Title level={4} style={{ marginBottom: "20px" }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.5 }}
+                  >
+                    <Card className="modern-contributors-card">
+                      <Title level={4} className="contributors-title">
                         Recent Supporters ({cause.contributors.length})
                       </Title>
-                      {cause.contributors.map((contributor) => (
-                        <div key={contributor.id} className="contributor-item">
-                          <div className="contributor-header">
-                            <div className="contributor-info">
+                      <div className="contributors-list">
+                        {cause.contributors.map((contributor) => (
+                          <div key={contributor.id} className="contributor-item">
+                            <div className="contributor-main">
                               <Avatar
                                 src={contributor.avatar}
                                 icon={<UserOutlined />}
-                                size="small"
+                                size={32}
                               />
-                              <Text className="contributor-name">
-                                {contributor.anonymous ? "Anonymous" : contributor.name}
-                              </Text>
+                              <div className="contributor-info">
+                                <div className="contributor-name">
+                                  {contributor.anonymous ? "Anonymous" : contributor.name}
+                                </div>
+                                <div className="contribution-date">
+                                  {formatDate(contributor.date)}
+                                </div>
+                              </div>
+                              <div className="contribution-amount">
+                                ${contributor.amount.toLocaleString()}
+                              </div>
                             </div>
-                            <Text className="contributor-amount">
-                              ${contributor.amount.toLocaleString()}
-                            </Text>
+                            {contributor.message && (
+                              <div className="contributor-message">
+                                "{contributor.message}"
+                              </div>
+                            )}
                           </div>
-                          {contributor.message && (
-                            <div className="contributor-message">
-                              "{contributor.message}"
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </Card>
                   </motion.div>
-                </motion.div>
+                </div>
               </Col>
             </Row>
           </div>
@@ -706,24 +672,26 @@ export default function CauseDetailsPage() {
           onCancel={() => setDonateModalVisible(false)}
           okText="Donate"
           cancelText="Cancel"
+          className="modern-donation-modal"
         >
-          <div style={{ padding: "20px 0" }}>
-            <Text>How much would you like to donate?</Text>
+          <div className="donation-content">
+            <Text className="donation-label">How much would you like to donate?</Text>
             <Input
               size="large"
               placeholder="Enter amount"
               prefix="$"
               value={donateAmount}
               onChange={(e) => setDonateAmount(e.target.value)}
-              style={{ marginTop: "12px" }}
+              className="donation-input"
             />
-            <div style={{ marginTop: "16px" }}>
+            <div className="preset-amounts">
               <Space wrap>
                 {[25, 50, 100, 250].map((amount) => (
                   <Button
                     key={amount}
                     onClick={() => setDonateAmount(amount.toString())}
                     type={donateAmount === amount.toString() ? "primary" : "default"}
+                    className="preset-amount-btn"
                   >
                     ${amount}
                   </Button>

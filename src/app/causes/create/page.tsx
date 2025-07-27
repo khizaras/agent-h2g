@@ -41,6 +41,9 @@ import {
   LeftOutlined,
   CheckCircleOutlined,
   WarningOutlined,
+  MailOutlined,
+  GlobalOutlined,
+  PhoneOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -86,18 +89,82 @@ interface CauseFormData {
 }
 
 const categories = [
-  { value: "emergency-relief", label: "Emergency Relief", subcategories: ["Natural Disasters", "Medical Emergencies", "Crisis Response"] },
-  { value: "food-security", label: "Food Security", subcategories: ["Food Banks", "Community Gardens", "Nutrition Programs", "School Meals"] },
-  { value: "education", label: "Education", subcategories: ["School Supplies", "Scholarships", "Literacy Programs", "Digital Access"] },
-  { value: "healthcare", label: "Healthcare", subcategories: ["Medical Equipment", "Mental Health", "Wellness Programs", "Healthcare Access"] },
-  { value: "environment", label: "Environment", subcategories: ["Clean Energy", "Conservation", "Sustainability", "Climate Action"] },
-  { value: "community", label: "Community Development", subcategories: ["Infrastructure", "Housing", "Public Spaces", "Transportation"] },
+  {
+    value: "emergency-relief",
+    label: "Emergency Relief",
+    subcategories: [
+      "Natural Disasters",
+      "Medical Emergencies",
+      "Crisis Response",
+    ],
+  },
+  {
+    value: "food-security",
+    label: "Food Security",
+    subcategories: [
+      "Food Banks",
+      "Community Gardens",
+      "Nutrition Programs",
+      "School Meals",
+    ],
+  },
+  {
+    value: "education",
+    label: "Education",
+    subcategories: [
+      "School Supplies",
+      "Scholarships",
+      "Literacy Programs",
+      "Digital Access",
+    ],
+  },
+  {
+    value: "healthcare",
+    label: "Healthcare",
+    subcategories: [
+      "Medical Equipment",
+      "Mental Health",
+      "Wellness Programs",
+      "Healthcare Access",
+    ],
+  },
+  {
+    value: "environment",
+    label: "Environment",
+    subcategories: [
+      "Clean Energy",
+      "Conservation",
+      "Sustainability",
+      "Climate Action",
+    ],
+  },
+  {
+    value: "community",
+    label: "Community Development",
+    subcategories: [
+      "Infrastructure",
+      "Housing",
+      "Public Spaces",
+      "Transportation",
+    ],
+  },
 ];
 
 const skillsOptions = [
-  "Web Development", "Graphic Design", "Marketing", "Photography", "Writing",
-  "Event Planning", "Legal Advice", "Financial Planning", "Social Media",
-  "Translation", "Teaching", "Carpentry", "Plumbing", "Electrical Work"
+  "Web Development",
+  "Graphic Design",
+  "Marketing",
+  "Photography",
+  "Writing",
+  "Event Planning",
+  "Legal Advice",
+  "Financial Planning",
+  "Social Media",
+  "Translation",
+  "Teaching",
+  "Carpentry",
+  "Plumbing",
+  "Electrical Work",
 ];
 
 export default function CreateCausePage() {
@@ -127,7 +194,7 @@ export default function CreateCausePage() {
     },
     {
       title: "Details",
-      description: "Category and description", 
+      description: "Category and description",
       icon: <FileTextOutlined />,
     },
     {
@@ -165,8 +232,8 @@ export default function CreateCausePage() {
     setLoading(true);
     try {
       // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       message.success("Your cause has been created successfully!");
       router.push("/profile");
     } catch (error) {
@@ -184,7 +251,7 @@ export default function CreateCausePage() {
   };
 
   const removeTag = (tagToRemove: string) => {
-    setCustomTags(customTags.filter(tag => tag !== tagToRemove));
+    setCustomTags(customTags.filter((tag) => tag !== tagToRemove));
   };
 
   const uploadProps = {
@@ -220,7 +287,10 @@ export default function CreateCausePage() {
               name="title"
               label="Cause Title"
               rules={[
-                { required: true, message: "Please enter a title for your cause" },
+                {
+                  required: true,
+                  message: "Please enter a title for your cause",
+                },
                 { min: 10, message: "Title should be at least 10 characters" },
                 { max: 100, message: "Title should not exceed 100 characters" },
               ]}
@@ -238,8 +308,14 @@ export default function CreateCausePage() {
               label="Short Description"
               rules={[
                 { required: true, message: "Please enter a short description" },
-                { min: 20, message: "Description should be at least 20 characters" },
-                { max: 200, message: "Description should not exceed 200 characters" },
+                {
+                  min: 20,
+                  message: "Description should be at least 20 characters",
+                },
+                {
+                  max: 200,
+                  message: "Description should not exceed 200 characters",
+                },
               ]}
             >
               <TextArea
@@ -253,43 +329,65 @@ export default function CreateCausePage() {
             <Form.Item
               name="causeType"
               label="What type of support do you need?"
-              rules={[{ required: true, message: "Please select a cause type" }]}
+              rules={[
+                { required: true, message: "Please select a cause type" },
+              ]}
             >
               <Radio.Group size="large" className="w-full">
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={12}>
-                    <Radio.Button value="fundraising" className="w-full h-auto p-4 text-center">
+                    <Radio.Button
+                      value="fundraising"
+                      className="w-full h-auto p-4 text-center"
+                    >
                       <div>
                         <DollarOutlined className="text-2xl text-green-600 mb-2" />
                         <div className="font-medium">Fundraising</div>
-                        <div className="text-sm text-gray-500">Raise money for your cause</div>
+                        <div className="text-sm text-gray-500">
+                          Raise money for your cause
+                        </div>
                       </div>
                     </Radio.Button>
                   </Col>
                   <Col xs={24} sm={12}>
-                    <Radio.Button value="volunteer" className="w-full h-auto p-4 text-center">
+                    <Radio.Button
+                      value="volunteer"
+                      className="w-full h-auto p-4 text-center"
+                    >
                       <div>
                         <TeamOutlined className="text-2xl text-blue-600 mb-2" />
                         <div className="font-medium">Volunteers</div>
-                        <div className="text-sm text-gray-500">Need people to help</div>
+                        <div className="text-sm text-gray-500">
+                          Need people to help
+                        </div>
                       </div>
                     </Radio.Button>
                   </Col>
                   <Col xs={24} sm={12}>
-                    <Radio.Button value="awareness" className="w-full h-auto p-4 text-center">
+                    <Radio.Button
+                      value="awareness"
+                      className="w-full h-auto p-4 text-center"
+                    >
                       <div>
                         <BookOutlined className="text-2xl text-purple-600 mb-2" />
                         <div className="font-medium">Awareness</div>
-                        <div className="text-sm text-gray-500">Spread the word</div>
+                        <div className="text-sm text-gray-500">
+                          Spread the word
+                        </div>
                       </div>
                     </Radio.Button>
                   </Col>
                   <Col xs={24} sm={12}>
-                    <Radio.Button value="mixed" className="w-full h-auto p-4 text-center">
+                    <Radio.Button
+                      value="mixed"
+                      className="w-full h-auto p-4 text-center"
+                    >
                       <div>
                         <HeartOutlined className="text-2xl text-red-600 mb-2" />
                         <div className="font-medium">Mixed</div>
-                        <div className="text-sm text-gray-500">All of the above</div>
+                        <div className="text-sm text-gray-500">
+                          All of the above
+                        </div>
                       </div>
                     </Radio.Button>
                   </Col>
@@ -327,14 +425,16 @@ export default function CreateCausePage() {
                 <Form.Item
                   name="category"
                   label="Category"
-                  rules={[{ required: true, message: "Please select a category" }]}
+                  rules={[
+                    { required: true, message: "Please select a category" },
+                  ]}
                 >
                   <Select
                     size="large"
                     placeholder="Select a category"
                     onChange={setSelectedCategory}
                   >
-                    {categories.map(cat => (
+                    {categories.map((cat) => (
                       <Option key={cat.value} value={cat.value}>
                         {cat.label}
                       </Option>
@@ -346,7 +446,9 @@ export default function CreateCausePage() {
                 <Form.Item
                   name="subcategory"
                   label="Subcategory"
-                  rules={[{ required: true, message: "Please select a subcategory" }]}
+                  rules={[
+                    { required: true, message: "Please select a subcategory" },
+                  ]}
                 >
                   <Select
                     size="large"
@@ -355,8 +457,8 @@ export default function CreateCausePage() {
                   >
                     {selectedCategory &&
                       categories
-                        .find(cat => cat.value === selectedCategory)
-                        ?.subcategories.map(sub => (
+                        .find((cat) => cat.value === selectedCategory)
+                        ?.subcategories.map((sub) => (
                           <Option key={sub} value={sub}>
                             {sub}
                           </Option>
@@ -370,8 +472,14 @@ export default function CreateCausePage() {
               name="description"
               label="Detailed Description"
               rules={[
-                { required: true, message: "Please provide a detailed description" },
-                { min: 100, message: "Description should be at least 100 characters" },
+                {
+                  required: true,
+                  message: "Please provide a detailed description",
+                },
+                {
+                  min: 100,
+                  message: "Description should be at least 100 characters",
+                },
               ]}
             >
               <TextArea
@@ -385,13 +493,23 @@ export default function CreateCausePage() {
             <Form.Item
               name="urgencyLevel"
               label="Urgency Level"
-              rules={[{ required: true, message: "Please select urgency level" }]}
+              rules={[
+                { required: true, message: "Please select urgency level" },
+              ]}
             >
               <Radio.Group size="large">
-                <Radio.Button value="low" className="text-green-600">Low</Radio.Button>
-                <Radio.Button value="medium" className="text-yellow-600">Medium</Radio.Button>
-                <Radio.Button value="high" className="text-orange-600">High</Radio.Button>
-                <Radio.Button value="critical" className="text-red-600">Critical</Radio.Button>
+                <Radio.Button value="low" className="text-green-600">
+                  Low
+                </Radio.Button>
+                <Radio.Button value="medium" className="text-yellow-600">
+                  Medium
+                </Radio.Button>
+                <Radio.Button value="high" className="text-orange-600">
+                  High
+                </Radio.Button>
+                <Radio.Button value="critical" className="text-red-600">
+                  Critical
+                </Radio.Button>
               </Radio.Group>
             </Form.Item>
 
@@ -407,14 +525,26 @@ export default function CreateCausePage() {
                   placeholder="Select or add tags"
                   style={{ width: "100%" }}
                 >
-                  {["emergency", "food", "education", "health", "environment", "community", "children", "seniors", "families"].map(tag => (
-                    <Option key={tag} value={tag}>#{tag}</Option>
+                  {[
+                    "emergency",
+                    "food",
+                    "education",
+                    "health",
+                    "environment",
+                    "community",
+                    "children",
+                    "seniors",
+                    "families",
+                  ].map((tag) => (
+                    <Option key={tag} value={tag}>
+                      #{tag}
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                {customTags.map(tag => (
+                {customTags.map((tag) => (
                   <Tag
                     key={tag}
                     closable
@@ -458,8 +588,15 @@ export default function CreateCausePage() {
                   name="goalAmount"
                   label="Fundraising Goal"
                   rules={[
-                    { required: true, message: "Please enter your goal amount" },
-                    { type: "number", min: 100, message: "Goal must be at least $100" },
+                    {
+                      required: true,
+                      message: "Please enter your goal amount",
+                    },
+                    {
+                      type: "number",
+                      min: 100,
+                      message: "Goal must be at least $100",
+                    },
                   ]}
                 >
                   <InputNumber
@@ -467,17 +604,15 @@ export default function CreateCausePage() {
                     style={{ width: "100%" }}
                     placeholder="0"
                     prefix="$"
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
                   />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
-                <Form.Item
-                  name="currency"
-                  label="Currency"
-                  initialValue="USD"
-                >
+                <Form.Item name="currency" label="Currency" initialValue="USD">
                   <Select size="large">
                     <Option value="USD">USD</Option>
                     <Option value="EUR">EUR</Option>
@@ -496,7 +631,9 @@ export default function CreateCausePage() {
               <DatePicker
                 size="large"
                 style={{ width: "100%" }}
-                disabledDate={(current) => current && current < dayjs().endOf('day')}
+                disabledDate={(current) =>
+                  current && current < dayjs().endOf("day")
+                }
                 placeholder="Select end date"
               />
             </Form.Item>
@@ -517,18 +654,17 @@ export default function CreateCausePage() {
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item
-                  name="skillsNeeded"
-                  label="Skills Needed"
-                >
+                <Form.Item name="skillsNeeded" label="Skills Needed">
                   <Select
                     mode="multiple"
                     size="large"
                     placeholder="Select skills needed"
                     style={{ width: "100%" }}
                   >
-                    {skillsOptions.map(skill => (
-                      <Option key={skill} value={skill}>{skill}</Option>
+                    {skillsOptions.map((skill) => (
+                      <Option key={skill} value={skill}>
+                        {skill}
+                      </Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -539,11 +675,15 @@ export default function CreateCausePage() {
               <div className="flex items-start space-x-3">
                 <InfoCircleOutlined className="text-blue-600 mt-1" />
                 <div>
-                  <Text strong className="text-blue-900">Goal Setting Tips</Text>
+                  <Text strong className="text-blue-900">
+                    Goal Setting Tips
+                  </Text>
                   <ul className="text-sm text-blue-800 mt-2 space-y-1">
                     <li>• Set realistic goals based on your network size</li>
                     <li>• Consider breaking large goals into milestones</li>
-                    <li>• Research similar successful campaigns for reference</li>
+                    <li>
+                      • Research similar successful campaigns for reference
+                    </li>
                     <li>• Factor in platform fees (typically 2-3%)</li>
                   </ul>
                 </div>
@@ -588,7 +728,7 @@ export default function CreateCausePage() {
             <Divider />
 
             <Title level={4}>Contact Information</Title>
-            
+
             <Row gutter={16}>
               <Col xs={24} md={12}>
                 <Form.Item
@@ -604,19 +744,13 @@ export default function CreateCausePage() {
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item
-                  name="contactPhone"
-                  label="Contact Phone (Optional)"
-                >
+                <Form.Item name="contactPhone" label="Contact Phone (Optional)">
                   <Input size="large" prefix={<PhoneOutlined />} />
                 </Form.Item>
               </Col>
             </Row>
 
-            <Form.Item
-              name="website"
-              label="Website (Optional)"
-            >
+            <Form.Item name="website" label="Website (Optional)">
               <Input
                 size="large"
                 prefix={<GlobalOutlined />}
@@ -627,17 +761,20 @@ export default function CreateCausePage() {
             <Title level={5}>Social Media (Optional)</Title>
             <Row gutter={16}>
               <Col xs={24} md={8}>
-                <Form.Item name={['socialMedia', 'facebook']} label="Facebook">
+                <Form.Item name={["socialMedia", "facebook"]} label="Facebook">
                   <Input size="large" placeholder="Facebook page URL" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
-                <Form.Item name={['socialMedia', 'twitter']} label="Twitter">
+                <Form.Item name={["socialMedia", "twitter"]} label="Twitter">
                   <Input size="large" placeholder="Twitter profile URL" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={8}>
-                <Form.Item name={['socialMedia', 'instagram']} label="Instagram">
+                <Form.Item
+                  name={["socialMedia", "instagram"]}
+                  label="Instagram"
+                >
                   <Input size="large" placeholder="Instagram profile URL" />
                 </Form.Item>
               </Col>
@@ -668,7 +805,12 @@ export default function CreateCausePage() {
                 </Col>
                 <Col span={12}>
                   <Text strong>Category:</Text>
-                  <div>{categories.find(c => c.value === formData.category)?.label}</div>
+                  <div>
+                    {
+                      categories.find((c) => c.value === formData.category)
+                        ?.label
+                    }
+                  </div>
                 </Col>
                 <Col span={12}>
                   <Text strong>Location:</Text>
@@ -712,7 +854,9 @@ export default function CreateCausePage() {
                       validator: (_, value) =>
                         value
                           ? Promise.resolve()
-                          : Promise.reject(new Error("You must agree to the terms")),
+                          : Promise.reject(
+                              new Error("You must agree to the terms"),
+                            ),
                     },
                   ]}
                 >
@@ -722,22 +866,32 @@ export default function CreateCausePage() {
                       Terms of Service
                     </a>{" "}
                     and{" "}
-                    <a href="/privacy" target="_blank" className="text-blue-600">
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      className="text-blue-600"
+                    >
                       Privacy Policy
                     </a>
                   </Checkbox>
                 </Form.Item>
 
-                <Form.Item name="updates" valuePropName="checked" initialValue={true}>
+                <Form.Item
+                  name="updates"
+                  valuePropName="checked"
+                  initialValue={true}
+                >
                   <Checkbox>
                     Send me updates about my cause and tips for success
                   </Checkbox>
                 </Form.Item>
 
-                <Form.Item name="publicProfile" valuePropName="checked" initialValue={true}>
-                  <Checkbox>
-                    Make my profile visible to supporters
-                  </Checkbox>
+                <Form.Item
+                  name="publicProfile"
+                  valuePropName="checked"
+                  initialValue={true}
+                >
+                  <Checkbox>Make my profile visible to supporters</Checkbox>
                 </Form.Item>
               </div>
             </Card>

@@ -70,6 +70,15 @@ export function Header({
       ),
     },
     {
+      key: "create-cause",
+      label: (
+        <Link href="/causes/create" className="nav-link">
+          <HiOutlineHeart size={18} />
+          Add Cause
+        </Link>
+      ),
+    },
+    {
       key: "education",
       label: (
         <Link href="/education" className="nav-link">
