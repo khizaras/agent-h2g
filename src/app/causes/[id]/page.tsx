@@ -38,6 +38,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { unsplashImages } from "@/services/unsplashService";
+import FoodDetailsSection from "@/components/details/FoodDetailsSection";
+import ClothesDetailsSection from "@/components/details/ClothesDetailsSection";
+import EducationDetailsSection from "@/components/details/EducationDetailsSection";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -53,6 +56,7 @@ interface Cause {
   raisedAmount: number;
   location: string;
   category: string;
+  category_name?: string;
   urgencyLevel: "low" | "medium" | "high" | "critical";
   createdAt: string;
   deadline?: string;
@@ -229,17 +233,36 @@ export default function CauseDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [cause, setCause] = useState<Cause | null>(null);
+  const [categoryDetails, setCategoryDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [donateModalVisible, setDonateModalVisible] = useState(false);
   const [donateAmount, setDonateAmount] = useState<string>("");
   const [activeTab, setActiveTab] = useState("1");
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setCause(mockCause);
-      setLoading(false);
-    }, 1000);
+    const fetchCauseDetails = async () => {
+      try {
+        const response = await fetch(`/api/causes/${params.id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          setCause(result.data.cause);
+          setCategoryDetails(result.data.categoryDetails);
+        } else {
+          console.error('Failed to fetch cause details:', result.error);
+          // Fallback to mock data for now
+          setCause(mockCause);
+        }
+      } catch (error) {
+        console.error('Error fetching cause details:', error);
+        // Fallback to mock data for now
+        setCause(mockCause);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCauseDetails();
   }, [params.id]);
 
   const handleDonate = () => {
@@ -501,6 +524,21 @@ export default function CauseDetailsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
+                  {/* Category-specific details */}
+                  {categoryDetails && cause.category_name && (
+                    <div style={{ marginBottom: '24px' }}>
+                      {cause.category_name === 'food' && (
+                        <FoodDetailsSection details={categoryDetails} />
+                      )}
+                      {cause.category_name === 'clothes' && (
+                        <ClothesDetailsSection details={categoryDetails} />
+                      )}
+                      {cause.category_name === 'education' && (
+                        <EducationDetailsSection details={categoryDetails} />
+                      )}
+                    </div>
+                  )}
+                  
                   <Tabs
                     activeKey={activeTab}
                     onChange={setActiveTab}
