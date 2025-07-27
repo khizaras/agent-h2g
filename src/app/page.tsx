@@ -110,21 +110,21 @@ export default function HomePage() {
       title: "Community Driven",
       description:
         "Join a network of compassionate individuals working together to fight hunger in our communities.",
-      gradient: "from-red-400 to-pink-500",
+      type: "community",
     },
     {
       icon: <FiShield size={32} />,
       title: "Transparent & Secure",
       description:
         "Track your contributions with complete transparency and know exactly how your help makes a difference.",
-      gradient: "from-blue-400 to-indigo-500",
+      type: "security",
     },
     {
       icon: <FiZap size={32} />,
       title: "Immediate Impact",
       description:
         "Your contributions start making a difference immediately, helping families in need today.",
-      gradient: "from-green-400 to-emerald-500",
+      type: "impact",
     },
   ];
 
@@ -320,7 +320,9 @@ export default function HomePage() {
                 <Col xs={24} md={8} key={index}>
                   <motion.div variants={fadeInUp} whileHover={scaleOnHover}>
                     <Card className="feature-card" hoverable>
-                      <div className={`feature-icon bg-gradient-to-r ${feature.gradient}`}>
+                      <div
+                        className={`feature-icon feature-icon-${feature.type}`}
+                      >
                         {feature.icon}
                       </div>
                       <Title level={4} className="feature-title">
@@ -379,8 +381,8 @@ export default function HomePage() {
                                     tag === "Urgent"
                                       ? "red"
                                       : tag === "Ongoing"
-                                      ? "blue"
-                                      : "green"
+                                        ? "blue"
+                                        : "green"
                                   }
                                   text={tag}
                                   className="cause-tag"
@@ -396,7 +398,7 @@ export default function HomePage() {
                       <Title level={4} className="cause-title">
                         {cause.title}
                       </Title>
-                      
+
                       <Paragraph className="cause-description">
                         {cause.description}
                       </Paragraph>
@@ -486,11 +488,11 @@ export default function HomePage() {
                       <div className="testimonial-rating">
                         <Rate disabled defaultValue={testimonial.rating} />
                       </div>
-                      
+
                       <Paragraph className="testimonial-content">
                         "{testimonial.content}"
                       </Paragraph>
-                      
+
                       <div className="testimonial-author">
                         <Avatar
                           size={48}

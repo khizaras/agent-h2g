@@ -110,21 +110,21 @@ export default function HomePage() {
       title: "Community Driven",
       description:
         "Join a network of compassionate individuals working together to fight hunger in our communities.",
-      gradient: "from-red-400 to-pink-500",
+      type: "community",
     },
     {
       icon: <FiShield size={32} />,
       title: "Transparent & Secure",
       description:
         "Track your contributions with complete transparency and know exactly how your help makes a difference.",
-      gradient: "from-blue-400 to-indigo-500",
+      type: "security",
     },
     {
       icon: <FiZap size={32} />,
       title: "Immediate Impact",
       description:
         "Your contributions start making a difference immediately, helping families in need today.",
-      gradient: "from-green-400 to-emerald-500",
+      type: "impact",
     },
   ];
 
@@ -321,7 +321,7 @@ export default function HomePage() {
                   <motion.div variants={fadeInUp} whileHover={scaleOnHover}>
                     <Card className="feature-card" hoverable>
                       <div
-                        className={`feature-icon bg-gradient-to-r ${feature.gradient}`}
+                        className={`feature-icon feature-icon-${feature.type}`}
                       >
                         {feature.icon}
                       </div>

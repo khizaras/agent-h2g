@@ -1,11 +1,21 @@
-'use client';
+"use client";
 
 import React, { useState } from "react";
-import { Layout, Menu, Button, Drawer, Space, Typography, Badge, Avatar, Dropdown } from "antd";
-import { 
-  HiOutlineHome, 
-  HiOutlineHeart, 
-  HiOutlineInformationCircle, 
+import {
+  Layout,
+  Menu,
+  Button,
+  Drawer,
+  Space,
+  Typography,
+  Badge,
+  Avatar,
+  Dropdown,
+} from "antd";
+import {
+  HiOutlineHome,
+  HiOutlineHeart,
+  HiOutlineInformationCircle,
   HiOutlineMail,
   HiOutlineAcademicCap,
   HiOutlineMenu,
@@ -13,7 +23,7 @@ import {
   HiOutlineBell,
   HiOutlineUser,
   HiOutlineCog,
-  HiOutlineLogout
+  HiOutlineLogout,
 } from "react-icons/hi";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -43,38 +53,48 @@ export function Header({
   const navigationItems = [
     {
       key: "home",
-      label: <Link href="/" className="flex items-center gap-2">
-        <HiOutlineHome size={18} />
-        Home
-      </Link>,
+      label: (
+        <Link href="/" className="nav-link">
+          <HiOutlineHome size={18} />
+          Home
+        </Link>
+      ),
     },
     {
       key: "causes",
-      label: <Link href="/causes" className="flex items-center gap-2">
-        <HiOutlineHeart size={18} />
-        Causes
-      </Link>,
+      label: (
+        <Link href="/causes" className="nav-link">
+          <HiOutlineHeart size={18} />
+          Causes
+        </Link>
+      ),
     },
     {
       key: "education",
-      label: <Link href="/education" className="flex items-center gap-2">
-        <HiOutlineAcademicCap size={18} />
-        Education
-      </Link>,
+      label: (
+        <Link href="/education" className="nav-link">
+          <HiOutlineAcademicCap size={18} />
+          Education
+        </Link>
+      ),
     },
     {
       key: "about",
-      label: <Link href="/about" className="flex items-center gap-2">
-        <HiOutlineInformationCircle size={18} />
-        About
-      </Link>,
+      label: (
+        <Link href="/about" className="nav-link">
+          <HiOutlineInformationCircle size={18} />
+          About
+        </Link>
+      ),
     },
     {
       key: "contact",
-      label: <Link href="/contact" className="flex items-center gap-2">
-        <HiOutlineMail size={18} />
-        Contact
-      </Link>,
+      label: (
+        <Link href="/contact" className="nav-link">
+          <HiOutlineMail size={18} />
+          Contact
+        </Link>
+      ),
     },
   ];
 
@@ -138,7 +158,10 @@ export function Header({
             {isAuthenticated ? (
               <Space size="middle" className="user-actions">
                 {/* Notifications */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Badge count={notificationCount} size="small">
                     <Button
                       type="text"
@@ -149,13 +172,20 @@ export function Header({
                 </motion.div>
 
                 {/* User Menu */}
-                <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Dropdown
+                  menu={{ items: userMenuItems }}
+                  placement="bottomRight"
+                  arrow
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button type="text" className="user-btn">
                       <Space>
-                        <Avatar 
-                          src={userAvatar} 
-                          icon={<HiOutlineUser />} 
+                        <Avatar
+                          src={userAvatar}
+                          icon={<HiOutlineUser />}
                           size="small"
                         />
                         <Text className="user-name">{userName}</Text>
@@ -227,7 +257,11 @@ export function Header({
 
           <div className="mobile-actions">
             {isAuthenticated ? (
-              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Space
+                direction="vertical"
+                size="large"
+                style={{ width: "100%" }}
+              >
                 <Button
                   type="text"
                   icon={<HiOutlineBell size={18} />}
@@ -236,7 +270,11 @@ export function Header({
                 >
                   Notifications
                   {notificationCount > 0 && (
-                    <Badge count={notificationCount} size="small" style={{ marginLeft: 8 }} />
+                    <Badge
+                      count={notificationCount}
+                      size="small"
+                      style={{ marginLeft: 8 }}
+                    />
                   )}
                 </Button>
                 <Button
@@ -258,7 +296,11 @@ export function Header({
                 </Button>
               </Space>
             ) : (
-              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Space
+                direction="vertical"
+                size="middle"
+                style={{ width: "100%" }}
+              >
                 <Button
                   type="text"
                   onClick={onSignIn}

@@ -54,7 +54,7 @@ export function Header({
     {
       key: "home",
       label: (
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="nav-link">
           <HiOutlineHome size={18} />
           Home
         </Link>
@@ -63,7 +63,7 @@ export function Header({
     {
       key: "causes",
       label: (
-        <Link href="/causes" className="flex items-center gap-2">
+        <Link href="/causes" className="nav-link">
           <HiOutlineHeart size={18} />
           Causes
         </Link>
@@ -72,7 +72,7 @@ export function Header({
     {
       key: "education",
       label: (
-        <Link href="/education" className="flex items-center gap-2">
+        <Link href="/education" className="nav-link">
           <HiOutlineAcademicCap size={18} />
           Education
         </Link>
@@ -81,7 +81,7 @@ export function Header({
     {
       key: "about",
       label: (
-        <Link href="/about" className="flex items-center gap-2">
+        <Link href="/about" className="nav-link">
           <HiOutlineInformationCircle size={18} />
           About
         </Link>
@@ -90,7 +90,7 @@ export function Header({
     {
       key: "contact",
       label: (
-        <Link href="/contact" className="flex items-center gap-2">
+        <Link href="/contact" className="nav-link">
           <HiOutlineMail size={18} />
           Contact
         </Link>

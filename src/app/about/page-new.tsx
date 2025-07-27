@@ -222,7 +222,7 @@ export default function AboutPage() {
                 <Col xs={24} md={12} lg={6} key={index}>
                   <motion.div variants={fadeInUp}>
                     <Card className="feature-card" hoverable>
-                      <div className="feature-icon bg-gradient-to-r from-blue-400 to-purple-500">
+                      <div className="feature-icon feature-icon-security">
                         {React.cloneElement(value.icon, {
                           style: { fontSize: "32px", color: "white" },
                         })}
@@ -264,7 +264,7 @@ export default function AboutPage() {
               {milestones.map((milestone, index) => (
                 <div key={index} className="timeline-item">
                   <Space align="start">
-                    <div className="feature-icon bg-gradient-to-r from-green-400 to-blue-500">
+                    <div className="feature-icon feature-icon-impact">
                       {React.cloneElement(milestone.icon, {
                         style: { fontSize: "24px", color: "white" },
                       })}

@@ -192,44 +192,41 @@ export function TestimonialsSection() {
   return (
     <section
       ref={ref}
-      className="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden"
+      className="testimonials-section"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-full h-full">
-          <CommentOutlined className="absolute top-20 left-20 text-6xl text-blue-300 transform -rotate-12" />
-          <CommentOutlined className="absolute bottom-20 right-20 text-6xl text-purple-300 transform rotate-12" />
-          <HeartFilled className="absolute top-1/2 left-1/4 text-4xl text-pink-300 transform -rotate-45" />
-          <HeartFilled className="absolute top-1/3 right-1/3 text-4xl text-red-300 transform rotate-45" />
+      <div className="testimonials-bg-pattern">
+        <div className="testimonials-bg-icons">
+          <CommentOutlined className="testimonial-icon testimonial-icon-1" />
+          <CommentOutlined className="testimonial-icon testimonial-icon-2" />
+          <HeartFilled className="testimonial-icon testimonial-icon-3" />
+          <HeartFilled className="testimonial-icon testimonial-icon-4" />
         </div>
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="testimonials-container">
         <motion.div
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
           variants={fadeInUp}
-          className="text-center mb-16"
+          className="section-header"
         >
-          <Title
-            level={2}
-            className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-          >
+          <Title level={2} className="section-title">
             Stories That Inspire Change
           </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <Paragraph className="section-description">
             Real people sharing how Hands2gether has transformed their
             communities and lives
           </Paragraph>
         </motion.div>
 
-        <div className="max-w-6xl mx-auto">
+        <div className="testimonials-content">
           <Row gutter={[48, 32]} align="middle">
             {/* Main Testimonial */}
             <Col xs={24} lg={14}>
-              <div className="relative h-96">
+              <div className="testimonial-carousel">
                 <AnimatePresence initial={false} custom={direction}>
                   <motion.div
                     key={currentIndex}
@@ -242,10 +239,10 @@ export function TestimonialsSection() {
                       x: { type: "spring", stiffness: 300, damping: 30 },
                       opacity: { duration: 0.2 },
                     }}
-                    className="absolute inset-0"
+                    className="testimonial-slide"
                   >
                     <Card
-                      className="h-full bg-white/80 backdrop-blur-md border-0 shadow-2xl"
+                      className="testimonial-card-main"
                       bodyStyle={{
                         padding: "3rem",
                         height: "100%",
@@ -254,8 +251,8 @@ export function TestimonialsSection() {
                       }}
                     >
                       {/* Header */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center space-x-4">
+                      <div className="testimonial-header">
+                        <div className="testimonial-author-section">
                           <Avatar
                             size={64}
                             style={{
@@ -267,18 +264,18 @@ export function TestimonialsSection() {
                             {currentTestimonial.avatar}
                           </Avatar>
                           <div>
-                            <div className="flex items-center space-x-2">
-                              <Text className="text-lg font-semibold text-gray-800">
+                            <div className="testimonial-author-header">
+                              <Text className="testimonial-author-name">
                                 {currentTestimonial.name}
                               </Text>
                               {currentTestimonial.verified && (
-                                <CheckCircleOutlined className="text-blue-500" />
+                                <CheckCircleOutlined className="testimonial-verified" />
                               )}
                             </div>
-                            <Text className="text-gray-600">
+                            <Text className="testimonial-author-role">
                               {currentTestimonial.role}
                             </Text>
-                            <Text className="text-sm text-gray-500">
+                            <Text className="testimonial-author-location">
                               {currentTestimonial.location}
                             </Text>
                           </div>
@@ -290,34 +287,36 @@ export function TestimonialsSection() {
                       </div>
 
                       {/* Quote */}
-                      <div className="mb-6 flex-1">
-                        <CommentOutlined className="text-3xl text-blue-400 mb-4" />
-                        <Paragraph className="text-lg text-gray-700 italic leading-relaxed">
+                      <div className="testimonial-quote-section">
+                        <CommentOutlined className="testimonial-quote-icon" />
+                        <Paragraph className="testimonial-quote-text">
                           "{currentTestimonial.quote}"
                         </Paragraph>
                       </div>
 
                       {/* Impact Badge */}
-                      <div className="mb-6">
+                      <div className="testimonial-impact">
                         <div
-                          className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${
+                          className={`testimonial-impact-badge ${
                             currentTestimonial.impact.type === "helped"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
+                              ? "testimonial-impact-helped"
+                              : "testimonial-impact-received"
                           }`}
                         >
-                          <span className="text-sm font-medium">
+                          <span className="testimonial-impact-category">
                             {currentTestimonial.impact.category}
                           </span>
-                          <span className="text-xs">•</span>
-                          <span className="text-sm">
+                          <span className="testimonial-impact-separator">
+                            •
+                          </span>
+                          <span className="testimonial-impact-achievement">
                             {currentTestimonial.impact.achievement}
                           </span>
                         </div>
                       </div>
 
                       {/* Story */}
-                      <Paragraph className="text-gray-600 leading-relaxed">
+                      <Paragraph className="testimonial-story">
                         {currentTestimonial.story}
                       </Paragraph>
                     </Card>
@@ -332,18 +331,18 @@ export function TestimonialsSection() {
                 initial="hidden"
                 animate={inView ? "visible" : "hidden"}
                 variants={fadeInUp}
-                className="space-y-8"
+                className="testimonial-nav-container"
               >
                 {/* Navigation */}
-                <div className="flex items-center justify-center space-x-4">
+                <div className="testimonial-nav">
                   <Button
                     type="text"
                     icon={<LeftOutlined />}
                     onClick={() => paginate(-1)}
-                    className="w-12 h-12 rounded-full border-2 border-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300"
+                    className="testimonial-nav-btn"
                   />
 
-                  <div className="flex space-x-2">
+                  <div className="testimonial-dots">
                     {testimonials.map((_, index) => (
                       <button
                         key={index}
@@ -351,10 +350,10 @@ export function TestimonialsSection() {
                           setDirection(index > currentIndex ? 1 : -1);
                           setCurrentIndex(index);
                         }}
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        className={`testimonial-dot ${
                           index === currentIndex
-                            ? "bg-blue-500 scale-125"
-                            : "bg-gray-300 hover:bg-gray-400"
+                            ? "testimonial-dot-active"
+                            : "testimonial-dot-inactive"
                         }`}
                       />
                     ))}
@@ -364,51 +363,51 @@ export function TestimonialsSection() {
                     type="text"
                     icon={<RightOutlined />}
                     onClick={() => paginate(1)}
-                    className="w-12 h-12 rounded-full border-2 border-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300"
+                    className="testimonial-nav-btn"
                   />
                 </div>
 
                 {/* Community Stats */}
-                <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-0">
-                  <div className="text-center p-4">
-                    <Title level={4} className="mb-4 text-gray-800">
+                <Card className="testimonial-stats-card">
+                  <div className="testimonial-stats-content">
+                    <Title level={4} className="testimonial-stats-title">
                       Our Community Impact
                     </Title>
                     <Row gutter={[16, 16]}>
                       <Col span={12}>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">
+                        <div className="testimonial-stat">
+                          <div className="testimonial-stat-value testimonial-stat-blue">
                             4.9/5
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="testimonial-stat-label">
                             Average Rating
                           </div>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">
+                        <div className="testimonial-stat">
+                          <div className="testimonial-stat-value testimonial-stat-purple">
                             98%
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="testimonial-stat-label">
                             Success Rate
                           </div>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">
+                        <div className="testimonial-stat">
+                          <div className="testimonial-stat-value testimonial-stat-green">
                             1,247
                           </div>
-                          <div className="text-sm text-gray-600">Reviews</div>
+                          <div className="testimonial-stat-label">Reviews</div>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">
+                        <div className="testimonial-stat">
+                          <div className="testimonial-stat-value testimonial-stat-orange">
                             24/7
                           </div>
-                          <div className="text-sm text-gray-600">Support</div>
+                          <div className="testimonial-stat-label">Support</div>
                         </div>
                       </Col>
                     </Row>
@@ -416,14 +415,14 @@ export function TestimonialsSection() {
                 </Card>
 
                 {/* CTA */}
-                <div className="text-center">
-                  <Paragraph className="text-gray-600 mb-4">
+                <div className="testimonial-cta">
+                  <Paragraph className="testimonial-cta-text">
                     Ready to create your own success story?
                   </Paragraph>
                   <Button
                     type="primary"
                     size="large"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 border-none hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                    className="testimonial-cta-btn"
                   >
                     Join Our Community
                   </Button>
