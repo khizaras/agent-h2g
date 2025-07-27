@@ -320,7 +320,9 @@ export default function HomePage() {
                 <Col xs={24} md={8} key={index}>
                   <motion.div variants={fadeInUp} whileHover={scaleOnHover}>
                     <Card className="feature-card" hoverable>
-                      <div className={`feature-icon bg-gradient-to-r ${feature.gradient}`}>
+                      <div
+                        className={`feature-icon bg-gradient-to-r ${feature.gradient}`}
+                      >
                         {feature.icon}
                       </div>
                       <Title level={4} className="feature-title">
@@ -379,8 +381,8 @@ export default function HomePage() {
                                     tag === "Urgent"
                                       ? "red"
                                       : tag === "Ongoing"
-                                      ? "blue"
-                                      : "green"
+                                        ? "blue"
+                                        : "green"
                                   }
                                   text={tag}
                                   className="cause-tag"
@@ -396,7 +398,7 @@ export default function HomePage() {
                       <Title level={4} className="cause-title">
                         {cause.title}
                       </Title>
-                      
+
                       <Paragraph className="cause-description">
                         {cause.description}
                       </Paragraph>
@@ -486,11 +488,11 @@ export default function HomePage() {
                       <div className="testimonial-rating">
                         <Rate disabled defaultValue={testimonial.rating} />
                       </div>
-                      
+
                       <Paragraph className="testimonial-content">
                         "{testimonial.content}"
                       </Paragraph>
-                      
+
                       <div className="testimonial-author">
                         <Avatar
                           size={48}

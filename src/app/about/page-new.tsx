@@ -189,8 +189,9 @@ export default function AboutPage() {
             </motion.div>
             <motion.div variants={fadeInUp}>
               <Paragraph className="page-hero-description">
-                Since 2020, Hands2gether has been connecting compassionate individuals 
-                with meaningful causes, creating lasting positive impact in communities worldwide.
+                Since 2020, Hands2gether has been connecting compassionate
+                individuals with meaningful causes, creating lasting positive
+                impact in communities worldwide.
               </Paragraph>
             </motion.div>
           </motion.div>
@@ -210,8 +211,9 @@ export default function AboutPage() {
                 Our Mission
               </Title>
               <Paragraph className="section-description">
-                To create a world where no one faces hardship alone, by building 
-                technology that connects communities and amplifies human compassion.
+                To create a world where no one faces hardship alone, by building
+                technology that connects communities and amplifies human
+                compassion.
               </Paragraph>
             </motion.div>
 
@@ -221,7 +223,9 @@ export default function AboutPage() {
                   <motion.div variants={fadeInUp}>
                     <Card className="feature-card" hoverable>
                       <div className="feature-icon bg-gradient-to-r from-blue-400 to-purple-500">
-                        {React.cloneElement(value.icon, { style: { fontSize: '32px', color: 'white' } })}
+                        {React.cloneElement(value.icon, {
+                          style: { fontSize: "32px", color: "white" },
+                        })}
                       </div>
                       <Title level={4} className="feature-title">
                         {value.title}
@@ -251,7 +255,7 @@ export default function AboutPage() {
                 Our Journey
               </Title>
               <Paragraph className="section-description">
-                From a simple idea to a global movement - here's how we've grown 
+                From a simple idea to a global movement - here's how we've grown
                 to serve communities worldwide.
               </Paragraph>
             </motion.div>
@@ -261,12 +265,16 @@ export default function AboutPage() {
                 <div key={index} className="timeline-item">
                   <Space align="start">
                     <div className="feature-icon bg-gradient-to-r from-green-400 to-blue-500">
-                      {React.cloneElement(milestone.icon, { style: { fontSize: '24px', color: 'white' } })}
+                      {React.cloneElement(milestone.icon, {
+                        style: { fontSize: "24px", color: "white" },
+                      })}
                     </div>
                     <div>
                       <div className="timeline-year">{milestone.year}</div>
                       <div className="timeline-title">{milestone.title}</div>
-                      <div className="timeline-description">{milestone.description}</div>
+                      <div className="timeline-description">
+                        {milestone.description}
+                      </div>
                     </div>
                   </Space>
                 </div>
@@ -299,9 +307,9 @@ export default function AboutPage() {
                       value={stat.value}
                       prefix={stat.prefix}
                       suffix={stat.suffix}
-                      valueStyle={{ 
-                        color: '#1890ff',
-                        fontSize: '2.5rem',
+                      valueStyle={{
+                        color: "#1890ff",
+                        fontSize: "2.5rem",
                         fontWeight: 700,
                       }}
                       className="stat-item"
@@ -327,8 +335,8 @@ export default function AboutPage() {
                 Meet Our Team
               </Title>
               <Paragraph className="section-description">
-                Passionate individuals dedicated to making technology serve humanity's 
-                greatest needs.
+                Passionate individuals dedicated to making technology serve
+                humanity's greatest needs.
               </Paragraph>
             </motion.div>
 
@@ -346,9 +354,7 @@ export default function AboutPage() {
                         {member.name}
                       </Title>
                       <Text className="team-role">{member.role}</Text>
-                      <Paragraph className="team-bio">
-                        {member.bio}
-                      </Paragraph>
+                      <Paragraph className="team-bio">{member.bio}</Paragraph>
                       <div className="team-achievements">
                         {member.achievements.map((achievement, i) => (
                           <Tag key={i} className="achievement-tag">
@@ -378,7 +384,7 @@ export default function AboutPage() {
                 Ready to Make a Difference?
               </Title>
               <Paragraph className="cta-description">
-                Join our community of changemakers and start creating positive 
+                Join our community of changemakers and start creating positive
                 impact in your neighborhood today.
               </Paragraph>
               <Space size="large" className="cta-actions">

@@ -14,6 +14,7 @@ import { antdTheme } from "@/config/theme";
 import { MotionConfig } from "framer-motion";
 import "antd/dist/reset.css";
 import "@/styles/globals.css";
+import "@/styles/components.css";
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",

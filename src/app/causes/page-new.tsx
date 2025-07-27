@@ -69,7 +69,9 @@ const mockCauses: Cause[] = [
     goal_amount: 25000,
     raised_amount: 18500,
     percentage_complete: 74,
-    image_url: unsplashImages.causes[0]?.url || "https://images.unsplash.com/photo-1593113598332-cd288d649433",
+    image_url:
+      unsplashImages.causes[0]?.url ||
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433",
     tags: ["emergency", "food-relief", "hurricane", "families"],
     view_count: 1245,
     like_count: 189,
@@ -88,7 +90,9 @@ const mockCauses: Cause[] = [
     goal_amount: 50000,
     raised_amount: 28000,
     percentage_complete: 56,
-    image_url: unsplashImages.causes[1]?.url || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c",
+    image_url:
+      unsplashImages.causes[1]?.url ||
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c",
     tags: ["food-bank", "expansion", "families", "nutrition"],
     view_count: 892,
     like_count: 145,
@@ -107,7 +111,9 @@ const mockCauses: Cause[] = [
     goal_amount: 35000,
     raised_amount: 12000,
     percentage_complete: 34,
-    image_url: unsplashImages.causes[2]?.url || "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b",
+    image_url:
+      unsplashImages.causes[2]?.url ||
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b",
     tags: ["mobile-kitchen", "elderly", "neighborhoods", "hot-meals"],
     view_count: 567,
     like_count: 78,
@@ -126,7 +132,9 @@ const mockCauses: Cause[] = [
     goal_amount: 20000,
     raised_amount: 8500,
     percentage_complete: 43,
-    image_url: unsplashImages.causes[3]?.url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
+    image_url:
+      unsplashImages.causes[3]?.url ||
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
     tags: ["school-meals", "children", "nutrition", "education"],
     view_count: 423,
     like_count: 56,
@@ -145,7 +153,9 @@ const mockCauses: Cause[] = [
     goal_amount: 30000,
     raised_amount: 19000,
     percentage_complete: 63,
-    image_url: unsplashImages.causes[4]?.url || "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
+    image_url:
+      unsplashImages.causes[4]?.url ||
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
     tags: ["senior-support", "meal-delivery", "nutrition", "social"],
     view_count: 634,
     like_count: 92,
@@ -164,7 +174,9 @@ const mockCauses: Cause[] = [
     goal_amount: 45000,
     raised_amount: 15000,
     percentage_complete: 33,
-    image_url: unsplashImages.causes[5]?.url || "https://images.unsplash.com/photo-1416879595882-3373a0480b5b",
+    image_url:
+      unsplashImages.causes[5]?.url ||
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b",
     tags: ["urban-farm", "organic", "sustainability", "fresh-produce"],
     view_count: 345,
     like_count: 42,
@@ -203,11 +215,11 @@ export default function CausesPage() {
 
   const categories = [
     "Emergency Relief",
-    "Food Banks", 
+    "Food Banks",
     "Community Kitchens",
     "School Meals",
     "Senior Support",
-    "Urban Farming"
+    "Urban Farming",
   ];
 
   const urgencyLevels = ["low", "medium", "high", "critical"];
@@ -217,19 +229,23 @@ export default function CausesPage() {
 
     if (searchTerm) {
       filtered = filtered.filter(
-        cause =>
+        (cause) =>
           cause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           cause.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          cause.location.toLowerCase().includes(searchTerm.toLowerCase())
+          cause.location.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
     if (selectedCategory !== "all") {
-      filtered = filtered.filter(cause => cause.category === selectedCategory);
+      filtered = filtered.filter(
+        (cause) => cause.category === selectedCategory,
+      );
     }
 
     if (selectedUrgency !== "all") {
-      filtered = filtered.filter(cause => cause.urgency_level === selectedUrgency);
+      filtered = filtered.filter(
+        (cause) => cause.urgency_level === selectedUrgency,
+      );
     }
 
     setFilteredCauses(filtered);
@@ -238,24 +254,29 @@ export default function CausesPage() {
 
   const paginatedCauses = filteredCauses.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   const getUrgencyColor = (level: string) => {
     switch (level) {
-      case "critical": return "#f5222d";
-      case "high": return "#fa8c16";
-      case "medium": return "#faad14";
-      case "low": return "#52c41a";
-      default: return "#d9d9d9";
+      case "critical":
+        return "#f5222d";
+      case "high":
+        return "#fa8c16";
+      case "medium":
+        return "#faad14";
+      case "low":
+        return "#52c41a";
+      default:
+        return "#d9d9d9";
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -277,7 +298,7 @@ export default function CausesPage() {
             </motion.div>
             <motion.div variants={fadeInUp}>
               <Paragraph className="page-hero-description">
-                Browse active causes in your community and around the world. 
+                Browse active causes in your community and around the world.
                 Every contribution makes a real difference in someone's life.
               </Paragraph>
             </motion.div>
@@ -310,8 +331,10 @@ export default function CausesPage() {
                     placeholder="Select Category"
                   >
                     <Option value="all">All Categories</Option>
-                    {categories.map(category => (
-                      <Option key={category} value={category}>{category}</Option>
+                    {categories.map((category) => (
+                      <Option key={category} value={category}>
+                        {category}
+                      </Option>
                     ))}
                   </Select>
                 </div>
@@ -326,7 +349,7 @@ export default function CausesPage() {
                     placeholder="Select Urgency"
                   >
                     <Option value="all">All Urgency Levels</Option>
-                    {urgencyLevels.map(level => (
+                    {urgencyLevels.map((level) => (
                       <Option key={level} value={level}>
                         {level.charAt(0).toUpperCase() + level.slice(1)}
                       </Option>
@@ -360,13 +383,14 @@ export default function CausesPage() {
                       >
                         <Card className="cause-card-large" hoverable>
                           <div className="cause-image-large">
-                            <img
-                              src={cause.image_url}
-                              alt={cause.title}
-                            />
+                            <img src={cause.image_url} alt={cause.title} />
                             <Tag
                               className={`cause-urgency urgency-${cause.urgency_level}`}
-                              style={{ backgroundColor: getUrgencyColor(cause.urgency_level) }}
+                              style={{
+                                backgroundColor: getUrgencyColor(
+                                  cause.urgency_level,
+                                ),
+                              }}
                             >
                               {cause.urgency_level.toUpperCase()}
                             </Tag>
@@ -407,7 +431,10 @@ export default function CausesPage() {
                                 <Text strong className="progress-amount">
                                   ${cause.raised_amount.toLocaleString()} raised
                                 </Text>
-                                <Text type="secondary" className="progress-goal">
+                                <Text
+                                  type="secondary"
+                                  className="progress-goal"
+                                >
                                   of ${cause.goal_amount.toLocaleString()} goal
                                 </Text>
                               </div>
@@ -420,7 +447,9 @@ export default function CausesPage() {
                               </Space>
                               <Space className="meta-item">
                                 <FiClock size={14} />
-                                <Text type="secondary">Due {formatDate(cause.deadline)}</Text>
+                                <Text type="secondary">
+                                  Due {formatDate(cause.deadline)}
+                                </Text>
                               </Space>
                             </div>
 
@@ -428,8 +457,12 @@ export default function CausesPage() {
                               <div className="cause-author">
                                 <Avatar icon={<FiUser />} size="small" />
                                 <div className="author-info">
-                                  <div className="author-name">{cause.user_name}</div>
-                                  <div className="author-date">{formatDate(cause.created_at)}</div>
+                                  <div className="author-name">
+                                    {cause.user_name}
+                                  </div>
+                                  <div className="author-date">
+                                    {formatDate(cause.created_at)}
+                                  </div>
                                 </div>
                               </div>
 
@@ -454,7 +487,9 @@ export default function CausesPage() {
                               className="cause-btn"
                               block
                             >
-                              <Link href={`/causes/${cause.id}`}>Support This Cause</Link>
+                              <Link href={`/causes/${cause.id}`}>
+                                Support This Cause
+                              </Link>
                             </Button>
                           </div>
                         </Card>
@@ -524,7 +559,7 @@ export default function CausesPage() {
                 Ready to Make a Difference?
               </Title>
               <Paragraph className="cta-description">
-                Can't find a cause that speaks to you? Create your own and start 
+                Can't find a cause that speaks to you? Create your own and start
                 building support for what matters most to your community.
               </Paragraph>
               <Space size="large" className="cta-actions">

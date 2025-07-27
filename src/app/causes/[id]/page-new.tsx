@@ -112,7 +112,8 @@ interface Cause {
 const mockCause: Cause = {
   id: 1,
   title: "Emergency Food Relief for Hurricane Victims",
-  description: "Providing immediate food assistance to families displaced by recent hurricane damage in coastal communities.",
+  description:
+    "Providing immediate food assistance to families displaced by recent hurricane damage in coastal communities.",
   detailedDescription: `
     In the aftermath of Hurricane Elena, thousands of families in our coastal communities have lost their homes, livelihoods, and access to basic necessities. The storm's unprecedented force left a trail of destruction, with many neighborhoods completely cut off from essential services.
 
@@ -122,11 +123,16 @@ const mockCause: Cause = {
 
     The need is urgent and growing daily. Local emergency shelters are overwhelmed, and many families are staying in temporary accommodations without access to cooking facilities. Our pre-prepared meal programs and mobile food trucks are literally lifelines for these communities.
   `,
-  imageUrl: unsplashImages.causes[0]?.url || "https://images.unsplash.com/photo-1593113598332-cd288d649433",
+  imageUrl:
+    unsplashImages.causes[0]?.url ||
+    "https://images.unsplash.com/photo-1593113598332-cd288d649433",
   images: [
-    unsplashImages.causes[0]?.url || "https://images.unsplash.com/photo-1593113598332-cd288d649433",
-    unsplashImages.causes[1]?.url || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c",
-    unsplashImages.causes[2]?.url || "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b",
+    unsplashImages.causes[0]?.url ||
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433",
+    unsplashImages.causes[1]?.url ||
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c",
+    unsplashImages.causes[2]?.url ||
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b",
   ],
   goalAmount: 25000,
   raisedAmount: 18500,
@@ -139,7 +145,8 @@ const mockCause: Cause = {
   creator: {
     id: 1,
     name: "Sarah Johnson",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face",
     bio: "Disaster relief coordinator with 10+ years experience. Passionate about ensuring no community faces crisis alone.",
     causesCreated: 8,
     totalRaised: 285000,
@@ -159,7 +166,8 @@ const mockCause: Cause = {
       name: "Miami Food Bank",
       amount: 2500,
       date: "2024-01-21",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
       message: "Proud to support this vital cause.",
       anonymous: false,
     },
@@ -184,25 +192,30 @@ const mockCause: Cause = {
     {
       id: 1,
       title: "Mobile Food Truck Reaches Remote Areas",
-      content: "Our new mobile food distribution truck successfully reached three remote communities today, delivering fresh produce and emergency meal kits to 127 families. The truck is equipped with refrigeration units to ensure food safety.",
+      content:
+        "Our new mobile food distribution truck successfully reached three remote communities today, delivering fresh produce and emergency meal kits to 127 families. The truck is equipped with refrigeration units to ensure food safety.",
       date: "2024-01-22",
       author: "Sarah Johnson",
       images: [
-        unsplashImages.causes[3]?.url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-        unsplashImages.causes[4]?.url || "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
+        unsplashImages.causes[3]?.url ||
+          "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
+        unsplashImages.causes[4]?.url ||
+          "https://images.unsplash.com/photo-1559827260-dc66d52bef19",
       ],
     },
     {
       id: 2,
       title: "Partnership with Local Schools Established",
-      content: "We've partnered with 15 local schools to ensure displaced children continue receiving nutritious meals. Our team will provide breakfast and lunch programs at temporary learning centers.",
+      content:
+        "We've partnered with 15 local schools to ensure displaced children continue receiving nutritious meals. Our team will provide breakfast and lunch programs at temporary learning centers.",
       date: "2024-01-20",
       author: "Relief Team",
     },
     {
       id: 3,
       title: "First 1,000 Families Reached!",
-      content: "Milestone achieved! We've successfully provided emergency food assistance to over 1,000 families in the first week. Your donations are making a real difference.",
+      content:
+        "Milestone achieved! We've successfully provided emergency food assistance to over 1,000 families in the first week. Your donations are making a real difference.",
       date: "2024-01-18",
       author: "Sarah Johnson",
     },
@@ -211,15 +224,18 @@ const mockCause: Cause = {
     {
       id: 1,
       author: "Maria Rodriguez",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
-      content: "My family was one of those helped by this program. Thank you so much for the quick response and quality food supplies.",
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+      content:
+        "My family was one of those helped by this program. Thank you so much for the quick response and quality food supplies.",
       date: "2024-01-21",
       likes: 24,
       replies: [
         {
           id: 1,
           author: "Sarah Johnson",
-          content: "So glad we could help, Maria. Wishing you and your family all the best during recovery.",
+          content:
+            "So glad we could help, Maria. Wishing you and your family all the best during recovery.",
           date: "2024-01-21",
         },
       ],
@@ -227,7 +243,8 @@ const mockCause: Cause = {
     {
       id: 2,
       author: "Dr. James Wilson",
-      content: "As a local physician, I've seen firsthand how malnutrition affects recovery from trauma. This program is vital for our community's health.",
+      content:
+        "As a local physician, I've seen firsthand how malnutrition affects recovery from trauma. This program is vital for our community's health.",
       date: "2024-01-20",
       likes: 18,
     },
@@ -282,27 +299,35 @@ export default function CauseDetailsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const getUrgencyColor = (level: string) => {
     switch (level) {
-      case "critical": return "#f5222d";
-      case "high": return "#fa8c16";
-      case "medium": return "#faad14";
-      case "low": return "#52c41a";
-      default: return "#d9d9d9";
+      case "critical":
+        return "#f5222d";
+      case "high":
+        return "#fa8c16";
+      case "medium":
+        return "#faad14";
+      case "low":
+        return "#52c41a";
+      default:
+        return "#d9d9d9";
     }
   };
 
   if (loading) {
     return (
       <MainLayout>
-        <div className="page-container" style={{ padding: "80px 0", textAlign: "center" }}>
+        <div
+          className="page-container"
+          style={{ padding: "80px 0", textAlign: "center" }}
+        >
           <Text>Loading cause details...</Text>
         </div>
       </MainLayout>
@@ -312,7 +337,10 @@ export default function CauseDetailsPage() {
   if (!cause) {
     return (
       <MainLayout>
-        <div className="page-container" style={{ padding: "80px 0", textAlign: "center" }}>
+        <div
+          className="page-container"
+          style={{ padding: "80px 0", textAlign: "center" }}
+        >
           <Title level={2}>Cause not found</Title>
           <Button type="primary" onClick={() => router.push("/causes")}>
             Back to Causes
@@ -322,8 +350,18 @@ export default function CauseDetailsPage() {
     );
   }
 
-  const progressPercentage = Math.round((cause.raisedAmount / cause.goalAmount) * 100);
-  const daysLeft = cause.deadline ? Math.max(0, Math.ceil((new Date(cause.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : null;
+  const progressPercentage = Math.round(
+    (cause.raisedAmount / cause.goalAmount) * 100,
+  );
+  const daysLeft = cause.deadline
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(cause.deadline).getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : null;
 
   const tabItems = [
     {
@@ -357,9 +395,7 @@ export default function CauseDetailsPage() {
                   </Space>
                 </div>
               </div>
-              <Paragraph className="update-content">
-                {update.content}
-              </Paragraph>
+              <Paragraph className="update-content">{update.content}</Paragraph>
               {update.images && (
                 <div className="update-images">
                   {update.images.map((image, index) => (
@@ -385,7 +421,10 @@ export default function CauseDetailsPage() {
                 <Avatar src={comment.avatar} icon={<UserOutlined />} />
                 <div>
                   <Text className="comment-author">{comment.author}</Text>
-                  <Text className="comment-date"> • {formatDate(comment.date)}</Text>
+                  <Text className="comment-date">
+                    {" "}
+                    • {formatDate(comment.date)}
+                  </Text>
                 </div>
               </div>
               <Paragraph className="comment-content">
@@ -404,7 +443,10 @@ export default function CauseDetailsPage() {
                     <Avatar icon={<UserOutlined />} size="small" />
                     <div>
                       <Text className="comment-author">{reply.author}</Text>
-                      <Text className="comment-date"> • {formatDate(reply.date)}</Text>
+                      <Text className="comment-date">
+                        {" "}
+                        • {formatDate(reply.date)}
+                      </Text>
                     </div>
                   </div>
                   <Paragraph className="comment-content">
@@ -428,7 +470,7 @@ export default function CauseDetailsPage() {
             <img src={cause.imageUrl} alt={cause.title} />
           </div>
           <div className="cause-details-overlay" />
-          
+
           <div className="cause-details-content">
             <motion.div
               initial="hidden"
@@ -452,9 +494,11 @@ export default function CauseDetailsPage() {
 
               <motion.div variants={fadeInUp}>
                 <div className="cause-tags">
-                  <Tag 
+                  <Tag
                     className="cause-tag-urgency"
-                    style={{ backgroundColor: getUrgencyColor(cause.urgencyLevel) }}
+                    style={{
+                      backgroundColor: getUrgencyColor(cause.urgencyLevel),
+                    }}
                   >
                     {cause.urgencyLevel.toUpperCase()} PRIORITY
                   </Tag>
@@ -586,15 +630,21 @@ export default function CauseDetailsPage() {
 
                       <div className="progress-stats">
                         <div className="progress-stat">
-                          <div className="progress-stat-value">{progressPercentage}%</div>
+                          <div className="progress-stat-value">
+                            {progressPercentage}%
+                          </div>
                           <div className="progress-stat-label">Funded</div>
                         </div>
                         <div className="progress-stat">
-                          <div className="progress-stat-value">{cause.contributors.length}</div>
+                          <div className="progress-stat-value">
+                            {cause.contributors.length}
+                          </div>
                           <div className="progress-stat-label">Supporters</div>
                         </div>
                         <div className="progress-stat">
-                          <div className="progress-stat-value">{daysLeft || 0}</div>
+                          <div className="progress-stat-value">
+                            {daysLeft || 0}
+                          </div>
                           <div className="progress-stat-label">Days Left</div>
                         </div>
                       </div>
@@ -609,10 +659,16 @@ export default function CauseDetailsPage() {
                       </Button>
 
                       <div className="share-buttons">
-                        <Button icon={<ShareAltOutlined />} className="share-button">
+                        <Button
+                          icon={<ShareAltOutlined />}
+                          className="share-button"
+                        >
                           Share
                         </Button>
-                        <Button icon={<BookOutlined />} className="share-button">
+                        <Button
+                          icon={<BookOutlined />}
+                          className="share-button"
+                        >
                           Save
                         </Button>
                       </div>
@@ -630,9 +686,12 @@ export default function CauseDetailsPage() {
                           className="creator-avatar"
                         />
                         <div className="creator-info">
-                          <div className="creator-name">{cause.creator.name}</div>
+                          <div className="creator-name">
+                            {cause.creator.name}
+                          </div>
                           <div className="creator-stats">
-                            {cause.creator.causesCreated} causes • ${cause.creator.totalRaised.toLocaleString()} raised
+                            {cause.creator.causesCreated} causes • $
+                            {cause.creator.totalRaised.toLocaleString()} raised
                           </div>
                         </div>
                       </div>
@@ -650,10 +709,16 @@ export default function CauseDetailsPage() {
                       </div>
 
                       <div className="creator-contact">
-                        <Button icon={<MessageOutlined />} className="contact-button">
+                        <Button
+                          icon={<MessageOutlined />}
+                          className="contact-button"
+                        >
                           Message
                         </Button>
-                        <Button icon={<UserOutlined />} className="contact-button">
+                        <Button
+                          icon={<UserOutlined />}
+                          className="contact-button"
+                        >
                           Profile
                         </Button>
                       </div>
@@ -676,7 +741,9 @@ export default function CauseDetailsPage() {
                                 size="small"
                               />
                               <Text className="contributor-name">
-                                {contributor.anonymous ? "Anonymous" : contributor.name}
+                                {contributor.anonymous
+                                  ? "Anonymous"
+                                  : contributor.name}
                               </Text>
                             </div>
                             <Text className="contributor-amount">
@@ -723,7 +790,9 @@ export default function CauseDetailsPage() {
                   <Button
                     key={amount}
                     onClick={() => setDonateAmount(amount.toString())}
-                    type={donateAmount === amount.toString() ? "primary" : "default"}
+                    type={
+                      donateAmount === amount.toString() ? "primary" : "default"
+                    }
                   >
                     ${amount}
                   </Button>

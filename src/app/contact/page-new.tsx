@@ -1,37 +1,37 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Row, Col, Typography, Form, Input, Button, Space } from 'antd';
-import { 
-  MailOutlined, 
-  PhoneOutlined, 
+import React from "react";
+import { Card, Row, Col, Typography, Form, Input, Button, Space } from "antd";
+import {
+  MailOutlined,
+  PhoneOutlined,
   EnvironmentOutlined,
   ClockCircleOutlined,
   MessageOutlined,
-  SendOutlined
-} from '@ant-design/icons';
-import { motion } from 'framer-motion';
-import { MainLayout } from '@/components/layout/MainLayout';
+  SendOutlined,
+} from "@ant-design/icons";
+import { motion } from "framer-motion";
+import { MainLayout } from "@/components/layout/MainLayout";
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+  },
 };
 
 const staggerContainer = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const contactInfo = [
@@ -39,26 +39,26 @@ const contactInfo = [
     icon: <MailOutlined />,
     title: "Email Us",
     content: "hello@hands2gether.com",
-    description: "Send us an email and we'll respond within 24 hours"
+    description: "Send us an email and we'll respond within 24 hours",
   },
   {
     icon: <PhoneOutlined />,
     title: "Call Us",
     content: "+1 (555) 123-4567",
-    description: "Monday to Friday, 9 AM to 6 PM PST"
+    description: "Monday to Friday, 9 AM to 6 PM PST",
   },
   {
     icon: <EnvironmentOutlined />,
     title: "Visit Us",
     content: "123 Community St, San Francisco, CA 94102",
-    description: "Our office is open for scheduled visits"
+    description: "Our office is open for scheduled visits",
   },
   {
     icon: <ClockCircleOutlined />,
     title: "Business Hours",
     content: "Mon - Fri: 9:00 AM - 6:00 PM",
-    description: "We're here to help during business hours"
-  }
+    description: "We're here to help during business hours",
+  },
 ];
 
 export default function ContactPage() {
@@ -66,12 +66,12 @@ export default function ContactPage() {
 
   const handleSubmit = async (values: any) => {
     try {
-      console.log('Contact form submission:', values);
+      console.log("Contact form submission:", values);
       // TODO: Implement actual form submission
       form.resetFields();
       // Show success message
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     }
   };
 
@@ -91,8 +91,9 @@ export default function ContactPage() {
                 Get in Touch
               </Title>
               <Paragraph className="page-hero-description">
-                Have questions, suggestions, or need help? We'd love to hear from you. 
-                Our team is here to support you and your community initiatives.
+                Have questions, suggestions, or need help? We'd love to hear
+                from you. Our team is here to support you and your community
+                initiatives.
               </Paragraph>
             </motion.div>
           </motion.div>
@@ -124,21 +125,24 @@ export default function ContactPage() {
                     <motion.div variants={fadeInUp}>
                       <Card className="contact-info-card" hoverable>
                         <div className="contact-icon">
-                          {React.cloneElement(info.icon, { 
-                            style: { 
-                              fontSize: '2rem',
-                              color: index === 0 ? '#1890ff' : 
-                                     index === 1 ? '#52c41a' : 
-                                     index === 2 ? '#722ed1' : '#fa8c16'
-                            }
+                          {React.cloneElement(info.icon, {
+                            style: {
+                              fontSize: "2rem",
+                              color:
+                                index === 0
+                                  ? "#1890ff"
+                                  : index === 1
+                                    ? "#52c41a"
+                                    : index === 2
+                                      ? "#722ed1"
+                                      : "#fa8c16",
+                            },
                           })}
                         </div>
                         <Title level={4} className="contact-title">
                           {info.title}
                         </Title>
-                        <Text className="contact-value">
-                          {info.content}
-                        </Text>
+                        <Text className="contact-value">{info.content}</Text>
                         <Paragraph className="contact-description">
                           {info.description}
                         </Paragraph>
@@ -164,7 +168,8 @@ export default function ContactPage() {
                         Send us a Message
                       </Title>
                       <Paragraph className="form-description">
-                        Fill out the form below and we'll get back to you as soon as possible.
+                        Fill out the form below and we'll get back to you as
+                        soon as possible.
                       </Paragraph>
                     </div>
 
@@ -179,7 +184,12 @@ export default function ContactPage() {
                           <Form.Item
                             name="firstName"
                             label="First Name"
-                            rules={[{ required: true, message: 'Please enter your first name' }]}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter your first name",
+                              },
+                            ]}
                           >
                             <Input placeholder="Your first name" />
                           </Form.Item>
@@ -188,7 +198,12 @@ export default function ContactPage() {
                           <Form.Item
                             name="lastName"
                             label="Last Name"
-                            rules={[{ required: true, message: 'Please enter your last name' }]}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter your last name",
+                              },
+                            ]}
                           >
                             <Input placeholder="Your last name" />
                           </Form.Item>
@@ -199,8 +214,14 @@ export default function ContactPage() {
                         name="email"
                         label="Email Address"
                         rules={[
-                          { required: true, message: 'Please enter your email' },
-                          { type: 'email', message: 'Please enter a valid email' }
+                          {
+                            required: true,
+                            message: "Please enter your email",
+                          },
+                          {
+                            type: "email",
+                            message: "Please enter a valid email",
+                          },
                         ]}
                       >
                         <Input placeholder="your.email@example.com" />
@@ -209,7 +230,9 @@ export default function ContactPage() {
                       <Form.Item
                         name="subject"
                         label="Subject"
-                        rules={[{ required: true, message: 'Please enter a subject' }]}
+                        rules={[
+                          { required: true, message: "Please enter a subject" },
+                        ]}
                       >
                         <Input placeholder="What's this about?" />
                       </Form.Item>
@@ -217,7 +240,12 @@ export default function ContactPage() {
                       <Form.Item
                         name="message"
                         label="Message"
-                        rules={[{ required: true, message: 'Please enter your message' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter your message",
+                          },
+                        ]}
                       >
                         <TextArea
                           rows={6}
@@ -256,8 +284,9 @@ export default function ContactPage() {
                       For Media Inquiries
                     </Title>
                     <Paragraph className="contact-description">
-                      Interested in featuring Hands2gether in your publication or 
-                      interviewing our team? Reach out to our media relations team.
+                      Interested in featuring Hands2gether in your publication
+                      or interviewing our team? Reach out to our media relations
+                      team.
                     </Paragraph>
                     <Text strong className="contact-value">
                       media@hands2gether.com
@@ -270,8 +299,8 @@ export default function ContactPage() {
                       Partnership Opportunities
                     </Title>
                     <Paragraph className="contact-description">
-                      Looking to partner with us? We're always open to collaborating 
-                      with organizations that share our mission.
+                      Looking to partner with us? We're always open to
+                      collaborating with organizations that share our mission.
                     </Paragraph>
                     <Text strong className="contact-value">
                       partnerships@hands2gether.com
