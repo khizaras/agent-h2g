@@ -19,7 +19,7 @@ export interface User {
 
 export interface Category {
   id: number;
-  name: 'food' | 'clothes' | 'education';
+  name: "food" | "clothes" | "education";
   displayName: string;
   description: string;
   icon: string;
@@ -41,8 +41,8 @@ export interface BaseCause {
   longitude?: number;
   image?: string;
   gallery?: string[];
-  status: 'active' | 'pending' | 'completed' | 'suspended' | 'archived';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: "active" | "pending" | "completed" | "suspended" | "archived";
+  priority: "low" | "medium" | "high" | "urgent";
   isFeatured: boolean;
   viewCount: number;
   likeCount: number;
@@ -59,22 +59,39 @@ export interface BaseCause {
   completedAt?: string;
   user: User;
   category: Category;
+  // Additional properties for compatibility with mock data
+  goal_amount?: number;
+  raised_amount?: number;
+  percentage_complete?: number;
+  image_url?: string;
+  urgency_level?: string;
+  created_at?: string;
+  user_name?: string;
+  view_count?: number;
+  like_count?: number;
+  deadline?: string;
 }
 
 export interface FoodDetails {
   id: number;
   causeId: number;
-  foodType: 'perishable' | 'non-perishable' | 'prepared' | 'raw' | 'beverages' | 'snacks';
+  foodType:
+    | "perishable"
+    | "non-perishable"
+    | "prepared"
+    | "raw"
+    | "beverages"
+    | "snacks";
   cuisineType?: string;
   quantity: number;
-  unit: 'kg' | 'lbs' | 'servings' | 'portions' | 'items' | 'packages';
+  unit: "kg" | "lbs" | "servings" | "portions" | "items" | "packages";
   servingSize?: number;
   dietaryRestrictions?: string[];
   allergens?: string[];
   expirationDate?: string;
   preparationDate?: string;
   storageRequirements?: string;
-  temperatureRequirements: 'frozen' | 'refrigerated' | 'room-temp' | 'hot';
+  temperatureRequirements: "frozen" | "refrigerated" | "room-temp" | "hot";
   pickupInstructions?: string;
   deliveryAvailable: boolean;
   deliveryRadius?: number;
@@ -91,12 +108,20 @@ export interface FoodDetails {
 export interface ClothesDetails {
   id: number;
   causeId: number;
-  clothesType: 'men' | 'women' | 'children' | 'unisex' | 'infant' | 'maternity';
-  category: 'tops' | 'bottoms' | 'dresses' | 'outerwear' | 'underwear' | 'shoes' | 'accessories' | 'uniforms';
-  ageGroup: 'infant' | 'toddler' | 'child' | 'teen' | 'adult' | 'senior';
+  clothesType: "men" | "women" | "children" | "unisex" | "infant" | "maternity";
+  category:
+    | "tops"
+    | "bottoms"
+    | "dresses"
+    | "outerwear"
+    | "underwear"
+    | "shoes"
+    | "accessories"
+    | "uniforms";
+  ageGroup: "infant" | "toddler" | "child" | "teen" | "adult" | "senior";
   sizeRange: string[];
-  condition: 'new' | 'like-new' | 'gently-used' | 'used' | 'needs-repair';
-  season: 'all-season' | 'summer' | 'winter' | 'spring' | 'fall';
+  condition: "new" | "like-new" | "gently-used" | "used" | "needs-repair";
+  season: "all-season" | "summer" | "winter" | "spring" | "fall";
   quantity: number;
   colors?: string[];
   brands?: string[];
@@ -128,8 +153,20 @@ export interface LearningObjective {
 export interface EducationDetails {
   id: number;
   causeId: number;
-  educationType: 'course' | 'workshop' | 'seminar' | 'mentoring' | 'tutoring' | 'certification' | 'bootcamp';
-  skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'all-levels';
+  educationType:
+    | "course"
+    | "workshop"
+    | "seminar"
+    | "mentoring"
+    | "tutoring"
+    | "certification"
+    | "bootcamp";
+  skillLevel:
+    | "beginner"
+    | "intermediate"
+    | "advanced"
+    | "expert"
+    | "all-levels";
   topics: string[];
   maxTrainees: number;
   currentTrainees: number;
@@ -141,7 +178,7 @@ export interface EducationDetails {
   endDate: string;
   registrationDeadline?: string;
   schedule: ScheduleItem[];
-  deliveryMethod: 'online' | 'in-person' | 'hybrid';
+  deliveryMethod: "online" | "in-person" | "hybrid";
   locationDetails?: string;
   meetingPlatform?: string;
   meetingLink?: string;
@@ -183,7 +220,14 @@ export interface Registration {
   id: number;
   educationId: number;
   userId: number;
-  status: 'pending' | 'approved' | 'declined' | 'waitlisted' | 'completed' | 'dropped' | 'no-show';
+  status:
+    | "pending"
+    | "approved"
+    | "declined"
+    | "waitlisted"
+    | "completed"
+    | "dropped"
+    | "no-show";
   registrationDate: string;
   approvalDate?: string;
   completionDate?: string;
@@ -204,7 +248,7 @@ export interface Comment {
   causeId: number;
   userId: number;
   parentId?: number;
-  commentType: 'feedback' | 'question' | 'update' | 'review';
+  commentType: "feedback" | "question" | "update" | "review";
   content: string;
   rating?: number;
   isAnonymous: boolean;
@@ -223,7 +267,13 @@ export interface Notification {
   userId: number;
   title: string;
   message: string;
-  type: 'cause_update' | 'registration' | 'reminder' | 'completion' | 'admin' | 'system';
+  type:
+    | "cause_update"
+    | "registration"
+    | "reminder"
+    | "completion"
+    | "admin"
+    | "system";
   relatedCauseId?: number;
   relatedUserId?: number;
   actionUrl?: string;
@@ -240,15 +290,15 @@ export interface UserInteraction {
   id: number;
   userId: number;
   causeId: number;
-  interactionType: 'view' | 'like' | 'share' | 'follow' | 'contact';
+  interactionType: "view" | "like" | "share" | "follow" | "contact";
   createdAt: string;
 }
 
 export interface Media {
   id: number;
-  relatedType: 'cause' | 'user' | 'education' | 'comment';
+  relatedType: "cause" | "user" | "education" | "comment";
   relatedId: number;
-  fileType: 'image' | 'video' | 'document' | 'audio';
+  fileType: "image" | "video" | "document" | "audio";
   fileName: string;
   fileUrl: string;
   fileSize?: number;
@@ -291,7 +341,7 @@ export interface PaginationParams {
   page?: number;
   limit?: number;
   sort?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
 }
 
 export interface FilterParams extends PaginationParams {
@@ -320,19 +370,22 @@ export interface CreateCauseForm {
   availabilityHours?: string;
   specialInstructions?: string;
   tags?: string[];
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
 }
 
 export interface CreateFoodCauseForm extends CreateCauseForm {
-  foodDetails: Omit<FoodDetails, 'id' | 'causeId' | 'createdAt'>;
+  foodDetails: Omit<FoodDetails, "id" | "causeId" | "createdAt">;
 }
 
 export interface CreateClothesCauseForm extends CreateCauseForm {
-  clothesDetails: Omit<ClothesDetails, 'id' | 'causeId' | 'createdAt'>;
+  clothesDetails: Omit<ClothesDetails, "id" | "causeId" | "createdAt">;
 }
 
 export interface CreateEducationCauseForm extends CreateCauseForm {
-  educationDetails: Omit<EducationDetails, 'id' | 'causeId' | 'createdAt' | 'currentTrainees' | 'instructorRating'>;
+  educationDetails: Omit<
+    EducationDetails,
+    "id" | "causeId" | "createdAt" | "currentTrainees" | "instructorRating"
+  >;
 }
 
 // UI State Types
@@ -402,7 +455,7 @@ export interface ChartData {
 
 // Search Types
 export interface SearchResult {
-  type: 'cause' | 'user' | 'education';
+  type: "cause" | "user" | "education";
   id: number;
   title: string;
   description: string;
@@ -436,7 +489,12 @@ export interface SocketEvent {
 }
 
 export interface RealTimeUpdate {
-  type: 'cause_update' | 'new_cause' | 'registration' | 'comment' | 'notification';
+  type:
+    | "cause_update"
+    | "new_cause"
+    | "registration"
+    | "comment"
+    | "notification";
   data: any;
   timestamp: string;
 }

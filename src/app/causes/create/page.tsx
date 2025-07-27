@@ -68,7 +68,7 @@ interface CauseFormData {
   contactEmail: string;
   contactPhone?: string;
   contactPerson?: string;
-  
+
   // Food specific
   foodType?: string;
   cuisineType?: string;
@@ -159,7 +159,7 @@ const categories = [
   },
   {
     value: "clothes",
-    label: "Clothing Donation", 
+    label: "Clothing Donation",
     description: "Donate and request clothing items for all ages",
     icon: "👕",
     color: "#4ECDC4",
@@ -296,7 +296,7 @@ export default function CreateCausePage() {
         setCurrentStep(1);
         return;
       }
-      
+
       const values = await form.validateFields();
       setFormData({ ...formData, ...values });
       setCurrentStep(currentStep + 1);
@@ -329,7 +329,7 @@ export default function CreateCausePage() {
     try {
       // Add category to form data
       const submitData = { ...formData, ...values, category: selectedCategory };
-      
+
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -365,9 +365,12 @@ export default function CreateCausePage() {
         <div className="modern-category-selection">
           <div className="selection-header">
             <BookOutlined className="header-icon" />
-            <Title level={2}>What type of cause would you like to create?</Title>
+            <Title level={2}>
+              What type of cause would you like to create?
+            </Title>
             <Paragraph className="header-subtitle">
-              Choose the category that best fits your cause to get a customized form
+              Choose the category that best fits your cause to get a customized
+              form
             </Paragraph>
           </div>
 
@@ -382,7 +385,10 @@ export default function CreateCausePage() {
                   onClick={() => handleCategorySelect(category.value)}
                 >
                   <div className="category-content">
-                    <div className="category-icon" style={{ color: category.color }}>
+                    <div
+                      className="category-icon"
+                      style={{ color: category.color }}
+                    >
                       {category.icon}
                     </div>
                     <Title level={3} className="category-title">
@@ -407,7 +413,12 @@ export default function CreateCausePage() {
             <div className="step-header">
               <InfoCircleOutlined className="step-icon" />
               <Title level={3}>Basic Information</Title>
-              <Paragraph>Tell us about your {categories.find(c => c.value === selectedCategory)?.label.toLowerCase()}</Paragraph>
+              <Paragraph>
+                Tell us about your{" "}
+                {categories
+                  .find((c) => c.value === selectedCategory)
+                  ?.label.toLowerCase()}
+              </Paragraph>
             </div>
 
             <Form.Item
@@ -432,7 +443,10 @@ export default function CreateCausePage() {
               label="Short Description"
               rules={[
                 { required: true, message: "Please enter a short description" },
-                { max: 500, message: "Description should not exceed 500 characters" },
+                {
+                  max: 500,
+                  message: "Description should not exceed 500 characters",
+                },
               ]}
             >
               <TextArea
@@ -447,8 +461,14 @@ export default function CreateCausePage() {
               name="description"
               label="Detailed Description"
               rules={[
-                { required: true, message: "Please provide a detailed description" },
-                { min: 50, message: "Description should be at least 50 characters" },
+                {
+                  required: true,
+                  message: "Please provide a detailed description",
+                },
+                {
+                  min: 50,
+                  message: "Description should be at least 50 characters",
+                },
               ]}
             >
               <TextArea
@@ -473,7 +493,9 @@ export default function CreateCausePage() {
             <Form.Item
               name="priority"
               label="Priority Level"
-              rules={[{ required: true, message: "Please select priority level" }]}
+              rules={[
+                { required: true, message: "Please select priority level" },
+              ]}
             >
               <Radio.Group size="large">
                 <Radio.Button value="low">Low</Radio.Button>
@@ -492,7 +514,9 @@ export default function CreateCausePage() {
               <div className="step-header">
                 <FileTextOutlined className="step-icon" />
                 <Title level={3}>Food Details</Title>
-                <Paragraph>Provide specific information about the food</Paragraph>
+                <Paragraph>
+                  Provide specific information about the food
+                </Paragraph>
               </div>
 
               <Row gutter={[16, 16]}>
@@ -500,7 +524,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="foodType"
                     label="Food Type"
-                    rules={[{ required: true, message: "Please select food type" }]}
+                    rules={[
+                      { required: true, message: "Please select food type" },
+                    ]}
                   >
                     <Select size="large" placeholder="Select food type">
                       <Option value="fresh-produce">Fresh Produce</Option>
@@ -516,7 +542,10 @@ export default function CreateCausePage() {
                 </Col>
                 <Col xs={24} md={12}>
                   <Form.Item name="cuisineType" label="Cuisine Type">
-                    <Input size="large" placeholder="e.g., Italian, Indian, Mexican" />
+                    <Input
+                      size="large"
+                      placeholder="e.g., Italian, Indian, Mexican"
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -526,7 +555,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="quantity"
                     label="Quantity"
-                    rules={[{ required: true, message: "Please enter quantity" }]}
+                    rules={[
+                      { required: true, message: "Please enter quantity" },
+                    ]}
                   >
                     <InputNumber
                       size="large"
@@ -576,7 +607,11 @@ export default function CreateCausePage() {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item name="temperatureRequirements" label="Storage Temperature" initialValue="room-temp">
+                  <Form.Item
+                    name="temperatureRequirements"
+                    label="Storage Temperature"
+                    initialValue="room-temp"
+                  >
                     <Select size="large">
                       <Option value="frozen">Frozen</Option>
                       <Option value="refrigerated">Refrigerated</Option>
@@ -587,7 +622,10 @@ export default function CreateCausePage() {
                 </Col>
               </Row>
 
-              <Form.Item name="dietaryRestrictions" label="Dietary Restrictions">
+              <Form.Item
+                name="dietaryRestrictions"
+                label="Dietary Restrictions"
+              >
                 <Select
                   mode="multiple"
                   size="large"
@@ -623,10 +661,7 @@ export default function CreateCausePage() {
               </Row>
 
               <Form.Item name="ingredients" label="Ingredients">
-                <TextArea
-                  rows={3}
-                  placeholder="List main ingredients..."
-                />
+                <TextArea rows={3} placeholder="List main ingredients..." />
               </Form.Item>
 
               <Form.Item name="pickupInstructions" label="Pickup Instructions">
@@ -656,7 +691,9 @@ export default function CreateCausePage() {
               <div className="step-header">
                 <FileTextOutlined className="step-icon" />
                 <Title level={3}>Clothing Details</Title>
-                <Paragraph>Provide specific information about the clothing items</Paragraph>
+                <Paragraph>
+                  Provide specific information about the clothing items
+                </Paragraph>
               </div>
 
               <Row gutter={[16, 16]}>
@@ -664,7 +701,12 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="clothesType"
                     label="Clothing Type"
-                    rules={[{ required: true, message: "Please select clothing type" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select clothing type",
+                      },
+                    ]}
                   >
                     <Select size="large" placeholder="Select clothing type">
                       <Option value="donation">Donation (Giving Away)</Option>
@@ -676,7 +718,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="clothesCategory"
                     label="Category"
-                    rules={[{ required: true, message: "Please select category" }]}
+                    rules={[
+                      { required: true, message: "Please select category" },
+                    ]}
                   >
                     <Select size="large" placeholder="Select category">
                       <Option value="tops">Tops & Shirts</Option>
@@ -700,7 +744,9 @@ export default function CreateCausePage() {
                     name="ageGroup"
                     label="Age Group"
                     initialValue="adult"
-                    rules={[{ required: true, message: "Please select age group" }]}
+                    rules={[
+                      { required: true, message: "Please select age group" },
+                    ]}
                   >
                     <Select size="large">
                       <Option value="newborn">Newborn (0-3 months)</Option>
@@ -717,7 +763,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="condition"
                     label="Condition"
-                    rules={[{ required: true, message: "Please select condition" }]}
+                    rules={[
+                      { required: true, message: "Please select condition" },
+                    ]}
                   >
                     <Select size="large">
                       <Option value="new">New with Tags</Option>
@@ -733,7 +781,9 @@ export default function CreateCausePage() {
                     name="season"
                     label="Season"
                     initialValue="all-season"
-                    rules={[{ required: true, message: "Please select season" }]}
+                    rules={[
+                      { required: true, message: "Please select season" },
+                    ]}
                   >
                     <Select size="large">
                       <Option value="spring">Spring</Option>
@@ -811,7 +861,10 @@ export default function CreateCausePage() {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="materialComposition" label="Material Composition">
+              <Form.Item
+                name="materialComposition"
+                label="Material Composition"
+              >
                 <Input
                   size="large"
                   placeholder="e.g., 100% Cotton, 80% Cotton 20% Polyester"
@@ -850,7 +903,9 @@ export default function CreateCausePage() {
               <div className="step-header">
                 <FileTextOutlined className="step-icon" />
                 <Title level={3}>Education Details</Title>
-                <Paragraph>Provide information about your course or training</Paragraph>
+                <Paragraph>
+                  Provide information about your course or training
+                </Paragraph>
               </div>
 
               <Row gutter={[16, 16]}>
@@ -858,7 +913,12 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="educationType"
                     label="Education Type"
-                    rules={[{ required: true, message: "Please select education type" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select education type",
+                      },
+                    ]}
                   >
                     <Select size="large" placeholder="Select type">
                       <Option value="course">Online Course</Option>
@@ -866,7 +926,9 @@ export default function CreateCausePage() {
                       <Option value="seminar">Seminar</Option>
                       <Option value="bootcamp">Bootcamp</Option>
                       <Option value="mentoring">1-on-1 Mentoring</Option>
-                      <Option value="certification">Certification Program</Option>
+                      <Option value="certification">
+                        Certification Program
+                      </Option>
                       <Option value="tutoring">Tutoring</Option>
                       <Option value="webinar">Webinar</Option>
                     </Select>
@@ -877,7 +939,9 @@ export default function CreateCausePage() {
                     name="skillLevel"
                     label="Skill Level"
                     initialValue="all-levels"
-                    rules={[{ required: true, message: "Please select skill level" }]}
+                    rules={[
+                      { required: true, message: "Please select skill level" },
+                    ]}
                   >
                     <Select size="large">
                       <Option value="beginner">Beginner</Option>
@@ -923,7 +987,12 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="maxTrainees"
                     label="Max Participants"
-                    rules={[{ required: true, message: "Please enter max participants" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter max participants",
+                      },
+                    ]}
                   >
                     <InputNumber
                       size="large"
@@ -938,7 +1007,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="durationHours"
                     label="Duration (Hours)"
-                    rules={[{ required: true, message: "Please enter duration" }]}
+                    rules={[
+                      { required: true, message: "Please enter duration" },
+                    ]}
                   >
                     <InputNumber
                       size="large"
@@ -952,7 +1023,12 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="numberOfDays"
                     label="Number of Days"
-                    rules={[{ required: true, message: "Please enter number of days" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter number of days",
+                      },
+                    ]}
                   >
                     <InputNumber
                       size="large"
@@ -967,12 +1043,11 @@ export default function CreateCausePage() {
               <Form.Item
                 name="instructorName"
                 label="Instructor Name"
-                rules={[{ required: true, message: "Please enter instructor name" }]}
+                rules={[
+                  { required: true, message: "Please enter instructor name" },
+                ]}
               >
-                <Input
-                  size="large"
-                  placeholder="Name of the instructor"
-                />
+                <Input size="large" placeholder="Name of the instructor" />
               </Form.Item>
 
               <Form.Item name="instructorBio" label="Instructor Bio">
@@ -1000,11 +1075,7 @@ export default function CreateCausePage() {
 
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
-                  <Form.Item
-                    name="price"
-                    label="Price ($)"
-                    initialValue={0}
-                  >
+                  <Form.Item name="price" label="Price ($)" initialValue={0}>
                     <InputNumber
                       size="large"
                       style={{ width: "100%" }}
@@ -1014,7 +1085,11 @@ export default function CreateCausePage() {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item name="isFree" valuePropName="checked" initialValue={true}>
+                  <Form.Item
+                    name="isFree"
+                    valuePropName="checked"
+                    initialValue={true}
+                  >
                     <Checkbox>This is a free course</Checkbox>
                   </Form.Item>
                 </Col>
@@ -1057,7 +1132,9 @@ export default function CreateCausePage() {
               <div className="step-header">
                 <CalendarOutlined className="step-icon" />
                 <Title level={3}>Schedule & Delivery</Title>
-                <Paragraph>Set up the course schedule and delivery method</Paragraph>
+                <Paragraph>
+                  Set up the course schedule and delivery method
+                </Paragraph>
               </div>
 
               <Row gutter={[16, 16]}>
@@ -1065,7 +1142,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="startDate"
                     label="Start Date"
-                    rules={[{ required: true, message: "Please select start date" }]}
+                    rules={[
+                      { required: true, message: "Please select start date" },
+                    ]}
                   >
                     <DatePicker
                       size="large"
@@ -1078,7 +1157,9 @@ export default function CreateCausePage() {
                   <Form.Item
                     name="endDate"
                     label="End Date"
-                    rules={[{ required: true, message: "Please select end date" }]}
+                    rules={[
+                      { required: true, message: "Please select end date" },
+                    ]}
                   >
                     <DatePicker
                       size="large"
@@ -1089,7 +1170,10 @@ export default function CreateCausePage() {
                 </Col>
               </Row>
 
-              <Form.Item name="registrationDeadline" label="Registration Deadline">
+              <Form.Item
+                name="registrationDeadline"
+                label="Registration Deadline"
+              >
                 <DatePicker
                   size="large"
                   style={{ width: "100%" }}
@@ -1100,7 +1184,9 @@ export default function CreateCausePage() {
               <Form.Item
                 name="deliveryMethod"
                 label="Delivery Method"
-                rules={[{ required: true, message: "Please select delivery method" }]}
+                rules={[
+                  { required: true, message: "Please select delivery method" },
+                ]}
               >
                 <Radio.Group size="large">
                   <Radio.Button value="online">Online</Radio.Button>
@@ -1116,7 +1202,10 @@ export default function CreateCausePage() {
                 />
               </Form.Item>
 
-              <Form.Item name="meetingPlatform" label="Meeting Platform (for online)">
+              <Form.Item
+                name="meetingPlatform"
+                label="Meeting Platform (for online)"
+              >
                 <Select size="large" placeholder="Select platform">
                   <Option value="zoom">Zoom</Option>
                   <Option value="teams">Microsoft Teams</Option>
@@ -1163,7 +1252,7 @@ export default function CreateCausePage() {
             </div>
           );
         }
-        // Fall through to Contact & Media for other categories
+      // Fall through to Contact & Media for other categories
       case 4:
         if (selectedCategory === "education" && currentStep === 4) {
           // Contact & Media for education
@@ -1247,9 +1336,10 @@ export default function CreateCausePage() {
       case 5:
       case 6:
         // Review step - adjust case number based on category
-        const isReviewStep = (selectedCategory === "education" && currentStep === 5) ||
-                            (selectedCategory !== "education" && currentStep === 4);
-        
+        const isReviewStep =
+          (selectedCategory === "education" && currentStep === 5) ||
+          (selectedCategory !== "education" && currentStep === 6);
+
         if (!isReviewStep) return null;
 
         return (
@@ -1257,14 +1347,21 @@ export default function CreateCausePage() {
             <div className="step-header">
               <CheckCircleOutlined className="step-icon" />
               <Title level={3}>Review Your Cause</Title>
-              <Paragraph>Please review all information before publishing</Paragraph>
+              <Paragraph>
+                Please review all information before publishing
+              </Paragraph>
             </div>
 
             <Card title="Basic Information" className="review-card">
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <Text strong>Category:</Text>
-                  <div>{categories.find(c => c.value === selectedCategory)?.label}</div>
+                  <div>
+                    {
+                      categories.find((c) => c.value === selectedCategory)
+                        ?.label
+                    }
+                  </div>
                 </Col>
                 <Col span={12}>
                   <Text strong>Title:</Text>
@@ -1294,15 +1391,21 @@ export default function CreateCausePage() {
                   </Col>
                   <Col span={12}>
                     <Text strong>Quantity:</Text>
-                    <div>{formData.quantity} {formData.unit}</div>
+                    <div>
+                      {formData.quantity} {formData.unit}
+                    </div>
                   </Col>
                   <Col span={12}>
                     <Text strong>Temperature:</Text>
-                    <div className="capitalize">{formData.temperatureRequirements}</div>
+                    <div className="capitalize">
+                      {formData.temperatureRequirements}
+                    </div>
                   </Col>
                   <Col span={12}>
                     <Text strong>Dietary Restrictions:</Text>
-                    <div>{formData.dietaryRestrictions?.join(", ") || "None"}</div>
+                    <div>
+                      {formData.dietaryRestrictions?.join(", ") || "None"}
+                    </div>
                   </Col>
                 </Row>
               </Card>
@@ -1352,7 +1455,10 @@ export default function CreateCausePage() {
                   </Col>
                   <Col span={12}>
                     <Text strong>Duration:</Text>
-                    <div>{formData.durationHours} hours over {formData.numberOfDays} days</div>
+                    <div>
+                      {formData.durationHours} hours over{" "}
+                      {formData.numberOfDays} days
+                    </div>
                   </Col>
                   <Col span={12}>
                     <Text strong>Max Participants:</Text>
@@ -1455,10 +1561,10 @@ export default function CreateCausePage() {
               className="hero-text"
             >
               <Title level={1} className="modern-hero-title">
-                Create a New 
+                Create a New
                 <span className="title-highlight"> Cause</span>
               </Title>
-              
+
               <Paragraph className="modern-hero-subtitle">
                 Share your passion and create positive change in your community.
                 Every great movement starts with a single step.
@@ -1475,7 +1581,6 @@ export default function CreateCausePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-
               {/* Progress Steps */}
               <Card className="modern-cause-card">
                 <Steps
@@ -1508,67 +1613,67 @@ export default function CreateCausePage() {
                   initialValues={formData}
                   size="large"
                 >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderStepContent()}
-                  </motion.div>
-                </AnimatePresence>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {renderStepContent()}
+                    </motion.div>
+                  </AnimatePresence>
 
-                {/* Navigation Buttons */}
-                <div className="form-navigation">
-                  <div>
-                    {(currentStep > 0 || showCategoryForm) && (
+                  {/* Navigation Buttons */}
+                  <div className="form-navigation">
+                    <div>
+                      {(currentStep > 0 || showCategoryForm) && (
+                        <Button
+                          size="large"
+                          onClick={prevStep}
+                          icon={<LeftOutlined />}
+                          className="nav-btn secondary"
+                        >
+                          Previous
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="nav-right">
                       <Button
                         size="large"
-                        onClick={prevStep}
-                        icon={<LeftOutlined />}
+                        onClick={() => router.push("/causes")}
                         className="nav-btn secondary"
                       >
-                        Previous
+                        Save as Draft
                       </Button>
-                    )}
-                  </div>
 
-                  <div className="nav-right">
-                    <Button
-                      size="large"
-                      onClick={() => router.push("/causes")}
-                      className="nav-btn secondary"
-                    >
-                      Save as Draft
-                    </Button>
-
-                    {currentStep < steps.length - 1 ? (
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={nextStep}
-                        className="nav-btn primary"
-                      >
-                        Next Step
-                        <RightOutlined />
-                      </Button>
-                    ) : (
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={loading}
-                        size="large"
-                        className="nav-btn primary"
-                        icon={<CheckCircleOutlined />}
-                      >
-                        Publish Cause
-                      </Button>
-                    )}
+                      {currentStep < steps.length - 1 ? (
+                        <Button
+                          type="primary"
+                          size="large"
+                          onClick={nextStep}
+                          className="nav-btn primary"
+                        >
+                          Next Step
+                          <RightOutlined />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          loading={loading}
+                          size="large"
+                          className="nav-btn primary"
+                          icon={<CheckCircleOutlined />}
+                        >
+                          Publish Cause
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Form>
+                </Form>
               </Card>
             </motion.div>
           </div>

@@ -12,13 +12,7 @@ import {
   Tag,
   Pagination,
 } from "antd";
-import {
-  FiHeart,
-  FiMapPin,
-  FiSearch,
-  FiUser,
-  FiPlus,
-} from "react-icons/fi";
+import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus } from "react-icons/fi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -44,11 +38,12 @@ interface Cause {
   deadline: string;
 }
 
-const mockCauses: Cause[] = [
+const mockCauses: any[] = [
   {
     id: 1,
     title: "Emergency Food Relief for Hurricane Victims",
-    description: "Providing immediate food assistance to families displaced by recent hurricane damage in coastal communities.",
+    description:
+      "Providing immediate food assistance to families displaced by recent hurricane damage in coastal communities.",
     location: "Miami, FL",
     category: "Emergency Relief",
     urgency_level: "critical",
@@ -57,7 +52,8 @@ const mockCauses: Cause[] = [
     goal_amount: 25000,
     raised_amount: 18500,
     percentage_complete: 74,
-    image_url: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=600&fit=crop",
     tags: ["emergency", "food-relief", "hurricane", "families"],
     view_count: 1245,
     like_count: 189,
@@ -66,7 +62,8 @@ const mockCauses: Cause[] = [
   {
     id: 2,
     title: "Community Food Bank Expansion",
-    description: "Expanding our local food bank to serve 500 more families weekly with fresh produce and nutritious meals.",
+    description:
+      "Expanding our local food bank to serve 500 more families weekly with fresh produce and nutritious meals.",
     location: "Seattle, WA",
     category: "Food Banks",
     urgency_level: "high",
@@ -75,7 +72,8 @@ const mockCauses: Cause[] = [
     goal_amount: 50000,
     raised_amount: 28000,
     percentage_complete: 56,
-    image_url: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&h=600&fit=crop",
     tags: ["food-bank", "expansion", "families", "nutrition"],
     view_count: 892,
     like_count: 145,
@@ -84,7 +82,8 @@ const mockCauses: Cause[] = [
   {
     id: 3,
     title: "Mobile Community Kitchen Initiative",
-    description: "Creating a mobile kitchen to deliver hot, nutritious meals to underserved neighborhoods and elderly residents.",
+    description:
+      "Creating a mobile kitchen to deliver hot, nutritious meals to underserved neighborhoods and elderly residents.",
     location: "Austin, TX",
     category: "Community Kitchens",
     urgency_level: "medium",
@@ -93,7 +92,8 @@ const mockCauses: Cause[] = [
     goal_amount: 35000,
     raised_amount: 12000,
     percentage_complete: 34,
-    image_url: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=600&fit=crop",
     tags: ["mobile-kitchen", "elderly", "neighborhoods", "hot-meals"],
     view_count: 567,
     like_count: 78,
@@ -102,7 +102,8 @@ const mockCauses: Cause[] = [
   {
     id: 4,
     title: "School Breakfast Program Enhancement",
-    description: "Improving school breakfast programs to ensure no child starts their day hungry, focusing on nutritious options.",
+    description:
+      "Improving school breakfast programs to ensure no child starts their day hungry, focusing on nutritious options.",
     location: "Denver, CO",
     category: "School Meals",
     urgency_level: "medium",
@@ -111,7 +112,8 @@ const mockCauses: Cause[] = [
     goal_amount: 20000,
     raised_amount: 8500,
     percentage_complete: 43,
-    image_url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
     tags: ["school-meals", "children", "nutrition", "education"],
     view_count: 423,
     like_count: 56,
@@ -120,7 +122,8 @@ const mockCauses: Cause[] = [
   {
     id: 5,
     title: "Senior Meal Delivery Service",
-    description: "Providing weekly meal deliveries to homebound seniors, ensuring they receive proper nutrition and social connection.",
+    description:
+      "Providing weekly meal deliveries to homebound seniors, ensuring they receive proper nutrition and social connection.",
     location: "Portland, OR",
     category: "Senior Support",
     urgency_level: "high",
@@ -129,7 +132,8 @@ const mockCauses: Cause[] = [
     goal_amount: 30000,
     raised_amount: 19000,
     percentage_complete: 63,
-    image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop",
     tags: ["senior-support", "meal-delivery", "nutrition", "social"],
     view_count: 634,
     like_count: 92,
@@ -138,7 +142,8 @@ const mockCauses: Cause[] = [
   {
     id: 6,
     title: "Urban Farm Fresh Produce Distribution",
-    description: "Creating sustainable urban farms to provide fresh, organic produce to food-insecure neighborhoods.",
+    description:
+      "Creating sustainable urban farms to provide fresh, organic produce to food-insecure neighborhoods.",
     location: "Detroit, MI",
     category: "Urban Farming",
     urgency_level: "low",
@@ -147,7 +152,8 @@ const mockCauses: Cause[] = [
     goal_amount: 45000,
     raised_amount: 15000,
     percentage_complete: 33,
-    image_url: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop",
+    image_url:
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop",
     tags: ["urban-farm", "organic", "sustainability", "fresh-produce"],
     view_count: 345,
     like_count: 42,
@@ -155,10 +161,9 @@ const mockCauses: Cause[] = [
   },
 ];
 
-
 export default function CausesPage() {
   const [causes, setCauses] = useState<Cause[]>(mockCauses);
-  const [filteredCauses, setFilteredCauses] = useState<Cause[]>(mockCauses);
+  const [filteredCauses, setFilteredCauses] = useState<any[]>(mockCauses);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
@@ -248,7 +253,8 @@ export default function CausesPage() {
                 Discover Causes That Matter
               </Title>
               <Paragraph className="hero-subtitle">
-                Browse meaningful initiatives in your community and join thousands making a real difference.
+                Browse meaningful initiatives in your community and join
+                thousands making a real difference.
               </Paragraph>
               <div className="hero-stats">
                 <div className="stat-item">
@@ -332,7 +338,11 @@ export default function CausesPage() {
                         <img src={cause.image_url} alt={cause.title} />
                         <Tag
                           className={`urgency-tag urgency-${cause.urgency_level}`}
-                          style={{ backgroundColor: getUrgencyColor(cause.urgency_level) }}
+                          style={{
+                            backgroundColor: getUrgencyColor(
+                              cause.urgency_level,
+                            ),
+                          }}
                         >
                           {cause.urgency_level.toUpperCase()}
                         </Tag>
@@ -340,7 +350,7 @@ export default function CausesPage() {
 
                       <div className="cause-content">
                         <div className="cause-category">{cause.category}</div>
-                        
+
                         <Title level={4} className="cause-title">
                           {cause.title}
                         </Title>
@@ -351,16 +361,22 @@ export default function CausesPage() {
 
                         <div className="cause-progress">
                           <div className="progress-info">
-                            <span className="raised">${cause.raised_amount.toLocaleString()}</span>
-                            <span className="percentage">{cause.percentage_complete}% funded</span>
+                            <span className="raised">
+                              ${cause.raised_amount.toLocaleString()}
+                            </span>
+                            <span className="percentage">
+                              {cause.percentage_complete}% funded
+                            </span>
                           </div>
                           <div className="progress-bar">
-                            <div 
-                              className="progress-fill" 
+                            <div
+                              className="progress-fill"
                               style={{ width: `${cause.percentage_complete}%` }}
                             />
                           </div>
-                          <div className="goal">Goal: ${cause.goal_amount.toLocaleString()}</div>
+                          <div className="goal">
+                            Goal: ${cause.goal_amount.toLocaleString()}
+                          </div>
                         </div>
 
                         <div className="cause-meta">
@@ -375,7 +391,11 @@ export default function CausesPage() {
                         </div>
 
                         <Link href={`/causes/${cause.id}`}>
-                          <Button type="primary" block className="modern-btn-primary">
+                          <Button
+                            type="primary"
+                            block
+                            className="modern-btn-primary"
+                          >
                             <FiHeart style={{ marginRight: 8 }} />
                             Support This Cause
                           </Button>
@@ -385,7 +405,6 @@ export default function CausesPage() {
                   </motion.div>
                 </Col>
               ))}
-
             </Row>
 
             {/* Pagination */}
@@ -397,7 +416,9 @@ export default function CausesPage() {
                   pageSize={pageSize}
                   onChange={setCurrentPage}
                   showSizeChanger={false}
-                  showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} causes`}
+                  showTotal={(total, range) =>
+                    `${range[0]}-${range[1]} of ${total} causes`
+                  }
                 />
               </div>
             )}
@@ -437,10 +458,15 @@ export default function CausesPage() {
                 Start Your Own Cause
               </Title>
               <Paragraph className="cta-description">
-                Can't find what you're looking for? Create your own cause and start building support for what matters to your community.
+                Can't find what you're looking for? Create your own cause and
+                start building support for what matters to your community.
               </Paragraph>
               <Link href="/causes/create">
-                <Button type="primary" size="large" className="modern-btn-primary">
+                <Button
+                  type="primary"
+                  size="large"
+                  className="modern-btn-primary"
+                >
                   <FiPlus style={{ marginRight: 8 }} />
                   Create a Cause
                 </Button>

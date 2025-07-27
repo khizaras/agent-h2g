@@ -52,6 +52,7 @@ import {
   BellOutlined,
   EyeOutlined,
   MessageOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -59,7 +60,10 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { unsplashImages, getRandomCauseImage } from "@/services/unsplashService";
+import {
+  unsplashImages,
+  getRandomCauseImage,
+} from "@/services/unsplashService";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -208,7 +212,8 @@ export default function ProfilePage() {
         {
           id: 1,
           title: "Emergency Food Relief for Hurricane Victims",
-          description: "Providing immediate food assistance to families displaced by recent hurricane damage.",
+          description:
+            "Providing immediate food assistance to families displaced by recent hurricane damage.",
           status: "active",
           raised: 48750,
           goal: 75000,
@@ -219,7 +224,8 @@ export default function ProfilePage() {
         {
           id: 2,
           title: "Community Food Bank Expansion",
-          description: "Expanding our local food bank to serve 500 more families weekly.",
+          description:
+            "Expanding our local food bank to serve 500 more families weekly.",
           status: "completed",
           raised: 50000,
           goal: 50000,
@@ -230,7 +236,8 @@ export default function ProfilePage() {
         {
           id: 3,
           title: "Mobile Kitchen Initiative",
-          description: "Creating a mobile kitchen to deliver hot meals to underserved neighborhoods.",
+          description:
+            "Creating a mobile kitchen to deliver hot meals to underserved neighborhoods.",
           status: "active",
           raised: 12000,
           goal: 35000,
@@ -442,7 +449,11 @@ export default function ProfilePage() {
                       <div className="flex items-center space-x-2">
                         <CalendarOutlined />
                         <span>
-                          Joined {new Date(profile.joinedDate).toLocaleDateString("en-US", { year: "numeric", month: "long" })}
+                          Joined{" "}
+                          {new Date(profile.joinedDate).toLocaleDateString(
+                            "en-US",
+                            { year: "numeric", month: "long" },
+                          )}
                         </span>
                       </div>
                     </div>
@@ -614,17 +625,14 @@ export default function ProfilePage() {
                                         <CheckCircleOutlined className="text-green-500" />
                                       )}
                                     </div>
-                                    <Text
-                                      type="secondary"
-                                      className="text-sm"
-                                    >
+                                    <Text type="secondary" className="text-sm">
                                       {badge.description}
                                     </Text>
                                     {badge.earned && badge.earnedDate && (
                                       <div className="text-xs text-gray-400 mt-1">
                                         Earned{" "}
                                         {new Date(
-                                          badge.earnedDate
+                                          badge.earnedDate,
                                         ).toLocaleDateString()}
                                       </div>
                                     )}
@@ -650,13 +658,14 @@ export default function ProfilePage() {
                                 <div>
                                   <Text strong>{activity.description}</Text>
                                   <div className="text-sm text-gray-500">
-                                    {new Date(
-                                      activity.date
-                                    ).toLocaleDateString("en-US", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    })}
+                                    {new Date(activity.date).toLocaleDateString(
+                                      "en-US",
+                                      {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      },
+                                    )}
                                   </div>
                                 </div>
                               ),
@@ -718,7 +727,7 @@ export default function ProfilePage() {
                                     </Text>
                                     <Text type="secondary" className="text-sm">
                                       {Math.round(
-                                        (cause.raised / cause.goal) * 100
+                                        (cause.raised / cause.goal) * 100,
                                       )}
                                       %
                                     </Text>
@@ -745,7 +754,7 @@ export default function ProfilePage() {
                                   <Text type="secondary" className="text-xs">
                                     Created{" "}
                                     {new Date(
-                                      cause.createdAt
+                                      cause.createdAt,
                                     ).toLocaleDateString()}
                                   </Text>
                                   <Link href={`/causes/${cause.id}`}>
@@ -801,8 +810,8 @@ export default function ProfilePage() {
                                     contribution.type === "donation"
                                       ? "bg-green-100 text-green-600"
                                       : contribution.type === "volunteer"
-                                      ? "bg-blue-100 text-blue-600"
-                                      : "bg-purple-100 text-purple-600"
+                                        ? "bg-blue-100 text-blue-600"
+                                        : "bg-purple-100 text-purple-600"
                                   }
                                 />
                               }
@@ -814,8 +823,8 @@ export default function ProfilePage() {
                                       contribution.type === "donation"
                                         ? "green"
                                         : contribution.type === "volunteer"
-                                        ? "blue"
-                                        : "purple"
+                                          ? "blue"
+                                          : "purple"
                                     }
                                     className="capitalize"
                                   >
@@ -827,7 +836,8 @@ export default function ProfilePage() {
                                 <div className="space-y-1">
                                   {contribution.type === "donation" && (
                                     <Text>
-                                      Donated {formatCurrency(contribution.amount)}
+                                      Donated{" "}
+                                      {formatCurrency(contribution.amount)}
                                     </Text>
                                   )}
                                   {contribution.type === "volunteer" && (
@@ -842,7 +852,7 @@ export default function ProfilePage() {
                                   )}
                                   <div className="text-sm text-gray-500">
                                     {new Date(
-                                      contribution.date
+                                      contribution.date,
                                     ).toLocaleDateString("en-US", {
                                       year: "numeric",
                                       month: "long",
@@ -889,7 +899,11 @@ export default function ProfilePage() {
             onFinish={handleEditProfile}
             initialValues={profile}
           >
-            <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>
+            <Form.Item
+              name="name"
+              label="Full Name"
+              rules={[{ required: true }]}
+            >
               <Input size="large" />
             </Form.Item>
 
@@ -912,7 +926,11 @@ export default function ProfilePage() {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="email" label="Email" rules={[{ type: "email" }]}>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[{ type: "email" }]}
+                >
                   <Input size="large" prefix={<MailOutlined />} />
                 </Form.Item>
               </Col>

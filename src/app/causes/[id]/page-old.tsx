@@ -22,8 +22,6 @@ import {
   Statistic,
   Badge,
   Tooltip,
-  Share,
-  Comment,
   Rate,
   Breadcrumb,
   Affix,
