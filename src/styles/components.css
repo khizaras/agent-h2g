@@ -546,7 +546,8 @@ body {
 .features-container,
 .causes-container,
 .testimonials-container,
-.cta-container {
+.cta-container,
+.stats-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
@@ -2744,4 +2745,204 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+/* ===== ENHANCED INTERACTIVE STATS STYLES ===== */
+
+/* Statistics Section */
+.stats-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #fff5f5 50%, #f6ffed 100%);
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(82, 196, 26, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(24, 144, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(114, 46, 209, 0.1) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+/* Stat Cards */
+.stat-card {
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  filter: brightness(1.02);
+}
+
+.stat-card-inner {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(10px);
+}
+
+.stat-card-inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #52c41a, #1890ff, #722ed1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover .stat-card-inner::before {
+  opacity: 1;
+}
+
+.stat-card:hover .stat-card-inner {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+/* Stat Icons */
+.stat-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Stat Numbers */
+.stat-number {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #333 0%, #666 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stat Labels */
+.stat-label {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px !important;
+}
+
+/* Stat Trends */
+.stat-trend {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(82, 196, 26, 0.1);
+  display: inline-block;
+  margin-top: 12px;
+}
+
+/* Trust Section */
+.trust-section {
+  position: relative;
+  z-index: 2;
+}
+
+.trust-badge {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.trust-badge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.trust-badge:hover::before {
+  left: 100%;
+}
+
+.trust-badge:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Responsive Design for Stats */
+@media (max-width: 768px) {
+  .stats-section {
+    padding: 60px 0;
+  }
+
+  .stat-number {
+    font-size: 36px;
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 32px !important;
+  }
+
+  .trust-badge {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-number {
+    font-size: 32px;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 28px !important;
+  }
 }
