@@ -936,25 +936,49 @@ export default function CreateCausePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {/* Progress Steps */}
-            <Card style={{ marginBottom: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <Steps
-                current={currentStep}
-                size="small"
-                items={steps.map((step, index) => ({
-                  title: step.title,
-                  description: step.description,
-                  icon: step.icon,
-                }))}
-              />
+            {/* Simplified Progress Header */}
+            <Card style={{ marginBottom: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', padding: '16px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
+                    {steps[currentStep]?.title}
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                    {steps[currentStep]?.description}
+                  </Text>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <Text strong style={{ fontSize: '16px', color: '#52c41a' }}>
+                    {currentStep + 1} / {steps.length}
+                  </Text>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete
+                  </div>
+                </div>
+              </div>
               <Progress
                 percent={((currentStep + 1) / steps.length) * 100}
                 showInfo={false}
-                strokeColor="#52c41a"
-                className="modern-progress-bar"
+                strokeColor={{
+                  '0%': '#52c41a',
+                  '100%': '#389e0d',
+                }}
+                trailColor="#f0f0f0"
+                strokeWidth={8}
+                style={{ marginBottom: '8px' }}
               />
-              <div className="progress-text">
-                Step {currentStep + 1} of {steps.length}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#999' }}>
+                {steps.map((step, index) => (
+                  <span 
+                    key={index}
+                    style={{ 
+                      color: index <= currentStep ? '#52c41a' : '#d9d9d9',
+                      fontWeight: index === currentStep ? 'bold' : 'normal'
+                    }}
+                  >
+                    {step.title}
+                  </span>
+                ))}
               </div>
             </Card>
 
