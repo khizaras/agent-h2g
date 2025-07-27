@@ -233,10 +233,9 @@ export default function HomePage() {
       suffix: "",
     },
     {
-      value: 1840000,
-      label: "Funds Raised",
-      prefix: "$",
-      icon: <FiTrendingUp />,
+      value: 1450,
+      label: "Meals Provided",
+      icon: <FiHeart />,
       trend: "+28% this quarter",
       color: "#1890ff",
       trendColor: "#52c41a",
@@ -245,7 +244,7 @@ export default function HomePage() {
     {
       value: 156,
       label: "Active Causes",
-      icon: <FiHeart />,
+      icon: <FiTrendingUp />,
       trend: "+5 this week",
       color: "#f5222d",
       trendColor: "#52c41a",
@@ -307,39 +306,39 @@ export default function HomePage() {
       title: "Weekend Meals for Local Families",
       description:
         "Providing nutritious weekend meals for children who rely on school breakfast and lunch programs.",
-      progress: 75,
-      goal: 5000,
-      raised: 3750,
       location: "Downtown Community Center",
       timeLeft: "5 days left",
       image: causeImages[0],
       tags: ["Children", "Education", "Urgent"],
+      participants: 45,
+      organizer: "Sarah Johnson",
+      category: "Food Assistance",
     },
     {
       id: 2,
       title: "Senior Citizens Grocery Support",
       description:
         "Helping elderly community members access fresh groceries and essential food items.",
-      progress: 60,
-      goal: 3000,
-      raised: 1800,
       location: "Riverside Senior Center",
       timeLeft: "12 days left",
       image: causeImages[1],
       tags: ["Seniors", "Ongoing", "Health"],
+      participants: 32,
+      organizer: "Michael Chen",
+      category: "Community Support",
     },
     {
       id: 3,
       title: "Mobile Food Pantry Initiative",
       description:
         "Bringing fresh food directly to underserved neighborhoods through our mobile pantry program.",
-      progress: 45,
-      goal: 8000,
-      raised: 3600,
       location: "Multiple Locations",
       timeLeft: "18 days left",
       image: causeImages[2],
       tags: ["Innovation", "Accessibility", "Impact"],
+      participants: 78,
+      organizer: "Emily Rodriguez",
+      category: "Food Distribution",
     },
   ];
 
@@ -444,7 +443,6 @@ export default function HomePage() {
                                 ? Math.floor(stat.value / 100) / 10
                                 : stat.value
                           }
-                          prefix={stat.prefix || ""}
                           suffix={
                             stat.value > 1000000
                               ? "M+"
@@ -533,7 +531,6 @@ export default function HomePage() {
                             <AnimatedCounter
                               value={stat.value}
                               duration={2000}
-                              prefix={stat.prefix}
                               suffix={stat.suffix}
                             />
                           </div>
@@ -735,53 +732,66 @@ export default function HomePage() {
                         )
                       }
                     >
-                      <Title level={4} className="cause-title">
-                        {cause.title}
-                      </Title>
-
-                      <Paragraph className="cause-description">
-                        {cause.description}
-                      </Paragraph>
-
-                      <div className="cause-progress">
-                        <Progress
-                          percent={cause.progress}
-                          showInfo={false}
-                          strokeColor={{
-                            "0%": "#40a9ff",
-                            "100%": "#1890ff",
-                          }}
-                          className="progress-bar"
-                        />
-                        <div className="progress-info">
-                          <Text strong className="progress-amount">
-                            ${cause.raised.toLocaleString()} raised
+                      <div className="cause-content">
+                        <div className="cause-header">
+                          <Text type="secondary" className="cause-category">
+                            {cause.category}
                           </Text>
-                          <Text type="secondary" className="progress-goal">
-                            of ${cause.goal.toLocaleString()} goal
-                          </Text>
+                          <Title level={4} className="cause-title">
+                            {cause.title}
+                          </Title>
+                        </div>
+
+                        <Paragraph className="cause-description">
+                          {cause.description}
+                        </Paragraph>
+
+                        <div className="cause-info">
+                          <div className="cause-organizer">
+                            <Text strong>Organized by:</Text>
+                            <Text className="organizer-name">
+                              {cause.organizer}
+                            </Text>
+                          </div>
+
+                          <div className="cause-engagement">
+                            <Space className="engagement-item">
+                              <FiUsers size={16} />
+                              <Text>{cause.participants} participating</Text>
+                            </Space>
+                          </div>
+                        </div>
+
+                        <div className="cause-meta">
+                          <Space className="meta-item">
+                            <FiMapPin size={14} />
+                            <Text type="secondary">{cause.location}</Text>
+                          </Space>
+                          <Space className="meta-item">
+                            <FiClock size={14} />
+                            <Text type="secondary">{cause.timeLeft}</Text>
+                          </Space>
+                        </div>
+
+                        <div className="cause-actions">
+                          <Button
+                            type="primary"
+                            block
+                            icon={<FiHeart />}
+                            className="cause-btn-primary"
+                          >
+                            Join This Cause
+                          </Button>
+                          <Button
+                            type="default"
+                            block
+                            icon={<FiExternalLink />}
+                            className="cause-btn-secondary"
+                          >
+                            Learn More
+                          </Button>
                         </div>
                       </div>
-
-                      <div className="cause-meta">
-                        <Space className="meta-item">
-                          <FiMapPin size={14} />
-                          <Text type="secondary">{cause.location}</Text>
-                        </Space>
-                        <Space className="meta-item">
-                          <FiClock size={14} />
-                          <Text type="secondary">{cause.timeLeft}</Text>
-                        </Space>
-                      </div>
-
-                      <Button
-                        type="primary"
-                        block
-                        icon={<FiHeart />}
-                        className="cause-btn"
-                      >
-                        Support This Cause
-                      </Button>
                     </Card>
                   </motion.div>
                 </Col>
