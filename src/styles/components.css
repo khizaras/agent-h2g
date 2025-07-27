@@ -717,6 +717,350 @@ body {
   }
 }
 
+/* ===== MODERN CREATE CAUSE PAGE ===== */
+
+/* Progress Card Styles */
+.modern-steps {
+  margin-bottom: 24px !important;
+}
+
+.modern-progress-bar {
+  margin: 24px 0 !important;
+  height: 8px !important;
+}
+
+.modern-progress-bar .ant-progress-bg {
+  border-radius: 4px !important;
+}
+
+.progress-text {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Category Selection */
+.modern-category-selection {
+  padding: 40px 0;
+}
+
+.selection-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.header-icon {
+  font-size: 64px !important;
+  color: var(--primary-color);
+  margin-bottom: 24px;
+  display: block;
+}
+
+.selection-header h2 {
+  color: var(--text-primary) !important;
+  margin-bottom: 16px !important;
+}
+
+.header-subtitle {
+  font-size: 16px !important;
+  color: var(--text-secondary) !important;
+  max-width: 500px;
+  margin: 0 auto !important;
+}
+
+.modern-category-card {
+  border-radius: var(--radius-lg) !important;
+  border: 2px solid var(--border-light) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer;
+  height: 280px;
+}
+
+.modern-category-card:hover {
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-4px);
+}
+
+.modern-category-card.selected {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 8px 25px rgba(82, 196, 26, 0.15) !important;
+  background: rgba(82, 196, 26, 0.02);
+}
+
+.category-content {
+  text-align: center;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.category-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.category-title {
+  color: var(--text-primary) !important;
+  margin-bottom: 12px !important;
+}
+
+.category-description {
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+  line-height: 1.6;
+}
+
+/* Form Steps */
+.modern-form-step {
+  min-height: 500px;
+  padding: 20px 0;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.step-icon {
+  font-size: 48px !important;
+  color: var(--primary-color);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.step-header h3 {
+  color: var(--text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.step-header .ant-typography {
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+}
+
+/* Form Elements */
+.modern-form-step .ant-form-item-label > label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modern-form-step .ant-input,
+.modern-form-step .ant-select-selector,
+.modern-form-step .ant-picker {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.modern-form-step .ant-input:focus,
+.modern-form-step .ant-select-focused .ant-select-selector,
+.modern-form-step .ant-picker:hover,
+.modern-form-step .ant-picker-focused {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.1) !important;
+}
+
+.modern-form-step .ant-radio-button-wrapper {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-color) !important;
+  margin-right: 8px;
+}
+
+.modern-form-step .ant-radio-button-wrapper-checked {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Upload Component */
+.modern-upload {
+  border: 2px dashed var(--border-color) !important;
+  border-radius: var(--radius-lg) !important;
+  background: #fafafa !important;
+  transition: var(--transition) !important;
+}
+
+.modern-upload:hover {
+  border-color: var(--primary-color) !important;
+  background: rgba(82, 196, 26, 0.02) !important;
+}
+
+.modern-upload .ant-upload-drag-icon {
+  color: var(--text-secondary) !important;
+}
+
+.modern-upload:hover .ant-upload-drag-icon {
+  color: var(--primary-color) !important;
+}
+
+/* Review Cards */
+.review-card {
+  margin-bottom: 24px !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+.review-card .ant-card-head {
+  background: var(--bg-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.review-card .ant-card-head-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.review-card .ant-card-body {
+  padding: 24px !important;
+}
+
+.terms-section {
+  padding: 20px 0;
+}
+
+.review-alert {
+  margin-top: 24px !important;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* Navigation */
+.form-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--border-light);
+}
+
+.nav-right {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-btn {
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  min-width: 120px;
+}
+
+.nav-btn.primary {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.nav-btn.primary:hover {
+  background: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
+}
+
+.nav-btn.secondary {
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  background: white !important;
+}
+
+.nav-btn.secondary:hover {
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Loading States */
+.modern-loading-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-light);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Create Cause Responsive Design */
+@media (max-width: 768px) {
+  .modern-form-step {
+    min-height: auto;
+  }
+  
+  .step-header {
+    margin-bottom: 24px;
+  }
+  
+  .selection-header {
+    margin-bottom: 32px;
+  }
+  
+  .header-icon,
+  .step-icon {
+    font-size: 40px !important;
+  }
+  
+  .modern-category-card {
+    height: auto;
+    min-height: 220px;
+  }
+  
+  .category-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+  
+  .form-navigation {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .nav-right {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .nav-btn {
+    flex: 1;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .modern-steps .ant-steps-item-title {
+    font-size: 12px !important;
+  }
+  
+  .modern-steps .ant-steps-item-description {
+    font-size: 11px !important;
+  }
+  
+  .form-navigation .nav-right {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
 /* ===== MODERN HEADER STYLES ===== */
 .header-modern {
   background: rgba(255, 255, 255, 0.95);

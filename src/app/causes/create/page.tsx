@@ -24,6 +24,7 @@ import {
   Alert,
   Tooltip,
   Radio,
+  TimePicker,
 } from "antd";
 import {
   PlusOutlined,
@@ -55,116 +56,121 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 interface CauseFormData {
+  // Basic Info
   title: string;
-  shortDescription: string;
   description: string;
+  shortDescription: string;
   category: string;
-  subcategory: string;
   location: string;
-  coordinates?: { lat: number; lng: number };
-  goalAmount: number;
-  currency: string;
-  deadline?: string;
-  images: any[];
-  tags: string[];
-  volunteersNeeded: number;
-  skillsNeeded: string[];
-  urgencyLevel: "low" | "medium" | "high" | "critical";
-  causeType: "fundraising" | "volunteer" | "awareness" | "mixed";
-  isRecurring: boolean;
-  recurringFrequency?: "weekly" | "monthly" | "quarterly";
   contactEmail: string;
   contactPhone?: string;
-  website?: string;
-  socialMedia?: {
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
-  };
+  contactPerson?: string;
+  
+  // Food specific
+  foodType?: string;
+  cuisineType?: string;
+  quantity?: number;
+  unit?: string;
+  servingSize?: number;
+  dietaryRestrictions?: string[];
+  allergens?: string[];
+  expirationDate?: string;
+  preparationDate?: string;
+  storageRequirements?: string;
+  temperatureRequirements?: string;
+  pickupInstructions?: string;
+  deliveryAvailable?: boolean;
+  deliveryRadius?: number;
+  isUrgent?: boolean;
+  nutritionalInfo?: string;
+  ingredients?: string;
+  packagingDetails?: string;
+  halal?: boolean;
+  kosher?: boolean;
+  organic?: boolean;
+
+  // Clothes specific
+  clothesType?: string;
+  clothesCategory?: string;
+  ageGroup?: string;
+  sizeRange?: string[];
+  condition?: string;
+  season?: string;
+  colors?: string[];
+  brands?: string[];
+  materialComposition?: string;
+  careInstructions?: string;
+  specialRequirements?: string;
+  isCleaned?: boolean;
+  donationReceipt?: boolean;
+
+  // Education specific
+  educationType?: string;
+  skillLevel?: string;
+  topics?: string[];
+  maxTrainees?: number;
+  durationHours?: number;
+  numberOfDays?: number;
+  prerequisites?: string;
+  learningObjectives?: string[];
+  startDate?: string;
+  endDate?: string;
+  registrationDeadline?: string;
+  schedule?: any;
+  deliveryMethod?: string;
+  locationDetails?: string;
+  meetingPlatform?: string;
+  meetingLink?: string;
+  instructorName?: string;
+  instructorEmail?: string;
+  instructorBio?: string;
+  instructorQualifications?: string;
+  certification?: boolean;
+  certificationBody?: string;
+  materialsProvided?: string[];
+  equipmentRequired?: string[];
+  softwareRequired?: string[];
+  price?: number;
+  isFree?: boolean;
+  courseLanguage?: string;
+  subtitlesAvailable?: string[];
+  difficultyRating?: number;
+
+  // Common
+  images?: any[];
+  availabilityHours?: string;
+  specialInstructions?: string;
+  priority?: string;
+  tags?: string[];
   terms: boolean;
   updates: boolean;
-  publicProfile: boolean;
 }
 
 const categories = [
   {
-    value: "emergency-relief",
-    label: "Emergency Relief",
-    subcategories: [
-      "Natural Disasters",
-      "Medical Emergencies",
-      "Crisis Response",
-    ],
+    value: "food",
+    label: "Food Assistance",
+    description: "Share meals and food supplies with those in need",
+    icon: "🍽️",
+    color: "#FF6B35",
   },
   {
-    value: "food-security",
-    label: "Food Security",
-    subcategories: [
-      "Food Banks",
-      "Community Gardens",
-      "Nutrition Programs",
-      "School Meals",
-    ],
+    value: "clothes",
+    label: "Clothing Donation", 
+    description: "Donate and request clothing items for all ages",
+    icon: "👕",
+    color: "#4ECDC4",
   },
   {
     value: "education",
-    label: "Education",
-    subcategories: [
-      "School Supplies",
-      "Scholarships",
-      "Literacy Programs",
-      "Digital Access",
-    ],
+    label: "Education & Training",
+    description: "Share knowledge through courses, workshops, and mentoring",
+    icon: "🎓",
+    color: "#45B7D1",
   },
-  {
-    value: "healthcare",
-    label: "Healthcare",
-    subcategories: [
-      "Medical Equipment",
-      "Mental Health",
-      "Wellness Programs",
-      "Healthcare Access",
-    ],
-  },
-  {
-    value: "environment",
-    label: "Environment",
-    subcategories: [
-      "Clean Energy",
-      "Conservation",
-      "Sustainability",
-      "Climate Action",
-    ],
-  },
-  {
-    value: "community",
-    label: "Community Development",
-    subcategories: [
-      "Infrastructure",
-      "Housing",
-      "Public Spaces",
-      "Transportation",
-    ],
-  },
-];
-
-const skillsOptions = [
-  "Web Development",
-  "Graphic Design",
-  "Marketing",
-  "Photography",
-  "Writing",
-  "Event Planning",
-  "Legal Advice",
-  "Financial Planning",
-  "Social Media",
-  "Translation",
-  "Teaching",
-  "Carpentry",
-  "Plumbing",
-  "Electrical Work",
 ];
 
 export default function CreateCausePage() {
@@ -175,8 +181,7 @@ export default function CreateCausePage() {
   const [formData, setFormData] = useState<Partial<CauseFormData>>({});
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [customTags, setCustomTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -186,36 +191,112 @@ export default function CreateCausePage() {
     }
   }, [session, status, router]);
 
-  const steps = [
-    {
-      title: "Basic Info",
-      description: "Tell us about your cause",
-      icon: <InfoCircleOutlined />,
-    },
-    {
-      title: "Details",
-      description: "Category and description",
-      icon: <FileTextOutlined />,
-    },
-    {
-      title: "Goals & Timeline",
-      description: "Set your targets",
-      icon: <DollarOutlined />,
-    },
-    {
-      title: "Media & Contact",
-      description: "Images and contact info",
-      icon: <CameraOutlined />,
-    },
-    {
-      title: "Review",
-      description: "Final review",
-      icon: <CheckCircleOutlined />,
-    },
-  ];
+  const getStepsForCategory = () => {
+    if (!selectedCategory || !showCategoryForm) {
+      return [
+        {
+          title: "Category",
+          description: "Choose your cause type",
+          icon: <BookOutlined />,
+        },
+      ];
+    }
+
+    const baseSteps = [
+      {
+        title: "Category",
+        description: "Choose your cause type",
+        icon: <BookOutlined />,
+      },
+      {
+        title: "Basic Info",
+        description: "Tell us about your cause",
+        icon: <InfoCircleOutlined />,
+      },
+    ];
+
+    if (selectedCategory === "food") {
+      return [
+        ...baseSteps,
+        {
+          title: "Food Details",
+          description: "Food-specific information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Contact & Media",
+          description: "Contact info and images",
+          icon: <CameraOutlined />,
+        },
+        {
+          title: "Review",
+          description: "Final review",
+          icon: <CheckCircleOutlined />,
+        },
+      ];
+    } else if (selectedCategory === "clothes") {
+      return [
+        ...baseSteps,
+        {
+          title: "Clothing Details",
+          description: "Clothing-specific information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Contact & Media",
+          description: "Contact info and images",
+          icon: <CameraOutlined />,
+        },
+        {
+          title: "Review",
+          description: "Final review",
+          icon: <CheckCircleOutlined />,
+        },
+      ];
+    } else if (selectedCategory === "education") {
+      return [
+        ...baseSteps,
+        {
+          title: "Education Details",
+          description: "Course and training information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Schedule & Delivery",
+          description: "Dates and delivery method",
+          icon: <CalendarOutlined />,
+        },
+        {
+          title: "Contact & Media",
+          description: "Contact info and images",
+          icon: <CameraOutlined />,
+        },
+        {
+          title: "Review",
+          description: "Final review",
+          icon: <CheckCircleOutlined />,
+        },
+      ];
+    }
+
+    return baseSteps;
+  };
+
+  const steps = getStepsForCategory();
 
   const nextStep = async () => {
     try {
+      if (currentStep === 0 && !showCategoryForm) {
+        // Category selection step
+        if (!selectedCategory) {
+          message.error("Please select a category first");
+          return;
+        }
+        setShowCategoryForm(true);
+        setCurrentStep(1);
+        return;
+      }
+      
       const values = await form.validateFields();
       setFormData({ ...formData, ...values });
       setCurrentStep(currentStep + 1);
@@ -224,34 +305,41 @@ export default function CreateCausePage() {
     }
   };
 
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    // Auto-advance after category selection
+    setTimeout(() => {
+      setShowCategoryForm(true);
+      setCurrentStep(1);
+    }, 300);
+  };
+
   const prevStep = () => {
+    if (currentStep === 1 && showCategoryForm) {
+      // Go back to category selection
+      setShowCategoryForm(false);
+      setCurrentStep(0);
+      return;
+    }
     setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async (values: CauseFormData) => {
     setLoading(true);
     try {
+      // Add category to form data
+      const submitData = { ...formData, ...values, category: selectedCategory };
+      
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       message.success("Your cause has been created successfully!");
-      router.push("/profile");
+      router.push("/causes");
     } catch (error) {
       message.error("Failed to create cause. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const addCustomTag = () => {
-    if (newTag && !customTags.includes(newTag)) {
-      setCustomTags([...customTags, newTag]);
-      setNewTag("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setCustomTags(customTags.filter((tag) => tag !== tagToRemove));
   };
 
   const uploadProps = {
@@ -271,35 +359,71 @@ export default function CreateCausePage() {
   };
 
   const renderStepContent = () => {
+    // Category Selection Step
+    if (currentStep === 0 && !showCategoryForm) {
+      return (
+        <div className="modern-category-selection">
+          <div className="selection-header">
+            <BookOutlined className="header-icon" />
+            <Title level={2}>What type of cause would you like to create?</Title>
+            <Paragraph className="header-subtitle">
+              Choose the category that best fits your cause to get a customized form
+            </Paragraph>
+          </div>
+
+          <Row gutter={[24, 24]} justify="center">
+            {categories.map((category) => (
+              <Col xs={24} sm={12} lg={8} key={category.value}>
+                <Card
+                  hoverable
+                  className={`modern-category-card ${
+                    selectedCategory === category.value ? "selected" : ""
+                  }`}
+                  onClick={() => handleCategorySelect(category.value)}
+                >
+                  <div className="category-content">
+                    <div className="category-icon" style={{ color: category.color }}>
+                      {category.icon}
+                    </div>
+                    <Title level={3} className="category-title">
+                      {category.label}
+                    </Title>
+                    <Paragraph className="category-description">
+                      {category.description}
+                    </Paragraph>
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      );
+    }
+
     switch (currentStep) {
-      case 0:
+      case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <HeartOutlined className="text-4xl text-blue-600 mb-4" />
-              <Title level={3}>Let's start with the basics</Title>
-              <Paragraph type="secondary">
-                Tell us about your cause and what you're trying to achieve
-              </Paragraph>
+          <div className="modern-form-step">
+            <div className="step-header">
+              <InfoCircleOutlined className="step-icon" />
+              <Title level={3}>Basic Information</Title>
+              <Paragraph>Tell us about your {categories.find(c => c.value === selectedCategory)?.label.toLowerCase()}</Paragraph>
             </div>
 
             <Form.Item
               name="title"
-              label="Cause Title"
+              label="Title"
               rules={[
-                {
-                  required: true,
-                  message: "Please enter a title for your cause",
-                },
+                { required: true, message: "Please enter a title" },
                 { min: 10, message: "Title should be at least 10 characters" },
-                { max: 100, message: "Title should not exceed 100 characters" },
+                { max: 255, message: "Title should not exceed 255 characters" },
               ]}
             >
               <Input
                 size="large"
-                placeholder="e.g., Emergency Food Relief for Hurricane Victims"
+                placeholder="e.g., Fresh Meals for Homeless Shelter"
                 showCount
-                maxLength={100}
+                maxLength={255}
               />
             </Form.Item>
 
@@ -308,91 +432,30 @@ export default function CreateCausePage() {
               label="Short Description"
               rules={[
                 { required: true, message: "Please enter a short description" },
-                {
-                  min: 20,
-                  message: "Description should be at least 20 characters",
-                },
-                {
-                  max: 200,
-                  message: "Description should not exceed 200 characters",
-                },
+                { max: 500, message: "Description should not exceed 500 characters" },
               ]}
             >
               <TextArea
                 rows={3}
-                placeholder="A brief summary of your cause that will appear in listings"
+                placeholder="A brief summary that will appear in listings"
                 showCount
-                maxLength={200}
+                maxLength={500}
               />
             </Form.Item>
 
             <Form.Item
-              name="causeType"
-              label="What type of support do you need?"
+              name="description"
+              label="Detailed Description"
               rules={[
-                { required: true, message: "Please select a cause type" },
+                { required: true, message: "Please provide a detailed description" },
+                { min: 50, message: "Description should be at least 50 characters" },
               ]}
             >
-              <Radio.Group size="large" className="w-full">
-                <Row gutter={[16, 16]}>
-                  <Col xs={24} sm={12}>
-                    <Radio.Button
-                      value="fundraising"
-                      className="w-full h-auto p-4 text-center"
-                    >
-                      <div>
-                        <DollarOutlined className="text-2xl text-green-600 mb-2" />
-                        <div className="font-medium">Fundraising</div>
-                        <div className="text-sm text-gray-500">
-                          Raise money for your cause
-                        </div>
-                      </div>
-                    </Radio.Button>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Radio.Button
-                      value="volunteer"
-                      className="w-full h-auto p-4 text-center"
-                    >
-                      <div>
-                        <TeamOutlined className="text-2xl text-blue-600 mb-2" />
-                        <div className="font-medium">Volunteers</div>
-                        <div className="text-sm text-gray-500">
-                          Need people to help
-                        </div>
-                      </div>
-                    </Radio.Button>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Radio.Button
-                      value="awareness"
-                      className="w-full h-auto p-4 text-center"
-                    >
-                      <div>
-                        <BookOutlined className="text-2xl text-purple-600 mb-2" />
-                        <div className="font-medium">Awareness</div>
-                        <div className="text-sm text-gray-500">
-                          Spread the word
-                        </div>
-                      </div>
-                    </Radio.Button>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Radio.Button
-                      value="mixed"
-                      className="w-full h-auto p-4 text-center"
-                    >
-                      <div>
-                        <HeartOutlined className="text-2xl text-red-600 mb-2" />
-                        <div className="font-medium">Mixed</div>
-                        <div className="text-sm text-gray-500">
-                          All of the above
-                        </div>
-                      </div>
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+              <TextArea
+                rows={6}
+                placeholder="Provide detailed information about your cause..."
+                showCount
+              />
             </Form.Item>
 
             <Form.Item
@@ -403,316 +466,724 @@ export default function CreateCausePage() {
               <Input
                 size="large"
                 prefix={<EnvironmentOutlined />}
-                placeholder="City, State or Region"
-              />
-            </Form.Item>
-          </div>
-        );
-
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <FileTextOutlined className="text-4xl text-blue-600 mb-4" />
-              <Title level={3}>Category and Details</Title>
-              <Paragraph type="secondary">
-                Help people find your cause and understand what you're doing
-              </Paragraph>
-            </div>
-
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="category"
-                  label="Category"
-                  rules={[
-                    { required: true, message: "Please select a category" },
-                  ]}
-                >
-                  <Select
-                    size="large"
-                    placeholder="Select a category"
-                    onChange={setSelectedCategory}
-                  >
-                    {categories.map((cat) => (
-                      <Option key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="subcategory"
-                  label="Subcategory"
-                  rules={[
-                    { required: true, message: "Please select a subcategory" },
-                  ]}
-                >
-                  <Select
-                    size="large"
-                    placeholder="Select a subcategory"
-                    disabled={!selectedCategory}
-                  >
-                    {selectedCategory &&
-                      categories
-                        .find((cat) => cat.value === selectedCategory)
-                        ?.subcategories.map((sub) => (
-                          <Option key={sub} value={sub}>
-                            {sub}
-                          </Option>
-                        ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              name="description"
-              label="Detailed Description"
-              rules={[
-                {
-                  required: true,
-                  message: "Please provide a detailed description",
-                },
-                {
-                  min: 100,
-                  message: "Description should be at least 100 characters",
-                },
-              ]}
-            >
-              <TextArea
-                rows={6}
-                placeholder="Describe your cause in detail. What problem are you solving? How will donations/volunteers help? What impact do you expect to make?"
-                showCount
-                maxLength={2000}
+                placeholder="City, State or specific address"
               />
             </Form.Item>
 
             <Form.Item
-              name="urgencyLevel"
-              label="Urgency Level"
-              rules={[
-                { required: true, message: "Please select urgency level" },
-              ]}
+              name="priority"
+              label="Priority Level"
+              rules={[{ required: true, message: "Please select priority level" }]}
             >
               <Radio.Group size="large">
-                <Radio.Button value="low" className="text-green-600">
-                  Low
-                </Radio.Button>
-                <Radio.Button value="medium" className="text-yellow-600">
-                  Medium
-                </Radio.Button>
-                <Radio.Button value="high" className="text-orange-600">
-                  High
-                </Radio.Button>
-                <Radio.Button value="critical" className="text-red-600">
-                  Critical
-                </Radio.Button>
+                <Radio.Button value="low">Low</Radio.Button>
+                <Radio.Button value="medium">Medium</Radio.Button>
+                <Radio.Button value="high">High</Radio.Button>
+                <Radio.Button value="critical">Critical</Radio.Button>
               </Radio.Group>
             </Form.Item>
-
-            <div>
-              <Form.Item
-                name="tags"
-                label="Tags"
-                help="Add tags to help people discover your cause"
-              >
-                <Select
-                  mode="multiple"
-                  size="large"
-                  placeholder="Select or add tags"
-                  style={{ width: "100%" }}
-                >
-                  {[
-                    "emergency",
-                    "food",
-                    "education",
-                    "health",
-                    "environment",
-                    "community",
-                    "children",
-                    "seniors",
-                    "families",
-                  ].map((tag) => (
-                    <Option key={tag} value={tag}>
-                      #{tag}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {customTags.map((tag) => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => removeTag(tag)}
-                    className="px-3 py-1"
-                  >
-                    #{tag}
-                  </Tag>
-                ))}
-              </div>
-
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Add custom tag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onPressEnter={addCustomTag}
-                />
-                <Button onClick={addCustomTag} disabled={!newTag}>
-                  Add Tag
-                </Button>
-              </div>
-            </div>
           </div>
         );
 
       case 2:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <DollarOutlined className="text-4xl text-blue-600 mb-4" />
-              <Title level={3}>Goals & Timeline</Title>
-              <Paragraph type="secondary">
-                Set your fundraising goals and timeline
-              </Paragraph>
-            </div>
-
-            <Row gutter={16}>
-              <Col xs={24} md={16}>
-                <Form.Item
-                  name="goalAmount"
-                  label="Fundraising Goal"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter your goal amount",
-                    },
-                    {
-                      type: "number",
-                      min: 100,
-                      message: "Goal must be at least $100",
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    size="large"
-                    style={{ width: "100%" }}
-                    placeholder="0"
-                    prefix="$"
-                    formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={8}>
-                <Form.Item name="currency" label="Currency" initialValue="USD">
-                  <Select size="large">
-                    <Option value="USD">USD</Option>
-                    <Option value="EUR">EUR</Option>
-                    <Option value="GBP">GBP</Option>
-                    <Option value="CAD">CAD</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              name="deadline"
-              label="Campaign Deadline (Optional)"
-              help="Set a deadline to create urgency. Leave blank for ongoing campaigns."
-            >
-              <DatePicker
-                size="large"
-                style={{ width: "100%" }}
-                disabledDate={(current) =>
-                  current && current < dayjs().endOf("day")
-                }
-                placeholder="Select end date"
-              />
-            </Form.Item>
-
-            <Row gutter={16}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="volunteersNeeded"
-                  label="Volunteers Needed"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    size="large"
-                    style={{ width: "100%" }}
-                    min={0}
-                    placeholder="Number of volunteers needed"
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item name="skillsNeeded" label="Skills Needed">
-                  <Select
-                    mode="multiple"
-                    size="large"
-                    placeholder="Select skills needed"
-                    style={{ width: "100%" }}
-                  >
-                    {skillsOptions.map((skill) => (
-                      <Option key={skill} value={skill}>
-                        {skill}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Card className="bg-blue-50 border-blue-200">
-              <div className="flex items-start space-x-3">
-                <InfoCircleOutlined className="text-blue-600 mt-1" />
-                <div>
-                  <Text strong className="text-blue-900">
-                    Goal Setting Tips
-                  </Text>
-                  <ul className="text-sm text-blue-800 mt-2 space-y-1">
-                    <li>• Set realistic goals based on your network size</li>
-                    <li>• Consider breaking large goals into milestones</li>
-                    <li>
-                      • Research similar successful campaigns for reference
-                    </li>
-                    <li>• Factor in platform fees (typically 2-3%)</li>
-                  </ul>
-                </div>
+        if (selectedCategory === "food") {
+          return (
+            <div className="modern-form-step">
+              <div className="step-header">
+                <FileTextOutlined className="step-icon" />
+                <Title level={3}>Food Details</Title>
+                <Paragraph>Provide specific information about the food</Paragraph>
               </div>
-            </Card>
 
-            <Form.Item name="isRecurring" valuePropName="checked">
-              <Checkbox>This is a recurring cause (ongoing need)</Checkbox>
-            </Form.Item>
-          </div>
-        );
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="foodType"
+                    label="Food Type"
+                    rules={[{ required: true, message: "Please select food type" }]}
+                  >
+                    <Select size="large" placeholder="Select food type">
+                      <Option value="fresh-produce">Fresh Produce</Option>
+                      <Option value="cooked-meals">Cooked Meals</Option>
+                      <Option value="packaged-food">Packaged Food</Option>
+                      <Option value="beverages">Beverages</Option>
+                      <Option value="dairy">Dairy Products</Option>
+                      <Option value="meat-seafood">Meat & Seafood</Option>
+                      <Option value="baked-goods">Baked Goods</Option>
+                      <Option value="other">Other</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="cuisineType" label="Cuisine Type">
+                    <Input size="large" placeholder="e.g., Italian, Indian, Mexican" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    rules={[{ required: true, message: "Please enter quantity" }]}
+                  >
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={1}
+                      placeholder="Number"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="unit"
+                    label="Unit"
+                    initialValue="servings"
+                    rules={[{ required: true, message: "Please select unit" }]}
+                  >
+                    <Select size="large">
+                      <Option value="servings">Servings</Option>
+                      <Option value="kg">Kilograms</Option>
+                      <Option value="lbs">Pounds</Option>
+                      <Option value="pieces">Pieces</Option>
+                      <Option value="boxes">Boxes</Option>
+                      <Option value="bags">Bags</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="servingSize" label="Serving Size (people)">
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={1}
+                      placeholder="e.g., 50"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="expirationDate" label="Expiration Date">
+                    <DatePicker
+                      size="large"
+                      style={{ width: "100%" }}
+                      placeholder="Select expiry date"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="temperatureRequirements" label="Storage Temperature" initialValue="room-temp">
+                    <Select size="large">
+                      <Option value="frozen">Frozen</Option>
+                      <Option value="refrigerated">Refrigerated</Option>
+                      <Option value="room-temp">Room Temperature</Option>
+                      <Option value="hot">Hot/Warm</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item name="dietaryRestrictions" label="Dietary Restrictions">
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="Select any dietary restrictions"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="vegetarian">Vegetarian</Option>
+                  <Option value="vegan">Vegan</Option>
+                  <Option value="gluten-free">Gluten Free</Option>
+                  <Option value="nut-free">Nut Free</Option>
+                  <Option value="dairy-free">Dairy Free</Option>
+                  <Option value="low-sodium">Low Sodium</Option>
+                  <Option value="diabetic-friendly">Diabetic Friendly</Option>
+                </Select>
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item name="halal" valuePropName="checked">
+                    <Checkbox>Halal Certified</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="kosher" valuePropName="checked">
+                    <Checkbox>Kosher Certified</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="organic" valuePropName="checked">
+                    <Checkbox>Organic</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item name="ingredients" label="Ingredients">
+                <TextArea
+                  rows={3}
+                  placeholder="List main ingredients..."
+                />
+              </Form.Item>
+
+              <Form.Item name="pickupInstructions" label="Pickup Instructions">
+                <TextArea
+                  rows={3}
+                  placeholder="Special instructions for pickup..."
+                />
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="deliveryAvailable" valuePropName="checked">
+                    <Checkbox>Delivery Available</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="isUrgent" valuePropName="checked">
+                    <Checkbox>Urgent Pickup Required</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+          );
+        } else if (selectedCategory === "clothes") {
+          return (
+            <div className="modern-form-step">
+              <div className="step-header">
+                <FileTextOutlined className="step-icon" />
+                <Title level={3}>Clothing Details</Title>
+                <Paragraph>Provide specific information about the clothing items</Paragraph>
+              </div>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="clothesType"
+                    label="Clothing Type"
+                    rules={[{ required: true, message: "Please select clothing type" }]}
+                  >
+                    <Select size="large" placeholder="Select clothing type">
+                      <Option value="donation">Donation (Giving Away)</Option>
+                      <Option value="request">Request (Need Items)</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="clothesCategory"
+                    label="Category"
+                    rules={[{ required: true, message: "Please select category" }]}
+                  >
+                    <Select size="large" placeholder="Select category">
+                      <Option value="tops">Tops & Shirts</Option>
+                      <Option value="bottoms">Bottoms & Pants</Option>
+                      <Option value="dresses">Dresses & Skirts</Option>
+                      <Option value="outerwear">Outerwear & Jackets</Option>
+                      <Option value="shoes">Shoes & Footwear</Option>
+                      <Option value="accessories">Accessories</Option>
+                      <Option value="undergarments">Undergarments</Option>
+                      <Option value="formal">Formal Wear</Option>
+                      <Option value="sleepwear">Sleepwear</Option>
+                      <Option value="sportswear">Sportswear</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="ageGroup"
+                    label="Age Group"
+                    initialValue="adult"
+                    rules={[{ required: true, message: "Please select age group" }]}
+                  >
+                    <Select size="large">
+                      <Option value="newborn">Newborn (0-3 months)</Option>
+                      <Option value="infant">Infant (3-12 months)</Option>
+                      <Option value="toddler">Toddler (1-3 years)</Option>
+                      <Option value="child">Child (4-12 years)</Option>
+                      <Option value="teen">Teen (13-17 years)</Option>
+                      <Option value="adult">Adult (18+ years)</Option>
+                      <Option value="senior">Senior (65+ years)</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="condition"
+                    label="Condition"
+                    rules={[{ required: true, message: "Please select condition" }]}
+                  >
+                    <Select size="large">
+                      <Option value="new">New with Tags</Option>
+                      <Option value="excellent">Excellent</Option>
+                      <Option value="good">Good</Option>
+                      <Option value="fair">Fair</Option>
+                      <Option value="worn">Well Worn</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="season"
+                    label="Season"
+                    initialValue="all-season"
+                    rules={[{ required: true, message: "Please select season" }]}
+                  >
+                    <Select size="large">
+                      <Option value="spring">Spring</Option>
+                      <Option value="summer">Summer</Option>
+                      <Option value="fall">Fall</Option>
+                      <Option value="winter">Winter</Option>
+                      <Option value="all-season">All Season</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                name="sizeRange"
+                label="Size Range"
+                rules={[{ required: true, message: "Please select sizes" }]}
+              >
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="Select sizes available"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="xs">XS</Option>
+                  <Option value="s">S</Option>
+                  <Option value="m">M</Option>
+                  <Option value="l">L</Option>
+                  <Option value="xl">XL</Option>
+                  <Option value="xxl">XXL</Option>
+                  <Option value="xxxl">XXXL</Option>
+                  <Option value="0-3m">0-3 months</Option>
+                  <Option value="3-6m">3-6 months</Option>
+                  <Option value="6-12m">6-12 months</Option>
+                  <Option value="12-18m">12-18 months</Option>
+                  <Option value="18-24m">18-24 months</Option>
+                  <Option value="2t">2T</Option>
+                  <Option value="3t">3T</Option>
+                  <Option value="4t">4T</Option>
+                  <Option value="5t">5T</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="quantity"
+                label="Quantity"
+                rules={[{ required: true, message: "Please enter quantity" }]}
+              >
+                <InputNumber
+                  size="large"
+                  style={{ width: "100%" }}
+                  min={1}
+                  placeholder="Number of items"
+                />
+              </Form.Item>
+
+              <Form.Item name="colors" label="Colors Available">
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="Select colors"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="black">Black</Option>
+                  <Option value="white">White</Option>
+                  <Option value="gray">Gray</Option>
+                  <Option value="blue">Blue</Option>
+                  <Option value="red">Red</Option>
+                  <Option value="green">Green</Option>
+                  <Option value="yellow">Yellow</Option>
+                  <Option value="purple">Purple</Option>
+                  <Option value="pink">Pink</Option>
+                  <Option value="brown">Brown</Option>
+                  <Option value="navy">Navy</Option>
+                  <Option value="beige">Beige</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="materialComposition" label="Material Composition">
+                <Input
+                  size="large"
+                  placeholder="e.g., 100% Cotton, 80% Cotton 20% Polyester"
+                />
+              </Form.Item>
+
+              <Form.Item name="careInstructions" label="Care Instructions">
+                <TextArea
+                  rows={2}
+                  placeholder="Washing and care instructions..."
+                />
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item name="isCleaned" valuePropName="checked">
+                    <Checkbox>Items are cleaned</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="deliveryAvailable" valuePropName="checked">
+                    <Checkbox>Delivery Available</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="donationReceipt" valuePropName="checked">
+                    <Checkbox>Donation Receipt Available</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+          );
+        } else if (selectedCategory === "education") {
+          return (
+            <div className="modern-form-step">
+              <div className="step-header">
+                <FileTextOutlined className="step-icon" />
+                <Title level={3}>Education Details</Title>
+                <Paragraph>Provide information about your course or training</Paragraph>
+              </div>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="educationType"
+                    label="Education Type"
+                    rules={[{ required: true, message: "Please select education type" }]}
+                  >
+                    <Select size="large" placeholder="Select type">
+                      <Option value="course">Online Course</Option>
+                      <Option value="workshop">Workshop</Option>
+                      <Option value="seminar">Seminar</Option>
+                      <Option value="bootcamp">Bootcamp</Option>
+                      <Option value="mentoring">1-on-1 Mentoring</Option>
+                      <Option value="certification">Certification Program</Option>
+                      <Option value="tutoring">Tutoring</Option>
+                      <Option value="webinar">Webinar</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="skillLevel"
+                    label="Skill Level"
+                    initialValue="all-levels"
+                    rules={[{ required: true, message: "Please select skill level" }]}
+                  >
+                    <Select size="large">
+                      <Option value="beginner">Beginner</Option>
+                      <Option value="intermediate">Intermediate</Option>
+                      <Option value="advanced">Advanced</Option>
+                      <Option value="all-levels">All Levels</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                name="topics"
+                label="Topics Covered"
+                rules={[{ required: true, message: "Please select topics" }]}
+              >
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="Select topics covered"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="programming">Programming</Option>
+                  <Option value="web-development">Web Development</Option>
+                  <Option value="data-science">Data Science</Option>
+                  <Option value="design">Design</Option>
+                  <Option value="marketing">Marketing</Option>
+                  <Option value="business">Business</Option>
+                  <Option value="language">Language Learning</Option>
+                  <Option value="mathematics">Mathematics</Option>
+                  <Option value="science">Science</Option>
+                  <Option value="arts">Arts & Crafts</Option>
+                  <Option value="music">Music</Option>
+                  <Option value="cooking">Cooking</Option>
+                  <Option value="photography">Photography</Option>
+                  <Option value="writing">Writing</Option>
+                  <Option value="fitness">Fitness & Health</Option>
+                </Select>
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="maxTrainees"
+                    label="Max Participants"
+                    rules={[{ required: true, message: "Please enter max participants" }]}
+                  >
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={1}
+                      max={1000}
+                      placeholder="e.g., 20"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="durationHours"
+                    label="Duration (Hours)"
+                    rules={[{ required: true, message: "Please enter duration" }]}
+                  >
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={1}
+                      placeholder="Total hours"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="numberOfDays"
+                    label="Number of Days"
+                    rules={[{ required: true, message: "Please enter number of days" }]}
+                  >
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={1}
+                      placeholder="e.g., 5"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                name="instructorName"
+                label="Instructor Name"
+                rules={[{ required: true, message: "Please enter instructor name" }]}
+              >
+                <Input
+                  size="large"
+                  placeholder="Name of the instructor"
+                />
+              </Form.Item>
+
+              <Form.Item name="instructorBio" label="Instructor Bio">
+                <TextArea
+                  rows={3}
+                  placeholder="Brief bio about the instructor's background and experience..."
+                />
+              </Form.Item>
+
+              <Form.Item name="learningObjectives" label="Learning Objectives">
+                <Select
+                  mode="tags"
+                  size="large"
+                  placeholder="Enter learning objectives (press Enter to add)"
+                  style={{ width: "100%" }}
+                />
+              </Form.Item>
+
+              <Form.Item name="prerequisites" label="Prerequisites">
+                <TextArea
+                  rows={2}
+                  placeholder="Any prerequisites or requirements for participants..."
+                />
+              </Form.Item>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="price"
+                    label="Price ($)"
+                    initialValue={0}
+                  >
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      min={0}
+                      placeholder="0 for free"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="isFree" valuePropName="checked" initialValue={true}>
+                    <Checkbox>This is a free course</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="certification" valuePropName="checked">
+                    <Checkbox>Certificate provided upon completion</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="courseLanguage"
+                    label="Course Language"
+                    initialValue="English"
+                  >
+                    <Select size="large">
+                      <Option value="English">English</Option>
+                      <Option value="Spanish">Spanish</Option>
+                      <Option value="French">French</Option>
+                      <Option value="German">German</Option>
+                      <Option value="Arabic">Arabic</Option>
+                      <Option value="Chinese">Chinese</Option>
+                      <Option value="Hindi">Hindi</Option>
+                      <Option value="Other">Other</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+          );
+        }
+        return null;
 
       case 3:
+        if (selectedCategory === "education") {
+          return (
+            <div className="modern-form-step">
+              <div className="step-header">
+                <CalendarOutlined className="step-icon" />
+                <Title level={3}>Schedule & Delivery</Title>
+                <Paragraph>Set up the course schedule and delivery method</Paragraph>
+              </div>
+
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="startDate"
+                    label="Start Date"
+                    rules={[{ required: true, message: "Please select start date" }]}
+                  >
+                    <DatePicker
+                      size="large"
+                      style={{ width: "100%" }}
+                      placeholder="Select start date"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="endDate"
+                    label="End Date"
+                    rules={[{ required: true, message: "Please select end date" }]}
+                  >
+                    <DatePicker
+                      size="large"
+                      style={{ width: "100%" }}
+                      placeholder="Select end date"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item name="registrationDeadline" label="Registration Deadline">
+                <DatePicker
+                  size="large"
+                  style={{ width: "100%" }}
+                  placeholder="Last day for registration"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="deliveryMethod"
+                label="Delivery Method"
+                rules={[{ required: true, message: "Please select delivery method" }]}
+              >
+                <Radio.Group size="large">
+                  <Radio.Button value="online">Online</Radio.Button>
+                  <Radio.Button value="in-person">In-Person</Radio.Button>
+                  <Radio.Button value="hybrid">Hybrid</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+
+              <Form.Item name="locationDetails" label="Location Details">
+                <TextArea
+                  rows={2}
+                  placeholder="For in-person: provide address. For online: meeting details will be shared separately."
+                />
+              </Form.Item>
+
+              <Form.Item name="meetingPlatform" label="Meeting Platform (for online)">
+                <Select size="large" placeholder="Select platform">
+                  <Option value="zoom">Zoom</Option>
+                  <Option value="teams">Microsoft Teams</Option>
+                  <Option value="meet">Google Meet</Option>
+                  <Option value="webex">Cisco Webex</Option>
+                  <Option value="discord">Discord</Option>
+                  <Option value="other">Other</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="materialsProvided" label="Materials Provided">
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="Select materials included"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="slides">Presentation Slides</Option>
+                  <Option value="notes">Course Notes</Option>
+                  <Option value="worksheets">Worksheets</Option>
+                  <Option value="recordings">Session Recordings</Option>
+                  <Option value="resources">Additional Resources</Option>
+                  <Option value="assignments">Practice Assignments</Option>
+                  <Option value="software">Software/Tools Access</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="equipmentRequired" label="Equipment Required">
+                <Select
+                  mode="multiple"
+                  size="large"
+                  placeholder="What participants need"
+                  style={{ width: "100%" }}
+                >
+                  <Option value="computer">Computer/Laptop</Option>
+                  <Option value="webcam">Webcam</Option>
+                  <Option value="microphone">Microphone</Option>
+                  <Option value="internet">Stable Internet</Option>
+                  <Option value="smartphone">Smartphone</Option>
+                  <Option value="notebook">Notebook & Pen</Option>
+                  <Option value="calculator">Calculator</Option>
+                </Select>
+              </Form.Item>
+            </div>
+          );
+        }
+        // Fall through to Contact & Media for other categories
+      case 4:
+        if (selectedCategory === "education" && currentStep === 4) {
+          // Contact & Media for education
+        } else if (currentStep === 3) {
+          // Contact & Media for food and clothes
+        }
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <CameraOutlined className="text-4xl text-blue-600 mb-4" />
-              <Title level={3}>Media & Contact</Title>
-              <Paragraph type="secondary">
-                Add images and contact information
-              </Paragraph>
+          <div className="modern-form-step">
+            <div className="step-header">
+              <CameraOutlined className="step-icon" />
+              <Title level={3}>Contact & Media</Title>
+              <Paragraph>Add contact information and images</Paragraph>
             </div>
 
             <Form.Item
               name="images"
               label="Images"
-              help="Upload compelling images that tell your story. First image will be the main cover photo."
+              help="Upload images that showcase your cause. First image will be the main photo."
             >
-              <Dragger {...uploadProps} className="h-40">
+              <Dragger {...uploadProps} className="modern-upload">
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
@@ -729,7 +1200,7 @@ export default function CreateCausePage() {
 
             <Title level={4}>Contact Information</Title>
 
-            <Row gutter={16}>
+            <Row gutter={[16, 16]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="contactEmail"
@@ -744,108 +1215,163 @@ export default function CreateCausePage() {
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item name="contactPhone" label="Contact Phone (Optional)">
+                <Form.Item name="contactPhone" label="Contact Phone">
                   <Input size="large" prefix={<PhoneOutlined />} />
                 </Form.Item>
               </Col>
             </Row>
 
-            <Form.Item name="website" label="Website (Optional)">
+            <Form.Item name="contactPerson" label="Contact Person">
               <Input
                 size="large"
-                prefix={<GlobalOutlined />}
-                placeholder="https://yourorganization.com"
+                placeholder="Name of primary contact person"
               />
             </Form.Item>
 
-            <Title level={5}>Social Media (Optional)</Title>
-            <Row gutter={16}>
-              <Col xs={24} md={8}>
-                <Form.Item name={["socialMedia", "facebook"]} label="Facebook">
-                  <Input size="large" placeholder="Facebook page URL" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={8}>
-                <Form.Item name={["socialMedia", "twitter"]} label="Twitter">
-                  <Input size="large" placeholder="Twitter profile URL" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={8}>
-                <Form.Item
-                  name={["socialMedia", "instagram"]}
-                  label="Instagram"
-                >
-                  <Input size="large" placeholder="Instagram profile URL" />
-                </Form.Item>
-              </Col>
-            </Row>
+            <Form.Item name="availabilityHours" label="Availability Hours">
+              <Input
+                size="large"
+                placeholder="e.g., Mon-Fri 9AM-5PM, Weekends by appointment"
+              />
+            </Form.Item>
+
+            <Form.Item name="specialInstructions" label="Special Instructions">
+              <TextArea
+                rows={3}
+                placeholder="Any special instructions for coordination, pickup, delivery, etc."
+              />
+            </Form.Item>
           </div>
         );
 
-      case 4:
+      case 5:
+      case 6:
+        // Review step - adjust case number based on category
+        const isReviewStep = (selectedCategory === "education" && currentStep === 5) ||
+                            (selectedCategory !== "education" && currentStep === 4);
+        
+        if (!isReviewStep) return null;
+
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <CheckCircleOutlined className="text-4xl text-green-600 mb-4" />
+          <div className="modern-form-step">
+            <div className="step-header">
+              <CheckCircleOutlined className="step-icon" />
               <Title level={3}>Review Your Cause</Title>
-              <Paragraph type="secondary">
-                Please review all information before publishing
-              </Paragraph>
+              <Paragraph>Please review all information before publishing</Paragraph>
             </div>
 
-            <Card title="Basic Information">
+            <Card title="Basic Information" className="review-card">
               <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Text strong>Category:</Text>
+                  <div>{categories.find(c => c.value === selectedCategory)?.label}</div>
+                </Col>
                 <Col span={12}>
                   <Text strong>Title:</Text>
                   <div>{formData.title}</div>
                 </Col>
                 <Col span={12}>
-                  <Text strong>Type:</Text>
-                  <div className="capitalize">{formData.causeType}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Category:</Text>
-                  <div>
-                    {
-                      categories.find((c) => c.value === formData.category)
-                        ?.label
-                    }
-                  </div>
-                </Col>
-                <Col span={12}>
                   <Text strong>Location:</Text>
                   <div>{formData.location}</div>
                 </Col>
+                <Col span={12}>
+                  <Text strong>Priority:</Text>
+                  <div className="capitalize">{formData.priority}</div>
+                </Col>
                 <Col span={24}>
-                  <Text strong>Short Description:</Text>
+                  <Text strong>Description:</Text>
                   <div>{formData.shortDescription}</div>
                 </Col>
               </Row>
             </Card>
 
-            <Card title="Goals & Timeline">
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
-                  <Text strong>Fundraising Goal:</Text>
-                  <div>${formData.goalAmount?.toLocaleString()}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Volunteers Needed:</Text>
-                  <div>{formData.volunteersNeeded || "None specified"}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Urgency:</Text>
-                  <div className="capitalize">{formData.urgencyLevel}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Deadline:</Text>
-                  <div>{formData.deadline || "No deadline set"}</div>
-                </Col>
-              </Row>
-            </Card>
+            {selectedCategory === "food" && (
+              <Card title="Food Details" className="review-card">
+                <Row gutter={[16, 16]}>
+                  <Col span={12}>
+                    <Text strong>Food Type:</Text>
+                    <div className="capitalize">{formData.foodType}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Quantity:</Text>
+                    <div>{formData.quantity} {formData.unit}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Temperature:</Text>
+                    <div className="capitalize">{formData.temperatureRequirements}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Dietary Restrictions:</Text>
+                    <div>{formData.dietaryRestrictions?.join(", ") || "None"}</div>
+                  </Col>
+                </Row>
+              </Card>
+            )}
 
-            <Card title="Legal & Preferences">
-              <div className="space-y-4">
+            {selectedCategory === "clothes" && (
+              <Card title="Clothing Details" className="review-card">
+                <Row gutter={[16, 16]}>
+                  <Col span={12}>
+                    <Text strong>Type:</Text>
+                    <div className="capitalize">{formData.clothesType}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Category:</Text>
+                    <div className="capitalize">{formData.clothesCategory}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Age Group:</Text>
+                    <div className="capitalize">{formData.ageGroup}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Sizes:</Text>
+                    <div>{formData.sizeRange?.join(", ")}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Condition:</Text>
+                    <div className="capitalize">{formData.condition}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Quantity:</Text>
+                    <div>{formData.quantity} items</div>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+
+            {selectedCategory === "education" && (
+              <Card title="Education Details" className="review-card">
+                <Row gutter={[16, 16]}>
+                  <Col span={12}>
+                    <Text strong>Type:</Text>
+                    <div className="capitalize">{formData.educationType}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Skill Level:</Text>
+                    <div className="capitalize">{formData.skillLevel}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Duration:</Text>
+                    <div>{formData.durationHours} hours over {formData.numberOfDays} days</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Max Participants:</Text>
+                    <div>{formData.maxTrainees}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Instructor:</Text>
+                    <div>{formData.instructorName}</div>
+                  </Col>
+                  <Col span={12}>
+                    <Text strong>Price:</Text>
+                    <div>{formData.isFree ? "Free" : `$${formData.price}`}</div>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+
+            <Card title="Legal & Preferences" className="review-card">
+              <div className="terms-section">
                 <Form.Item
                   name="terms"
                   valuePropName="checked"
@@ -885,14 +1411,6 @@ export default function CreateCausePage() {
                     Send me updates about my cause and tips for success
                   </Checkbox>
                 </Form.Item>
-
-                <Form.Item
-                  name="publicProfile"
-                  valuePropName="checked"
-                  initialValue={true}
-                >
-                  <Checkbox>Make my profile visible to supporters</Checkbox>
-                </Form.Item>
               </div>
             </Card>
 
@@ -901,6 +1419,7 @@ export default function CreateCausePage() {
               description="Once you publish your cause, it will be reviewed by our team and go live within 24 hours."
               type="info"
               showIcon
+              className="review-alert"
             />
           </div>
         );
@@ -913,10 +1432,10 @@ export default function CreateCausePage() {
   if (status === "loading") {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <Text className="text-gray-600">Loading...</Text>
+        <div className="modern-loading-page">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <Text>Loading...</Text>
           </div>
         </div>
       </MainLayout>
@@ -925,59 +1444,70 @@ export default function CreateCausePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Header */}
-            <div className="text-center mb-8">
-              <Title level={1} className="text-gray-900 mb-4">
-                Create a New Cause
+      <div className="modern-home-page">
+        {/* Hero Section */}
+        <section className="modern-hero">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="hero-text"
+            >
+              <Title level={1} className="modern-hero-title">
+                Create a New 
+                <span className="title-highlight"> Cause</span>
               </Title>
-              <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
+              
+              <Paragraph className="modern-hero-subtitle">
                 Share your passion and create positive change in your community.
                 Every great movement starts with a single step.
               </Paragraph>
-            </div>
+            </motion.div>
+          </div>
+        </section>
 
-            {/* Progress Steps */}
-            <Card className="mb-8 shadow-sm">
-              <Steps
-                current={currentStep}
-                size="small"
-                className="mb-6"
-                items={steps.map((step, index) => ({
-                  title: step.title,
-                  description: step.description,
-                  icon: step.icon,
-                }))}
-              />
-              <Progress
-                percent={((currentStep + 1) / steps.length) * 100}
-                showInfo={false}
-                strokeColor={{
-                  "0%": "#3b82f6",
-                  "100%": "#1d4ed8",
-                }}
-                className="mb-4"
-              />
-              <div className="text-center text-sm text-gray-500">
-                Step {currentStep + 1} of {steps.length}
-              </div>
-            </Card>
+        {/* Main Content */}
+        <section className="modern-content-section">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
 
-            {/* Form Content */}
-            <Card className="shadow-lg">
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-                initialValues={formData}
-                size="large"
-              >
+              {/* Progress Steps */}
+              <Card className="modern-cause-card">
+                <Steps
+                  current={currentStep}
+                  size="small"
+                  className="modern-steps"
+                  items={steps.map((step, index) => ({
+                    title: step.title,
+                    description: step.description,
+                    icon: step.icon,
+                  }))}
+                />
+                <Progress
+                  percent={((currentStep + 1) / steps.length) * 100}
+                  showInfo={false}
+                  strokeColor="#52c41a"
+                  className="modern-progress-bar"
+                />
+                <div className="progress-text">
+                  Step {currentStep + 1} of {steps.length}
+                </div>
+              </Card>
+
+              {/* Form Content */}
+              <Card className="modern-cause-card">
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleSubmit}
+                  initialValues={formData}
+                  size="large"
+                >
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentStep}
@@ -991,25 +1521,25 @@ export default function CreateCausePage() {
                 </AnimatePresence>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between items-center pt-8 mt-8 border-t border-gray-200">
+                <div className="form-navigation">
                   <div>
-                    {currentStep > 0 && (
+                    {(currentStep > 0 || showCategoryForm) && (
                       <Button
                         size="large"
                         onClick={prevStep}
                         icon={<LeftOutlined />}
-                        className="rounded-lg"
+                        className="nav-btn secondary"
                       >
                         Previous
                       </Button>
                     )}
                   </div>
 
-                  <div className="flex space-x-3">
+                  <div className="nav-right">
                     <Button
                       size="large"
                       onClick={() => router.push("/causes")}
-                      className="rounded-lg"
+                      className="nav-btn secondary"
                     >
                       Save as Draft
                     </Button>
@@ -1019,7 +1549,7 @@ export default function CreateCausePage() {
                         type="primary"
                         size="large"
                         onClick={nextStep}
-                        className="bg-blue-600 hover:bg-blue-700 border-none rounded-lg"
+                        className="nav-btn primary"
                       >
                         Next Step
                         <RightOutlined />
@@ -1030,7 +1560,7 @@ export default function CreateCausePage() {
                         htmlType="submit"
                         loading={loading}
                         size="large"
-                        className="bg-green-600 hover:bg-green-700 border-none rounded-lg"
+                        className="nav-btn primary"
                         icon={<CheckCircleOutlined />}
                       >
                         Publish Cause
@@ -1039,9 +1569,10 @@ export default function CreateCausePage() {
                   </div>
                 </div>
               </Form>
-            </Card>
-          </motion.div>
-        </div>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
       </div>
     </MainLayout>
   );
