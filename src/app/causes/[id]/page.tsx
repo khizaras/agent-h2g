@@ -17,6 +17,7 @@ import {
   Avatar,
   Tabs,
   Breadcrumb,
+  Carousel,
 } from "antd";
 import {
   HeartOutlined,
@@ -495,11 +496,61 @@ export default function CauseDetailsPage() {
         {/* Hero Section */}
         <section className="modern-cause-hero">
           <div className="hero-background">
-            <img src={cause.imageUrl} alt={cause.title} />
-            <div className="hero-overlay" />
+            {/* Image Carousel */}
+            {cause.images && cause.images.length > 1 ? (
+              <Carousel 
+                autoplay 
+                autoplaySpeed={5000}
+                fade
+                style={{ height: '100%' }}
+              >
+                {cause.images.map((image, index) => (
+                  <div key={index} style={{ height: '500px', position: 'relative' }}>
+                    <img 
+                      src={image || '/placeholder-cause.jpg'} 
+                      alt={`${cause.title} - Image ${index + 1}`}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover',
+                        objectPosition: 'center'
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder-cause.jpg';
+                      }}
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <img 
+                src={cause.image || cause.imageUrl || cause.images?.[0] || '/placeholder-cause.jpg'} 
+                alt={cause.title}
+                style={{ 
+                  width: '100%', 
+                  height: '500px', 
+                  objectFit: 'cover',
+                  objectPosition: 'center'
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder-cause.jpg';
+                }}
+              />
+            )}
+            <div className="hero-overlay" style={{ 
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1
+            }} />
           </div>
 
-          <div className="container">
+          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -567,29 +618,52 @@ export default function CauseDetailsPage() {
               </Paragraph>
 
               <div className="hero-actions">
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<HeartOutlined />}
-                  onClick={() => setDonateModalVisible(true)}
-                  className="modern-btn-primary"
-                >
-                  Donate Now
-                </Button>
-                <Button
-                  size="large"
-                  icon={<ShareAltOutlined />}
-                  className="modern-btn-secondary"
-                >
-                  Share
-                </Button>
-                <Button
-                  size="large"
-                  icon={<TeamOutlined />}
-                  className="modern-btn-secondary"
-                >
-                  Volunteer
-                </Button>
+                {/* Dynamic buttons based on cause type */}
+                {cause.category_name === 'education' ? (
+                  <>
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<BookOutlined />}
+                      className="modern-btn-primary"
+                    >
+                      Enroll Now
+                    </Button>
+                    <Button
+                      size="large"
+                      icon={<ShareAltOutlined />}
+                      className="modern-btn-secondary"
+                    >
+                      Share Course
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<HeartOutlined />}
+                      onClick={() => setDonateModalVisible(true)}
+                      className="modern-btn-primary"
+                    >
+                      Donate Now
+                    </Button>
+                    <Button
+                      size="large"
+                      icon={<ShareAltOutlined />}
+                      className="modern-btn-secondary"
+                    >
+                      Share
+                    </Button>
+                    <Button
+                      size="large"
+                      icon={<TeamOutlined />}
+                      className="modern-btn-secondary"
+                    >
+                      Volunteer
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>
@@ -615,7 +689,7 @@ export default function CauseDetailsPage() {
                         <ClothesDetailsSection details={categoryDetails} />
                       )}
                       {cause.category_name === "education" && (
-                        <EducationDetailsSection details={categoryDetails} />
+                        <EducationDetailsSection details={categoryDetails} causeId={cause.id} />
                       )}
                     </div>
                   )}
@@ -675,16 +749,28 @@ export default function CauseDetailsPage() {
                         </div>
                       </div>
 
-                      <Button
-                        type="primary"
-                        size="large"
-                        icon={<HeartOutlined />}
-                        onClick={() => setDonateModalVisible(true)}
-                        className="modern-btn-primary"
-                        block
-                      >
-                        Donate Now
-                      </Button>
+                      {cause.category_name === 'education' ? (
+                        <Button
+                          type="primary"
+                          size="large"
+                          icon={<BookOutlined />}
+                          className="modern-btn-primary"
+                          block
+                        >
+                          Enroll Now
+                        </Button>
+                      ) : (
+                        <Button
+                          type="primary"
+                          size="large"
+                          icon={<HeartOutlined />}
+                          onClick={() => setDonateModalVisible(true)}
+                          className="modern-btn-primary"
+                          block
+                        >
+                          Donate Now
+                        </Button>
+                      )}
 
                       <div className="secondary-actions">
                         <Button

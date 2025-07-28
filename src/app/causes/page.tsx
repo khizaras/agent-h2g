@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Card,
   Row,
@@ -13,21 +13,26 @@ import {
   Pagination,
   Spin,
   Empty,
+  Switch,
+  Space,
 } from "antd";
-import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus } from "react-icons/fi";
+import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus, FiRefreshCw } from "react-icons/fi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { 
   fetchCauses, 
+  loadMoreCauses,
   setFilters, 
   setSearchQuery,
   selectCausesList,
   selectCausesLoading,
+  selectCausesLoadingMore,
   selectCausesError,
   selectCausesFilters,
-  selectCausesPagination
+  selectCausesPagination,
+  selectCausesHasMore
 } from "@/store/slices/causesSlice";
 
 const { Title, Paragraph, Text } = Typography;
@@ -39,13 +44,17 @@ export default function CausesPage() {
   const dispatch = useAppDispatch();
   const causes = useAppSelector(selectCausesList) || [];
   const loading = useAppSelector(selectCausesLoading);
+  const loadingMore = useAppSelector(selectCausesLoadingMore);
   const error = useAppSelector(selectCausesError);
   const filters = useAppSelector(selectCausesFilters);
   const pagination = useAppSelector(selectCausesPagination);
+  const hasMore = useAppSelector(selectCausesHasMore);
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     "food",
@@ -81,6 +90,62 @@ export default function CausesPage() {
     const newFilters = { ...filters, page };
     dispatch(setFilters(newFilters));
     dispatch(fetchCauses(newFilters));
+  };
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore && infiniteScrollEnabled) {
+      const nextPage = pagination.page + 1;
+      const newFilters = { 
+        ...filters, 
+        page: nextPage,
+        search: searchTerm || undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
+      };
+      dispatch(loadMoreCauses(newFilters));
+    }
+  }, [dispatch, loadingMore, hasMore, infiniteScrollEnabled, pagination.page, filters, searchTerm, selectedCategory, selectedUrgency]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!infiniteScrollEnabled) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
+      }
+    );
+
+    const currentRef = loadingRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [loadMore, hasMore, loadingMore, loading, infiniteScrollEnabled]);
+
+  const handleRefresh = () => {
+    const refreshFilters = {
+      ...filters,
+      page: 1,
+      search: searchTerm || undefined,
+      category: selectedCategory !== "all" ? selectedCategory : undefined,
+      urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
+    };
+    dispatch(setFilters(refreshFilters));
+    dispatch(fetchCauses(refreshFilters));
   };
 
   const getUrgencyColor = (level: string) => {
@@ -131,6 +196,10 @@ export default function CausesPage() {
                   <span className="stat-label">Active Causes</span>
                 </div>
                 <div className="stat-item">
+                  <span className="stat-number">{causes.length || 0}</span>
+                  <span className="stat-label">Loaded</span>
+                </div>
+                <div className="stat-item">
                   <span className="stat-number">25K+</span>
                   <span className="stat-label">Lives Impacted</span>
                 </div>
@@ -143,7 +212,7 @@ export default function CausesPage() {
         <section className="modern-filters-section">
           <div className="container">
             <Row gutter={[16, 16]}>
-              <Col xs={24} md={12}>
+              <Col xs={24} md={10}>
                 <Input.Search
                   placeholder="Search causes..."
                   size="large"
@@ -153,7 +222,7 @@ export default function CausesPage() {
                   className="modern-search"
                 />
               </Col>
-              <Col xs={12} md={6}>
+              <Col xs={12} md={5}>
                 <Select
                   value={selectedCategory}
                   onChange={setSelectedCategory}
@@ -170,7 +239,7 @@ export default function CausesPage() {
                   ))}
                 </Select>
               </Col>
-              <Col xs={12} md={6}>
+              <Col xs={12} md={5}>
                 <Select
                   value={selectedUrgency}
                   onChange={setSelectedUrgency}
@@ -186,6 +255,26 @@ export default function CausesPage() {
                     </Option>
                   ))}
                 </Select>
+              </Col>
+              <Col xs={24} md={4}>
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Switch
+                      checked={infiniteScrollEnabled}
+                      onChange={setInfiniteScrollEnabled}
+                      size="small"
+                    />
+                    <Text style={{ fontSize: "12px" }}>Infinite Scroll</Text>
+                  </div>
+                  <Button
+                    icon={<FiRefreshCw />}
+                    onClick={handleRefresh}
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
+                    Refresh
+                  </Button>
+                </Space>
               </Col>
             </Row>
           </div>
@@ -229,11 +318,26 @@ export default function CausesPage() {
                     >
                       <Card className="modern-cause-card" hoverable>
                         <div className="cause-image">
-                          <img src={cause.image || '/placeholder-cause.jpg'} alt={cause.title} />
+                          <img 
+                            src={cause.image || '/placeholder-cause.jpg'} 
+                            alt={cause.title}
+                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder-cause.jpg';
+                            }}
+                          />
                           <Tag
                             className={`urgency-tag urgency-${cause.priority || 'medium'}`}
                             style={{
                               backgroundColor: getUrgencyColor(cause.priority || 'medium'),
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                              zIndex: 1,
+                              color: 'white',
+                              border: 'none',
+                              fontWeight: 'bold'
                             }}
                           >
                             {(cause.priority || 'medium').toUpperCase()}
@@ -280,20 +384,61 @@ export default function CausesPage() {
               </Row>
             )}
 
-            {/* Pagination */}
-            {!loading && causes.length > 0 && pagination.totalPages > 1 && (
-              <div className="pagination-container">
-                <Pagination
-                  current={pagination.page}
-                  total={pagination.total}
-                  pageSize={pagination.limit}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
-                  showTotal={(total, range) =>
-                    `${range[0]}-${range[1]} of ${total} causes`
-                  }
-                />
-              </div>
+            {/* Load More & Pagination */}
+            {!loading && causes.length > 0 && (
+              <>
+                {/* Infinite Scroll Loading Trigger */}
+                {infiniteScrollEnabled && (
+                  <div ref={loadingRef} style={{ padding: '20px', textAlign: 'center' }}>
+                    {loadingMore && (
+                      <div style={{ marginBottom: '16px' }}>
+                        <Spin size="large" />
+                        <p style={{ marginTop: '12px', color: '#666' }}>Loading more causes...</p>
+                      </div>
+                    )}
+                    {!hasMore && causes.length > 0 && (
+                      <div style={{ padding: '40px 20px', textAlign: 'center', color: '#999' }}>
+                        <p>🎉 You've reached the end! No more causes to load.</p>
+                        <Button onClick={handleRefresh} type="link">
+                          Go back to top
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Load More Button (fallback for infinite scroll) */}
+                {infiniteScrollEnabled && hasMore && !loadingMore && (
+                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                    <Button 
+                      type="primary" 
+                      size="large" 
+                      onClick={loadMore}
+                      loading={loadingMore}
+                      style={{ minWidth: '200px' }}
+                    >
+                      Load More Causes
+                    </Button>
+                  </div>
+                )}
+
+                {/* Traditional Pagination */}
+                {!infiniteScrollEnabled && pagination.totalPages > 1 && (
+                  <div className="pagination-container" style={{ marginTop: '32px', textAlign: 'center' }}>
+                    <Pagination
+                      current={pagination.page}
+                      total={pagination.total}
+                      pageSize={pagination.limit}
+                      onChange={handlePageChange}
+                      showSizeChanger={false}
+                      showTotal={(total, range) =>
+                        `${range[0]}-${range[1]} of ${total} causes`
+                      }
+                      showQuickJumper
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
