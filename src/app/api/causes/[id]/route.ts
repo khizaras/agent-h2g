@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Database } from "@/lib/database";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const causeId = params.id;
+    const { id } = await params;
+    const causeId = id;
 
     if (!causeId) {
       return NextResponse.json(

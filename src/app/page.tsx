@@ -11,6 +11,7 @@ import {
   Space,
   Avatar,
   Rate,
+  Spin,
 } from "antd";
 import {
   FiHeart,
@@ -24,6 +25,12 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { 
+  fetchFeaturedCauses, 
+  selectFeaturedCauses,
+  selectCausesLoading 
+} from "@/store/slices/causesSlice";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -50,6 +57,9 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
 
 export default function HomePage() {
+  const dispatch = useAppDispatch();
+  const featuredCauses = useAppSelector(selectFeaturedCauses) || [];
+  const loading = useAppSelector(selectCausesLoading);
   const [mounted, setMounted] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
@@ -63,6 +73,12 @@ export default function HomePage() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      dispatch(fetchFeaturedCauses());
+    }
+  }, [dispatch, mounted]);
 
   const features = [
     {
@@ -136,35 +152,6 @@ export default function HomePage() {
     },
   ];
 
-  const featuredCauses = [
-    {
-      id: 1,
-      title: "Weekend Meals for Families",
-      description: "Providing nutritious weekend meals for children who rely on school meal programs.",
-      goal: 5000,
-      raised: 3250,
-      supporters: 45,
-      image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=600&fit=crop",
-    },
-    {
-      id: 2,
-      title: "Senior Grocery Support",
-      description: "Helping elderly community members access fresh groceries and essential supplies.",
-      goal: 3000,
-      raised: 2100,
-      supporters: 32,
-      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&h=600&fit=crop",
-    },
-    {
-      id: 3,
-      title: "Mobile Food Pantry",
-      description: "Bringing fresh food directly to underserved neighborhoods in our community.",
-      goal: 8000,
-      raised: 4800,
-      supporters: 78,
-      image: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=600&fit=crop",
-    },
-  ];
 
   if (!mounted) return null;
 
@@ -380,53 +367,60 @@ export default function HomePage() {
               </Paragraph>
             </div>
 
-            <Row gutter={[24, 24]}>
-              {featuredCauses.map((cause, index) => (
-                <Col xs={24} md={8} key={cause.id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Card className="modern-cause-card" hoverable>
-                      <div className="cause-image">
-                        <img src={cause.image} alt={cause.title} />
-                      </div>
-                      <div className="cause-content">
-                        <Title level={4} className="cause-title">
-                          {cause.title}
-                        </Title>
-                        <Paragraph className="cause-description">
-                          {cause.description}
-                        </Paragraph>
-                        
-                        <div className="cause-progress">
-                          <div className="progress-info">
-                            <Text strong>${cause.raised.toLocaleString()}</Text>
-                            <Text type="secondary"> of ${cause.goal.toLocaleString()}</Text>
-                          </div>
-                          <div className="progress-bar">
-                            <div 
-                              className="progress-fill" 
-                              style={{ width: `${(cause.raised / cause.goal) * 100}%` }}
-                            />
-                          </div>
-                          <Text type="secondary" className="supporters">
-                            {cause.supporters} supporters
-                          </Text>
+            {loading ? (
+              <div className="text-center py-12">
+                <Spin size="large" />
+                <p className="mt-4">Loading featured causes...</p>
+              </div>
+            ) : featuredCauses.length === 0 ? (
+              <div className="text-center py-12">
+                <Title level={4}>No featured causes available</Title>
+                <Paragraph>Check back soon for featured community initiatives.</Paragraph>
+                <Link href="/causes">
+                  <Button type="primary">
+                    Browse All Causes
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <Row gutter={[24, 24]}>
+                {featuredCauses.slice(0, 3).map((cause, index) => (
+                  <Col xs={24} md={8} key={cause.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Card className="modern-cause-card" hoverable>
+                        <div className="cause-image">
+                          <img src={cause.image || '/placeholder-cause.jpg'} alt={cause.title} />
                         </div>
+                        <div className="cause-content">
+                          <Title level={4} className="cause-title">
+                            {cause.title}
+                          </Title>
+                          <Paragraph className="cause-description">
+                            {cause.description?.substring(0, 100)}...
+                          </Paragraph>
+                          
+                          <div className="cause-meta">
+                            <Text type="secondary">
+                              {cause.category_name || 'General'} • {cause.location || 'Location TBD'}
+                            </Text>
+                          </div>
 
-                        <Link href={`/causes/${cause.id}`}>
-                          <Button type="primary" block className="modern-btn-primary">
-                            Support This Cause
-                          </Button>
-                        </Link>
-                      </div>
-                    </Card>
-                  </motion.div>
-                </Col>
-              ))}
-            </Row>
+                          <Link href={`/causes/${cause.id}`}>
+                            <Button type="primary" block className="modern-btn-primary">
+                              Support This Cause
+                            </Button>
+                          </Link>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  </Col>
+                ))}
+              </Row>
+            )}
 
             <div className="causes-cta">
               <Link href="/causes">

@@ -8,6 +8,8 @@ export interface User {
   bio?: string;
   phone?: string;
   address?: string;
+  location?: string;
+  website?: string;
   isAdmin: boolean;
   isVerified: boolean;
   emailNotifications: boolean;
@@ -59,14 +61,17 @@ export interface BaseCause {
   completedAt?: string;
   user: User;
   category: Category;
-  // Additional properties for compatibility with mock data
+  // Additional fields from API joins and compatibility
+  user_name?: string;
+  user_email?: string;
+  category_name?: string;
+  category_display_name?: string;
   goal_amount?: number;
   raised_amount?: number;
   percentage_complete?: number;
   image_url?: string;
   urgency_level?: string;
   created_at?: string;
-  user_name?: string;
   view_count?: number;
   like_count?: number;
   deadline?: string;

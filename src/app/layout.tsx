@@ -9,7 +9,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
-import { store } from "@/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { store, persistor } from "@/store";
 import { antdTheme } from "@/config/theme";
 import { MotionConfig } from "framer-motion";
 import "antd/dist/reset.css";
@@ -66,7 +67,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body style={{ minHeight: "100vh", background: "var(--color-bg)" }}>
         <SessionProvider>
           <Provider store={store}>
-            <QueryClientProvider client={queryClient}>
+            <PersistGate loading={null} persistor={persistor}>
+              <QueryClientProvider client={queryClient}>
               <ThemeProvider
                 attribute="class"
                 defaultTheme="light"
@@ -97,11 +99,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   </MotionConfig>
                 </ConfigProvider>
               </ThemeProvider>
-              <ReactQueryDevtools
-                initialIsOpen={false}
-                buttonPosition="bottom-right"
-              />
-            </QueryClientProvider>
+                <ReactQueryDevtools
+                  initialIsOpen={false}
+                  buttonPosition="bottom-right"
+                />
+              </QueryClientProvider>
+            </PersistGate>
           </Provider>
         </SessionProvider>
       </body>

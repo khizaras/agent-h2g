@@ -399,9 +399,9 @@ const causesSlice = createSlice({
       })
       .addCase(fetchCauses.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.causes = action.payload.data || [];
-        if (action.payload.pagination) {
-          state.pagination = action.payload.pagination;
+        state.causes = action.payload.data?.causes || [];
+        if (action.payload.data?.pagination) {
+          state.pagination = action.payload.data.pagination;
         }
         state.error = null;
       })
