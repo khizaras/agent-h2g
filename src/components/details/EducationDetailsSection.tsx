@@ -253,16 +253,16 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({ detai
 
   // Site-consistent theme colors
   const theme = {
-    primary: '#1890ff',
-    success: '#52c41a',
-    warning: '#faad14',
-    error: '#ff4d4f',
-    text: '#1f2937',
-    textSecondary: '#6b7280',
-    background: '#ffffff',
-    backgroundSecondary: '#f8fafc',
-    border: '#e5e7eb',
-    shadow: '0 2px 8px rgba(0,0,0,0.08)'
+    primary: '#1f2937', // Dark professional color
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    text: '#ffffff',
+    textSecondary: '#e5e7eb',
+    background: '#374151', // Dark background
+    backgroundSecondary: '#1f2937',
+    border: '#4b5563',
+    shadow: '0 4px 16px rgba(0,0,0,0.3)'
   };
 
   return (
@@ -276,33 +276,57 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({ detai
       >
         <Card 
           style={{ 
-            background: theme.primary,
+            background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.backgroundSecondary} 100%)`,
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: '16px',
             boxShadow: theme.shadow,
             overflow: 'hidden'
           }}
           bodyStyle={{ padding: '32px' }}
         >
           <div style={{ textAlign: 'center', color: 'white' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
-            <Title level={2} style={{ color: 'white', marginBottom: '8px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎓</div>
+            <Title level={2} style={{ color: 'white', marginBottom: '8px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
               {details.education_type?.replace('-', ' ').toUpperCase()} COURSE
             </Title>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap', marginTop: '24px' }}>
-              <div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                padding: '16px 24px', 
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
                 <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{details.duration_hours || 0}h</div>
                 <div style={{ fontSize: '14px', opacity: 0.9 }}>Duration</div>
               </div>
-              <div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                padding: '16px 24px', 
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
                 <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{details.current_trainees || 0}/{details.max_trainees || '∞'}</div>
                 <div style={{ fontSize: '14px', opacity: 0.9 }}>Enrolled</div>
               </div>
-              <div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                padding: '16px 24px', 
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
                 <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{details.difficulty_rating || 1}/5</div>
                 <div style={{ fontSize: '14px', opacity: 0.9 }}>Difficulty</div>
               </div>
-              <div>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                padding: '16px 24px', 
+                borderRadius: '12px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
                 <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{details.is_free ? 'FREE' : `$${details.price}`}</div>
                 <div style={{ fontSize: '14px', opacity: 0.9 }}>Price</div>
               </div>
@@ -318,12 +342,13 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({ detai
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Card 
-          title={<span><BookOutlined style={{ marginRight: '8px' }} />Course Overview</span>} 
+          title={<span style={{ color: theme.text }}><BookOutlined style={{ marginRight: '8px' }} />Course Overview</span>} 
           style={{ 
             marginBottom: '24px',
-            borderRadius: '8px',
+            borderRadius: '12px',
             boxShadow: theme.shadow,
-            border: `1px solid ${theme.border}`
+            border: `1px solid ${theme.border}`,
+            background: theme.background
           }}
           headStyle={{ 
             background: theme.backgroundSecondary,
@@ -331,6 +356,7 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({ detai
             fontSize: '16px',
             fontWeight: '600'
           }}
+          bodyStyle={{ background: theme.background }}
         >
           <Row gutter={[24, 16]}>
             <Col xs={24} md={12}>

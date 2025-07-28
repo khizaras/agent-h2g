@@ -157,10 +157,10 @@ export async function POST(request: NextRequest) {
       const insertCauseQuery = `
         INSERT INTO causes (
           user_id, title, description, short_description, category_id,
-          location, image, tags, status, priority, contact_phone,
+          location, image, gallery, tags, status, priority, contact_phone,
           contact_email, contact_person, availability_hours,
           special_instructions, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
       const causeResult = await connection.execute(insertCauseQuery, [
@@ -171,6 +171,7 @@ export async function POST(request: NextRequest) {
         categoryId,
         location,
         images?.[0]?.url || null, // Main image
+        JSON.stringify(images || []), // All images in gallery
         JSON.stringify(tags || []),
         priority,
         contactPhone || null,

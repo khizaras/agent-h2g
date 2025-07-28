@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Card,
   Button,
@@ -34,6 +35,7 @@ import {
   ClockCircleOutlined,
   EyeOutlined,
   SafetyCertificateOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -51,8 +53,10 @@ interface Cause {
   title: string;
   description: string;
   detailedDescription: string;
-  imageUrl: string;
-  images: string[];
+  image?: string;
+  imageUrl?: string;
+  images?: string[];
+  gallery?: string[];
   goalAmount: number;
   raisedAmount: number;
   location: string;
@@ -62,6 +66,8 @@ interface Cause {
   createdAt: string;
   deadline?: string;
   verified: boolean;
+  view_count?: number;
+  share_count?: number;
   creator: {
     id: number;
     name: string;
@@ -249,6 +255,7 @@ const mockCause: Cause = {
 export default function CauseDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [cause, setCause] = useState<Cause | null>(null);
   const [categoryDetails, setCategoryDetails] = useState<any>(null);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -265,6 +272,11 @@ export default function CauseDetailsPage() {
         const result = await response.json();
 
         if (result.success) {
+          console.log('Cause API Response:', result.data.cause);
+          console.log('Gallery:', result.data.cause?.gallery);
+          console.log('Images:', result.data.cause?.images);
+          console.log('Image:', result.data.cause?.image);
+          
           setCause(result.data.cause);
           setCategoryDetails(result.data.categoryDetails);
           setUpdates(result.data.activities || []);
@@ -497,50 +509,57 @@ export default function CauseDetailsPage() {
         <section className="modern-cause-hero">
           <div className="hero-background">
             {/* Image Carousel */}
-            {cause.images && cause.images.length > 1 ? (
-              <Carousel 
-                autoplay 
-                autoplaySpeed={5000}
-                fade
-                style={{ height: '100%' }}
-              >
-                {cause.images.map((image, index) => (
-                  <div key={index} style={{ height: '500px', position: 'relative' }}>
-                    <img 
-                      src={image || '/placeholder-cause.jpg'} 
-                      alt={`${cause.title} - Image ${index + 1}`}
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'cover',
-                        objectPosition: 'center'
-                      }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-cause.jpg';
-                      }}
-                    />
-                  </div>
-                ))}
-              </Carousel>
-            ) : (
-              <img 
-                src={cause.image || cause.imageUrl || cause.images?.[0] || '/placeholder-cause.jpg'} 
-                alt={cause.title}
-                style={{ 
-                  width: '100%', 
-                  height: '500px', 
-                  objectFit: 'cover',
-                  objectPosition: 'center'
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder-cause.jpg';
-                }}
-              />
-            )}
+            {(() => {
+              // Get all available images from different sources
+              const allImages = [
+                ...(cause.gallery || []),
+                ...(cause.images || []),
+                cause.image,
+                cause.imageUrl
+              ].filter(Boolean).filter((img, index, arr) => arr.indexOf(img) === index); // Remove duplicates
+
+              return allImages.length > 1 ? (
+                <Carousel 
+                  autoplay 
+                  autoplaySpeed={4000}
+                  fade
+                  dots={{ className: 'hero-carousel-dots' }}
+                  style={{ height: '400px', width: '100%' }}
+                  effect="fade"
+                >
+                  {allImages.map((image, index) => (
+                    <div key={index}>
+                      <div 
+                        style={{ 
+                          height: '400px', 
+                          backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${image || '/placeholder-cause.svg'})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          position: 'relative',
+                          transition: 'all 0.6s ease-in-out'
+                        }}
+                      />
+                    </div>
+                  ))}
+                </Carousel>
+              ) : (
+                <div 
+                  style={{ 
+                    height: '400px', 
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${allImages[0] || '/placeholder-cause.svg'})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    position: 'relative'
+                  }}
+                />
+              );
+            })()}
+            
+            {/* Enhanced overlay for better text visibility */}
             <div className="hero-overlay" style={{ 
-              background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)',
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)',
               position: 'absolute',
               top: 0,
               left: 0,
@@ -588,11 +607,13 @@ export default function CauseDetailsPage() {
                 )}
               </div>
 
-              <Title level={1} className="hero-title">
+              {/* Simplified Hero Title - Clean and Bold */}
+              <Title level={1} className="hero-title-clean">
                 {cause.title}
               </Title>
 
-              <div className="hero-meta">
+              {/* Essential Meta Information Only */}
+              <div className="hero-meta-minimal">
                 <div className="meta-item">
                   <EnvironmentOutlined />
                   <span>{cause.location}</span>
@@ -601,38 +622,49 @@ export default function CauseDetailsPage() {
                   <CalendarOutlined />
                   <span>Created {formatDate(cause.createdAt)}</span>
                 </div>
-                {cause.deadline && (
+                {daysLeft && (
                   <div className="meta-item">
                     <ClockCircleOutlined />
                     <span>{daysLeft} days left</span>
                   </div>
                 )}
-                <div className="meta-item">
-                  <EyeOutlined />
-                  <span>{cause.contributors?.length || 0} supporters</span>
-                </div>
               </div>
 
-              <Paragraph className="hero-description">
-                {cause.description}
-              </Paragraph>
-
-              <div className="hero-actions">
-                {/* Dynamic buttons based on cause type */}
+              {/* Call to Action Buttons */}
+              <div className="hero-actions-centered">
+                {/* Edit button for cause owners */}
+                {session?.user?.id === String(cause?.creator?.id) && (
+                  <Button
+                    size="large"
+                    icon={<EditOutlined />}
+                    onClick={() => router.push(`/causes/${cause.id}/edit`)}
+                    className="hero-btn-edit"
+                    style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      color: 'white',
+                      backdropFilter: 'blur(10px)',
+                      marginRight: '12px'
+                    }}
+                  >
+                    Edit Cause
+                  </Button>
+                )}
+                
                 {cause.category_name === 'education' ? (
                   <>
                     <Button
                       type="primary"
                       size="large"
                       icon={<BookOutlined />}
-                      className="modern-btn-primary"
+                      className="hero-btn-primary"
                     >
                       Enroll Now
                     </Button>
                     <Button
                       size="large"
                       icon={<ShareAltOutlined />}
-                      className="modern-btn-secondary"
+                      className="hero-btn-secondary"
                     >
                       Share Course
                     </Button>
@@ -644,28 +676,114 @@ export default function CauseDetailsPage() {
                       size="large"
                       icon={<HeartOutlined />}
                       onClick={() => setDonateModalVisible(true)}
-                      className="modern-btn-primary"
+                      className="hero-btn-primary"
                     >
                       Donate Now
                     </Button>
                     <Button
                       size="large"
                       icon={<ShareAltOutlined />}
-                      className="modern-btn-secondary"
+                      className="hero-btn-secondary"
                     >
                       Share
-                    </Button>
-                    <Button
-                      size="large"
-                      icon={<TeamOutlined />}
-                      className="modern-btn-secondary"
-                    >
-                      Volunteer
                     </Button>
                   </>
                 )}
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Description & Stats Section */}
+        <section className="cause-description-section">
+          <div className="container">
+            <Row gutter={[40, 40]} align="middle">
+              <Col xs={24} lg={16}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <Title level={2} className="description-title">
+                    About This {cause.category_name === 'education' ? 'Course' : 'Cause'}
+                  </Title>
+                  <Paragraph className="description-text">
+                    {cause.description}
+                  </Paragraph>
+                  
+                  {/* Additional stats */}
+                  <div className="cause-stats">
+                    <div className="stat-item">
+                      <EyeOutlined className="stat-icon" />
+                      <div className="stat-content">
+                        <div className="stat-number">{cause.view_count || 0}</div>
+                        <div className="stat-label">Views</div>
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <TeamOutlined className="stat-icon" />
+                      <div className="stat-content">
+                        <div className="stat-number">{cause.contributors?.length || 0}</div>
+                        <div className="stat-label">Supporters</div>
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <ShareAltOutlined className="stat-icon" />
+                      <div className="stat-content">
+                        <div className="stat-number">{cause.share_count || 0}</div>
+                        <div className="stat-label">Shares</div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Col>
+              
+              <Col xs={24} lg={8}>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <Card className="quick-action-card">
+                    <div className="quick-action-content">
+                      <Title level={4}>Quick Actions</Title>
+                      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                        {cause.category_name === 'education' ? (
+                          <Button 
+                            type="primary" 
+                            size="large" 
+                            icon={<BookOutlined />} 
+                            block
+                            className="action-button"
+                          >
+                            Enroll Now
+                          </Button>
+                        ) : (
+                          <Button 
+                            type="primary" 
+                            size="large" 
+                            icon={<HeartOutlined />} 
+                            onClick={() => setDonateModalVisible(true)}
+                            block
+                            className="action-button"
+                          >
+                            Donate Now
+                          </Button>
+                        )}
+                        <Button 
+                          size="large" 
+                          icon={<ShareAltOutlined />} 
+                          block
+                          className="action-button-secondary"
+                        >
+                          Share
+                        </Button>
+                      </Space>
+                    </div>
+                  </Card>
+                </motion.div>
+              </Col>
+            </Row>
           </div>
         </section>
 

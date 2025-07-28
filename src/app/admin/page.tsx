@@ -58,7 +58,6 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   BookOutlined,
-  ShirtOutlined,
   HomeOutlined,
   MedicineBoxOutlined,
 } from "@ant-design/icons";
@@ -489,8 +488,8 @@ export default function AdminDashboard() {
       case "food":
         return <BookOutlined />;
       case "clothes":
-        return <ShirtOutlined />;
-      case "education":
+      case "clothes":
+        return <HeartOutlined />;
         return <BookOutlined />;
       case "healthcare":
         return <MedicineBoxOutlined />;

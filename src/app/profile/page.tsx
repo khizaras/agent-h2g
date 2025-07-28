@@ -841,6 +841,12 @@ export default function ProfilePage() {
                                         >
                                           <EyeOutlined /> View
                                         </Link>,
+                                        <Link
+                                          href={`/causes/${cause.id}/edit`}
+                                          key="edit"
+                                        >
+                                          <EditOutlined /> Edit
+                                        </Link>,
                                         <span key="likes">
                                           <HeartOutlined />{" "}
                                           {cause.like_count || 0}

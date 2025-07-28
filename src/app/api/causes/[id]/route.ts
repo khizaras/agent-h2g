@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Database } from "@/lib/database";
+import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -126,6 +127,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       });
     }
 
+    // Transform creator information for easier access
+    if (cause.user_id) {
+      cause.creator_id = cause.user_id;
+      cause.creator = {
+        id: cause.user_id,
+        name: cause.user_name || 'Anonymous',
+        email: cause.user_email,
+        avatar: cause.user_avatar,
+        bio: cause.user_bio || '',
+        causesCreated: 0, // This would need a separate query
+        totalRaised: 0,   // This would need a separate query
+        verified: false   // This would need a separate query
+      };
+    }
+
     const response = {
       success: true,
       data: {
@@ -148,17 +164,228 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Implementation for updating a cause
-    // This would be used for editing causes
-    return NextResponse.json(
-      { success: false, error: "Update functionality not implemented yet" },
-      { status: 501 },
-    );
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const causeId = parseInt(params.id);
+    const updateData = await request.json();
+
+    // First, check if the cause exists and if the user is the owner
+    const existingCauseResult = await Database.query(
+      'SELECT creator_id, category_name FROM causes WHERE id = ?',
+      [causeId]
+    ) as any[];
+    const existingCause = existingCauseResult[0];
+
+    if (!existingCause) {
+      return NextResponse.json({ error: 'Cause not found' }, { status: 404 });
+    }
+
+    if (existingCause.creator_id !== session.user.id) {
+      return NextResponse.json({ error: 'You can only edit your own causes' }, { status: 403 });
+    }
+
+    // Update main cause data
+    const updateQuery = `
+      UPDATE causes 
+      SET title = ?, 
+          description = ?, 
+          detailedDescription = ?,
+          category_name = ?, 
+          goalAmount = ?, 
+          urgencyLevel = ?, 
+          location = ?, 
+          deadline = ?,
+          gallery = ?,
+          updatedAt = NOW()
+      WHERE id = ?
+    `;
+
+    await Database.query(updateQuery, [
+      updateData.title,
+      updateData.description,
+      updateData.detailedDescription || '',
+      updateData.category,
+      updateData.goalAmount,
+      updateData.urgencyLevel,
+      updateData.location,
+      updateData.deadline,
+      JSON.stringify(updateData.gallery || []),
+      causeId
+    ]);
+
+    // Update category-specific details if provided
+    if (updateData.categoryDetails) {
+      const categoryDetails = updateData.categoryDetails;
+
+      switch (updateData.category) {
+        case 'food':
+          // Check if food details exist
+          const existingFoodResult = await Database.query(
+            'SELECT id FROM food_details WHERE cause_id = ?',
+            [causeId]
+          ) as any[];
+          const existingFood = existingFoodResult[0];
+
+          if (existingFood) {
+            // Update existing food details
+            await Database.query(`
+              UPDATE food_details 
+              SET food_type = ?, 
+                  servings_count = ?, 
+                  dietary_restrictions = ?, 
+                  preparation_time = ?, 
+                  cooking_instructions = ?
+              WHERE cause_id = ?
+            `, [
+              categoryDetails.food_type || 'meals',
+              categoryDetails.servings_count || 1,
+              JSON.stringify(categoryDetails.dietary_restrictions || []),
+              categoryDetails.preparation_time || 0,
+              categoryDetails.cooking_instructions || '',
+              causeId
+            ]);
+          } else {
+            // Create new food details
+            await Database.query(`
+              INSERT INTO food_details 
+              (cause_id, food_type, servings_count, dietary_restrictions, preparation_time, cooking_instructions)
+              VALUES (?, ?, ?, ?, ?, ?)
+            `, [
+              causeId,
+              categoryDetails.food_type || 'meals',
+              categoryDetails.servings_count || 1,
+              JSON.stringify(categoryDetails.dietary_restrictions || []),
+              categoryDetails.preparation_time || 0,
+              categoryDetails.cooking_instructions || ''
+            ]);
+          }
+          break;
+
+        case 'clothes':
+          const existingClothesResult = await Database.query(
+            'SELECT id FROM clothes_details WHERE cause_id = ?',
+            [causeId]
+          ) as any[];
+          const existingClothes = existingClothesResult[0];
+
+          if (existingClothes) {
+            await Database.query(`
+              UPDATE clothes_details 
+              SET clothing_type = ?, 
+                  sizes_available = ?, 
+                  gender = ?, 
+                  season = ?, 
+                  condition_status = ?
+              WHERE cause_id = ?
+            `, [
+              categoryDetails.clothing_type || 'shirts',
+              JSON.stringify(categoryDetails.sizes_available || []),
+              categoryDetails.gender || 'unisex',
+              categoryDetails.season || 'all-season',
+              categoryDetails.condition || 'good',
+              causeId
+            ]);
+          } else {
+            await Database.query(`
+              INSERT INTO clothes_details 
+              (cause_id, clothing_type, sizes_available, gender, season, condition_status)
+              VALUES (?, ?, ?, ?, ?, ?)
+            `, [
+              causeId,
+              categoryDetails.clothing_type || 'shirts',
+              JSON.stringify(categoryDetails.sizes_available || []),
+              categoryDetails.gender || 'unisex',
+              categoryDetails.season || 'all-season',
+              categoryDetails.condition || 'good'
+            ]);
+          }
+          break;
+
+        case 'education':
+          const existingEducationResult = await Database.query(
+            'SELECT id FROM education_details WHERE cause_id = ?',
+            [causeId]
+          ) as any[];
+          const existingEducation = existingEducationResult[0];
+
+          if (existingEducation) {
+            await Database.query(`
+              UPDATE education_details 
+              SET education_type = ?, 
+                  skill_level = ?, 
+                  topics = ?, 
+                  max_trainees = ?, 
+                  duration_hours = ?, 
+                  prerequisites = ?, 
+                  learning_objectives = ?, 
+                  instructor_name = ?, 
+                  instructor_email = ?, 
+                  certification = ?
+              WHERE cause_id = ?
+            `, [
+              categoryDetails.education_type || 'course',
+              categoryDetails.skill_level || 'beginner',
+              JSON.stringify(categoryDetails.topics || []),
+              categoryDetails.max_trainees || 20,
+              categoryDetails.duration_hours || 1,
+              categoryDetails.prerequisites || '',
+              JSON.stringify(categoryDetails.learning_objectives || []),
+              categoryDetails.instructor_name || '',
+              categoryDetails.instructor_email || '',
+              categoryDetails.certification || false,
+              causeId
+            ]);
+          } else {
+            await Database.query(`
+              INSERT INTO education_details 
+              (cause_id, education_type, skill_level, topics, max_trainees, duration_hours, 
+               prerequisites, learning_objectives, instructor_name, instructor_email, certification)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+              causeId,
+              categoryDetails.education_type || 'course',
+              categoryDetails.skill_level || 'beginner',
+              JSON.stringify(categoryDetails.topics || []),
+              categoryDetails.max_trainees || 20,
+              categoryDetails.duration_hours || 1,
+              categoryDetails.prerequisites || '',
+              JSON.stringify(categoryDetails.learning_objectives || []),
+              categoryDetails.instructor_name || '',
+              categoryDetails.instructor_email || '',
+              categoryDetails.certification || false
+            ]);
+          }
+          break;
+      }
+    }
+
+    // Fetch the updated cause
+    const updatedCauseResult = await Database.query(
+      'SELECT * FROM causes WHERE id = ?',
+      [causeId]
+    ) as any[];
+    const updatedCause = updatedCauseResult[0];
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        cause: updatedCause,
+        message: 'Cause updated successfully'
+      }
+    });
+
   } catch (error) {
-    console.error("Error updating cause:", error);
+    console.error('Error updating cause:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to update cause" },
-      { status: 500 },
+      { 
+        success: false, 
+        error: 'Failed to update cause',
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      },
+      { status: 500 }
     );
   }
 }
