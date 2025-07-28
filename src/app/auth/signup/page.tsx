@@ -77,7 +77,7 @@ export default function SignUpPage() {
       // Get current form values and merge with accumulated data
       const currentValues = await form.getFieldsValue();
       const allFormData = { ...formData, ...currentValues, ...values };
-      
+
       // Prepare data for the registration API
       const registrationData = {
         name: `${allFormData.firstName} ${allFormData.lastName}`.trim(),
@@ -86,7 +86,7 @@ export default function SignUpPage() {
         confirmPassword: allFormData.confirmPassword,
       };
 
-      console.log('Submitting registration data:', registrationData); // Debug log
+      console.log("Submitting registration data:", registrationData); // Debug log
 
       // Use the correct registration endpoint
       const response = await fetch("/api/auth/register", {
@@ -126,11 +126,11 @@ export default function SignUpPage() {
     try {
       const values = await form.validateFields();
       const updatedFormData = { ...formData, ...values };
-      console.log('Next step - accumulated data:', updatedFormData); // Debug log
+      console.log("Next step - accumulated data:", updatedFormData); // Debug log
       setFormData(updatedFormData);
       setCurrentStep(currentStep + 1);
     } catch (error) {
-      console.error('Validation failed:', error);
+      console.error("Validation failed:", error);
     }
   };
 
