@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -51,6 +51,11 @@ export default function SignUpPage() {
   const router = useRouter();
   const [form] = Form.useForm();
 
+  // Keep form data in sync
+  useEffect(() => {
+    form.setFieldsValue(formData);
+  }, [form, formData]);
+
   const steps = [
     {
       title: "Personal Info",
@@ -69,13 +74,27 @@ export default function SignUpPage() {
   const onFinish = async (values: SignUpFormData) => {
     setLoading(true);
     try {
-      // Mock signup - replace with actual API call
-      const response = await fetch("/api/auth/signup", {
+      // Get current form values and merge with accumulated data
+      const currentValues = await form.getFieldsValue();
+      const allFormData = { ...formData, ...currentValues, ...values };
+      
+      // Prepare data for the registration API
+      const registrationData = {
+        name: `${allFormData.firstName} ${allFormData.lastName}`.trim(),
+        email: allFormData.email,
+        password: allFormData.password,
+        confirmPassword: allFormData.confirmPassword,
+      };
+
+      console.log('Submitting registration data:', registrationData); // Debug log
+
+      // Use the correct registration endpoint
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(registrationData),
       });
 
       if (response.ok) {
@@ -106,10 +125,12 @@ export default function SignUpPage() {
   const nextStep = async () => {
     try {
       const values = await form.validateFields();
-      setFormData({ ...formData, ...values });
+      const updatedFormData = { ...formData, ...values };
+      console.log('Next step - accumulated data:', updatedFormData); // Debug log
+      setFormData(updatedFormData);
       setCurrentStep(currentStep + 1);
     } catch (error) {
-      // Validation failed
+      console.error('Validation failed:', error);
     }
   };
 
@@ -326,6 +347,7 @@ export default function SignUpPage() {
             size="large"
             autoComplete="off"
             initialValues={formData}
+            preserve={false}
           >
             {renderStepContent()}
 
