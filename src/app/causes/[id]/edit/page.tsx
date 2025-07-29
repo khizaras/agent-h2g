@@ -605,14 +605,14 @@ export default function EditCausePage() {
       if (fieldsToValidate.length > 0) {
         await form.validateFields(fieldsToValidate);
       }
-      
+
       // Store current step values
       const currentStepValues = form.getFieldsValue();
       setStepFormValues((prev: any) => ({
         ...prev,
-        ...currentStepValues
+        ...currentStepValues,
       }));
-      
+
       setCurrentStep(currentStep + 1);
     } catch (error) {
       console.error("Validation failed:", error);
@@ -624,9 +624,9 @@ export default function EditCausePage() {
     const currentStepValues = form.getFieldsValue();
     setStepFormValues((prev: any) => ({
       ...prev,
-      ...currentStepValues
+      ...currentStepValues,
     }));
-    
+
     setCurrentStep(currentStep - 1);
   };
 
@@ -752,7 +752,7 @@ export default function EditCausePage() {
       const currentStepValues = form.getFieldsValue();
       const allFormValues = {
         ...stepFormValues,
-        ...currentStepValues
+        ...currentStepValues,
       };
 
       console.log("Submit function combined values:", allFormValues); // Debug log
