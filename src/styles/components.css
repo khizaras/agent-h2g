@@ -6496,6 +6496,234 @@ body {
   padding: 0 16px;
 }
 
+/* Ultimate Home Page Specific Styles */
+.ultimate-hero-section {
+  position: relative;
+  min-height: 100vh;
+  background: #181a20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ultimate-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.ultimate-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(24, 26, 32, 0.45), rgba(24, 26, 32, 0.85));
+  z-index: 1;
+}
+
+.ultimate-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.ultimate-section {
+  padding: 80px 0;
+}
+
+.ultimate-section-bg {
+  background: #ffffff;
+}
+
+.ultimate-section-alt {
+  background: #f8f9fa;
+}
+
+.ultimate-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.ultimate-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  height: 100%;
+}
+
+.ultimate-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.ultimate-card-image {
+  height: 200px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+
+.ultimate-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.ultimate-card:hover .ultimate-card-image img {
+  transform: scale(1.05);
+}
+
+.ultimate-card-content {
+  padding: 24px;
+}
+
+.ultimate-testimonial-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  padding: 32px 24px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.ultimate-testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.ultimate-footer {
+  background: #181a20;
+  color: white;
+  padding: 60px 0 20px;
+}
+
+.ultimate-footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.ultimate-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.ultimate-footer-section h4 {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.ultimate-footer-section p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.ultimate-footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ultimate-footer-section li {
+  margin-bottom: 8px;
+}
+
+.ultimate-footer-section a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.ultimate-footer-section a:hover {
+  color: white;
+}
+
+.ultimate-footer-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+}
+
+.ultimate-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ultimate-footer-bottom p {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.ultimate-social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.ultimate-social-link {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.ultimate-social-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ultimate-hero-content {
+    padding: 0 16px;
+  }
+
+  .ultimate-container {
+    padding: 0 16px;
+  }
+
+  .ultimate-section {
+    padding: 60px 0;
+  }
+
+  .ultimate-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .ultimate-footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
 @media (min-width: 1200px) {
   .causes-grid-container {
     padding: 0 24px;

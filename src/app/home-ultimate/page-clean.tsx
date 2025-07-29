@@ -22,12 +22,13 @@ import {
   FiTrendingUp,
   FiCheckCircle,
   FiFacebook,
+  FiTwitter,
   FiInstagram,
   FiLinkedin,
   FiShield,
   FiZap,
 } from "react-icons/fi";
-import { MainLayout } from "@/components/layout/MainLayout";
+import MainLayout from "@/components/layout/MainLayout";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -651,7 +652,7 @@ export default function HomeUltimatePage() {
                               marginBottom: "4px",
                             }}
                           >
-                            {testimonial.name}
+                            {testimonial.author}
                           </div>
                           <div style={{ fontSize: "14px", color: "#666" }}>
                             {testimonial.role}
@@ -767,7 +768,7 @@ export default function HomeUltimatePage() {
                     <FiFacebook />
                   </a>
                   <a href="#" className="ultimate-social-link">
-                    <FiGlobe />
+                    <FiTwitter />
                   </a>
                   <a href="#" className="ultimate-social-link">
                     <FiInstagram />
