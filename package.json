@@ -10,7 +10,7 @@
     "start": "next start",
     "start:server": "node server.js",
     "start:production": "NODE_ENV=production node server.js",
-    "clean": "rimraf .next",
+    "clean": "rm -rf .next",
     "clean:dev": "npm run clean && npm run dev",
     "lint": "next lint",
     "type-check": "tsc --noEmit",

@@ -52,3 +52,5 @@ nul
 tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
+.env.example
+.env.prod
