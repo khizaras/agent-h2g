@@ -27,45 +27,46 @@ import {
   Popconfirm,
   Badge,
   Tooltip,
+  Dropdown,
+  Empty,
+  theme,
+  Breadcrumb,
+  Result,
 } from "antd";
 import {
-  DashboardOutlined,
   UserOutlined,
   HeartOutlined,
   MessageOutlined,
-  BarChartOutlined,
-  SettingOutlined,
   TeamOutlined,
+  DollarOutlined,
+  RiseOutlined,
+  WarningOutlined,
   TrophyOutlined,
-  StarOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  PlusOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  ExportOutlined,
+  BellOutlined,
   SafetyCertificateOutlined,
   CrownOutlined,
-  RiseOutlined,
-  ClockCircleOutlined,
+  StarOutlined,
+  FilterOutlined,
+  ExportOutlined,
+  PlusOutlined,
   CheckCircleOutlined,
-  WarningOutlined,
-  BugOutlined,
-  FireOutlined,
-  GlobalOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CalendarOutlined,
+  CloseCircleOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DashboardOutlined,
+  BarChartOutlined,
+  SettingOutlined,
   BookOutlined,
-  HomeOutlined,
   MedicineBoxOutlined,
-  BellOutlined,
-  DollarOutlined,
+  HomeOutlined,
+  ClockCircleOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
 import type { ColumnsType } from "antd/es/table";
 
@@ -134,6 +135,8 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [collapsed, setCollapsed] = useState(false);
+  const { token } = theme.useToken();
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     totalCauses: 0,
@@ -885,26 +888,49 @@ export default function AdminDashboard() {
 
   if (loading || status === "loading") {
     return (
-      <MainLayout>
-        <div style={{ padding: "50px", textAlign: "center" }}>
-          <Title level={3}>Loading admin dashboard...</Title>
-        </div>
-      </MainLayout>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          background: "#f5f5f5",
+        }}
+      >
+        <Card style={{ textAlign: "center", padding: "50px" }}>
+          <div className="loading-spinner"></div>
+          <Title level={3} style={{ marginTop: "20px" }}>
+            Loading admin dashboard...
+          </Title>
+        </Card>
+      </div>
     );
   }
 
   if (!session?.user || !(session.user as any)?.is_admin) {
     return (
-      <MainLayout>
-        <div style={{ padding: "50px", textAlign: "center" }}>
-          <Alert
-            message="Access Denied"
-            description="You don't have permission to access the admin dashboard."
-            type="error"
-            showIcon
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          background: "#f5f5f5",
+        }}
+      >
+        <Card style={{ textAlign: "center", maxWidth: 400 }}>
+          <Result
+            status="403"
+            title="Access Denied"
+            subTitle="You don't have permission to access the admin dashboard."
+            extra={
+              <Button type="primary" onClick={() => router.push("/")}>
+                Go Home
+              </Button>
+            }
           />
-        </div>
-      </MainLayout>
+        </Card>
+      </div>
     );
   }
 
@@ -917,17 +943,17 @@ export default function AdminDashboard() {
     {
       key: "users",
       icon: <UserOutlined />,
-      label: "Manage Users",
+      label: "Users",
     },
     {
       key: "causes",
       icon: <HeartOutlined />,
-      label: "Manage Causes",
+      label: "Causes",
     },
     {
       key: "comments",
       icon: <MessageOutlined />,
-      label: "Manage Comments",
+      label: "Comments",
     },
     {
       key: "analytics",
@@ -942,864 +968,652 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <MainLayout>
-      <div style={{ display: "flex", minHeight: "100vh", background: "#fafbfc" }}>
-        {/* Modern Dark Sidebar */}
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Professional Sidebar */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={280}
+        style={{
+          background: "#001529",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.15)",
+        }}
+      >
+        {/* Logo Section */}
         <div
           style={{
-            width: "260px",
-            position: "fixed",
-            left: 0,
-            top: 0,
-            height: "100vh",
-            background: "#1f2937",
-            boxShadow: "4px 0 16px rgba(0,0,0,0.1)",
-            zIndex: 1000,
-            overflowY: "auto",
+            height: "64px",
+            padding: "16px",
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid #1f2937",
           }}
         >
-        <div
-          style={{
-            padding: "24px 20px",
-            textAlign: "center",
-            borderBottom: "1px solid #f0f0f0",
-            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-            color: "white",
-          }}
-        >
-          <Title level={4} style={{ margin: 0, color: "white" }}>
-            <CrownOutlined /> Admin Dashboard
-          </Title>
-          <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
-            Hands2gether Management
-          </Text>
-        </div>
-        <div style={{ padding: "20px 0" }}>
-          {menuItems.map((item) => (
-            <div
-              key={item.key}
-              onClick={() => setActiveTab(item.key)}
+          <HeartOutlined
+            style={{
+              fontSize: "24px",
+              color: "#10b981",
+              marginRight: collapsed ? 0 : "12px",
+            }}
+          />
+          {!collapsed && (
+            <span
               style={{
-                padding: "12px 20px",
-                margin: "4px 12px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                fontSize: "14px",
-                fontWeight: "500",
-                color: activeTab === item.key ? "#2563eb" : "#6b7280",
-                backgroundColor:
-                  activeTab === item.key ? "#eff6ff" : "transparent",
-                transition: "all 0.2s ease",
-                border:
-                  activeTab === item.key
-                    ? "1px solid #bfdbfe"
-                    : "1px solid transparent",
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== item.key) {
-                  e.currentTarget.style.backgroundColor = "#f8fafc";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== item.key) {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }
+                color: "white",
+                fontSize: "18px",
+                fontWeight: "600",
               }}
             >
-              {item.icon}
-              {item.label}
-            </div>
-          ))}
+              Hands2gether
+            </span>
+          )}
         </div>
-      </div>
 
-        {/* Main Content Area */}
-        <div
+        {/* Navigation Menu */}
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[activeTab]}
           style={{
-            marginLeft: "260px",
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
+            border: "none",
+            background: "transparent",
           }}
-        >
-        {/* Header */}
+          items={menuItems.map((item) => ({
+            ...item,
+            onClick: () => setActiveTab(item.key),
+            style: {
+              margin: "4px 8px",
+              borderRadius: "8px",
+              height: "48px",
+              display: "flex",
+              alignItems: "center",
+            },
+          }))}
+        />
+
+        {/* User Profile Section */}
         <div
           style={{
-            background: "#ffffff",
-            padding: "16px 32px",
-            borderBottom: "1px solid #e5e7eb",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            position: "sticky",
-            top: 0,
-            zIndex: 100,
+            position: "absolute",
+            bottom: "16px",
+            left: "8px",
+            right: "8px",
+            padding: "16px",
+            borderTop: "1px solid #1f2937",
           }}
         >
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
+              color: "white",
             }}
           >
-            <div>
-              <Title
-                level={3}
-                style={{
-                  margin: 0,
-                  fontSize: "20px",
-                  fontWeight: "600",
-                  color: "#111827",
-                }}
-              >
-                {activeTab === "dashboard"
-                  ? "Dashboard Overview"
-                  : activeTab === "users"
-                    ? "User Management"
-                    : activeTab === "causes"
-                      ? "Cause Management"
-                      : activeTab === "comments"
-                        ? "Comment Moderation"
-                        : activeTab === "analytics"
-                          ? "Analytics & Reports"
-                          : "System Settings"}
-              </Title>
-              <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                {activeTab === "dashboard" &&
-                  "Monitor platform activity and key metrics"}
-                {activeTab === "users" &&
-                  "Manage user accounts and permissions"}
-                {activeTab === "causes" &&
-                  "Oversee cause listings and approvals"}
-                {activeTab === "comments" &&
-                  "Review and moderate user comments"}
-                {activeTab === "analytics" &&
-                  "View detailed analytics and insights"}
-                {activeTab === "settings" && "Configure system settings"}
-              </Text>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <Space>
-                <Badge count={stats.pendingApprovals} size="small">
-                  <Button icon={<BellOutlined />} type="text" />
-                </Badge>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <Avatar
-                    src={session.user?.image}
-                    icon={<UserOutlined />}
-                    size="small"
-                  />
-                  <div style={{ textAlign: "left" }}>
-                    <Text
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: "500",
-                        color: "#111827",
-                      }}
-                    >
-                      {session.user?.name}
-                    </Text>
-                    <br />
-                    <Text style={{ fontSize: "11px", color: "#6b7280" }}>
-                      Admin
-                    </Text>
-                  </div>
+            <Avatar
+              size={collapsed ? "small" : "default"}
+              style={{
+                backgroundColor: "#10b981",
+                marginRight: collapsed ? 0 : "12px",
+              }}
+            >
+              {session?.user?.name?.charAt(0)?.toUpperCase()}
+            </Avatar>
+            {!collapsed && (
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                  {session?.user?.name}
                 </div>
-              </Space>
-            </div>
+                <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                  Administrator
+                </div>
+              </div>
+            )}
           </div>
         </div>
+      </Sider>
 
-        {/* Content Area */}
-        <div style={{ padding: "24px 32px", flex: 1, overflowY: "auto" }}>
-          {activeTab === "dashboard" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+      <Layout>
+        {/* Professional Header */}
+        <Header
+          style={{
+            background: "white",
+            padding: "0 24px",
+            borderBottom: "1px solid #f0f0f0",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                fontSize: "16px",
+                width: 40,
+                height: 40,
+                marginRight: "16px",
+              }}
+            />
+            <Breadcrumb
+              items={[
+                {
+                  title: "Admin",
+                },
+                {
+                  title: menuItems.find((item) => item.key === activeTab)
+                    ?.label,
+                },
+              ]}
+            />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <Badge count={stats.pendingApprovals}>
+              <Button
+                type="text"
+                icon={<BellOutlined />}
+                style={{ width: 40, height: 40 }}
+              />
+            </Badge>
+
+            <Button
+              type="text"
+              icon={<LogoutOutlined />}
+              onClick={() => router.push("/api/auth/signout")}
+              style={{ width: 40, height: 40 }}
+            />
+          </div>
+        </Header>
+
+        {/* Main Content Area */}
+        <Content
+          style={{
+            margin: "24px",
+            padding: "24px",
+            background: "white",
+            borderRadius: "8px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            minHeight: "calc(100vh - 112px)",
+          }}
+        >
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "400px",
+              }}
             >
-              {/* Enhanced Stats Cards */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                  gap: "20px",
-                  marginBottom: "32px",
-                }}
-              >
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
+              <Space direction="vertical" align="center">
+                <div className="loading-spinner"></div>
+                <Text>Loading admin dashboard...</Text>
+              </Space>
+            </div>
+          ) : (
+            <>
+              {/* Dashboard Content */}
+              {activeTab === "dashboard" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
                 >
-                  <div style={{ padding: "20px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: "#eff6ff",
-                          padding: "12px",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <TeamOutlined
-                          style={{ color: "#2563eb", fontSize: "24px" }}
-                        />
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <Text style={{ fontSize: "12px", color: "#10b981" }}>
-                          <RiseOutlined /> +{stats.monthlyGrowth}%
-                        </Text>
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: "8px" }}>
-                      <Text
-                        style={{
-                          fontSize: "32px",
-                          fontWeight: "700",
-                          color: "#111827",
-                        }}
-                      >
-                        {stats.totalUsers.toLocaleString()}
-                      </Text>
-                    </div>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Total Users
-                    </Text>
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "8px 0",
-                        borderTop: "1px solid #f3f4f6",
-                      }}
-                    >
-                      <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                        {stats.monthlyGrowth}% growth this month
-                      </Text>
-                    </div>
-                  </div>
-                </Card>
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div style={{ padding: "20px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: "#f0fdf4",
-                          padding: "12px",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <HeartOutlined
-                          style={{ color: "#16a34a", fontSize: "24px" }}
-                        />
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <Text style={{ fontSize: "12px", color: "#16a34a" }}>
-                          {stats.activeCauses} active
-                        </Text>
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: "8px" }}>
-                      <Text
-                        style={{
-                          fontSize: "32px",
-                          fontWeight: "700",
-                          color: "#111827",
-                        }}
-                      >
-                        {stats.totalCauses.toLocaleString()}
-                      </Text>
-                    </div>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Total Causes
-                    </Text>
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "8px 0",
-                        borderTop: "1px solid #f3f4f6",
-                      }}
-                    >
-                      <Progress
-                        percent={Math.round(
-                          (stats.activeCauses / stats.totalCauses) * 100,
-                        )}
-                        size="small"
-                        strokeColor="#16a34a"
-                        format={() =>
-                          `${Math.round((stats.activeCauses / stats.totalCauses) * 100)}% active`
-                        }
-                      />
-                    </div>
-                  </div>
-                </Card>
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div style={{ padding: "20px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: "#fdf4ff",
-                          padding: "12px",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <MessageOutlined
-                          style={{ color: "#a855f7", fontSize: "24px" }}
-                        />
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <Badge
-                          count={stats.pendingApprovals}
-                          style={{ backgroundColor: "#f59e0b" }}
-                        />
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: "8px" }}>
-                      <Text
-                        style={{
-                          fontSize: "32px",
-                          fontWeight: "700",
-                          color: "#111827",
-                        }}
-                      >
-                        {stats.totalComments.toLocaleString()}
-                      </Text>
-                    </div>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Total Comments
-                    </Text>
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "8px 0",
-                        borderTop: "1px solid #f3f4f6",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: "12px",
-                          color:
-                            stats.pendingApprovals > 0 ? "#f59e0b" : "#6b7280",
-                        }}
-                      >
-                        {stats.pendingApprovals} pending approval
-                      </Text>
-                    </div>
-                  </div>
-                </Card>
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div style={{ padding: "20px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: "#fff7ed",
-                          padding: "12px",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <DollarOutlined
-                          style={{ color: "#ea580c", fontSize: "24px" }}
-                        />
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <Text style={{ fontSize: "12px", color: "#ea580c" }}>
-                          <TrophyOutlined /> Top Impact
-                        </Text>
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: "8px" }}>
-                      <Text
-                        style={{
-                          fontSize: "32px",
-                          fontWeight: "700",
-                          color: "#111827",
-                        }}
-                      >
-                        ${stats.totalDonations.toLocaleString()}
-                      </Text>
-                    </div>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Total Donations
-                    </Text>
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        padding: "8px 0",
-                        borderTop: "1px solid #f3f4f6",
-                      }}
-                    >
-                      <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                        Avg: $
-                        {Math.round(
-                          stats.totalDonations / Math.max(stats.totalCauses, 1),
-                        ).toLocaleString()}{" "}
-                        per cause
-                      </Text>
-                    </div>
-                  </div>
-                </Card>
-              </div>
+                  <Title level={2} style={{ marginBottom: "24px" }}>
+                    Dashboard Overview
+                  </Title>
 
-              {/* Interactive Quick Actions */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "20px",
-                  marginBottom: "32px",
-                }}
-              >
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  hoverable
-                  onClick={() => setActiveTab("users")}
-                >
-                  <div style={{ textAlign: "center", padding: "20px" }}>
-                    <div
-                      style={{
-                        backgroundColor: "#eff6ff",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        display: "inline-block",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <UserOutlined
-                        style={{ fontSize: "32px", color: "#2563eb" }}
-                      />
-                    </div>
-                    <Title
-                      level={4}
-                      style={{ margin: "0 0 8px 0", color: "#111827" }}
-                    >
-                      Manage Users
-                    </Title>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Add, edit, or remove user accounts
-                    </Text>
-                  </div>
-                </Card>
-
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  hoverable
-                  onClick={() => setActiveTab("causes")}
-                >
-                  <div style={{ textAlign: "center", padding: "20px" }}>
-                    <div
-                      style={{
-                        backgroundColor: "#f0fdf4",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        display: "inline-block",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <HeartOutlined
-                        style={{ fontSize: "32px", color: "#16a34a" }}
-                      />
-                    </div>
-                    <Title
-                      level={4}
-                      style={{ margin: "0 0 8px 0", color: "#111827" }}
-                    >
-                      Manage Causes
-                    </Title>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Review and moderate cause listings
-                    </Text>
-                  </div>
-                </Card>
-
-                <Card
-                  style={{
-                    borderRadius: "12px",
-                    border: "1px solid #e5e7eb",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  hoverable
-                  onClick={() => setActiveTab("comments")}
-                >
-                  <div style={{ textAlign: "center", padding: "20px" }}>
-                    <div
-                      style={{
-                        backgroundColor: "#fdf4ff",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        display: "inline-block",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <MessageOutlined
-                        style={{ fontSize: "32px", color: "#a855f7" }}
-                      />
-                    </div>
-                    <Title
-                      level={4}
-                      style={{ margin: "0 0 8px 0", color: "#111827" }}
-                    >
-                      Moderate Comments
-                    </Title>
-                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                      Review flagged content and comments
-                    </Text>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Recent Activity Dashboard */}
-              <Row gutter={[24, 24]}>
-                <Col xs={24} lg={12}>
-                  <Card
-                    title="Recent Users"
-                    extra={
-                      <Button type="link" onClick={() => setActiveTab("users")}>
-                        View All
-                      </Button>
-                    }
-                  >
-                    <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-                      {users.slice(0, 5).map((user) => (
+                  {/* Stats Grid */}
+                  <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
+                    <Col xs={24} sm={12} lg={6}>
+                      <Card
+                        bordered={false}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "white",
+                        }}
+                      >
+                        <Statistic
+                          title={
+                            <span style={{ color: "rgba(255,255,255,0.9)" }}>
+                              Total Users
+                            </span>
+                          }
+                          value={stats.totalUsers}
+                          prefix={<TeamOutlined />}
+                          valueStyle={{ color: "white", fontSize: "28px" }}
+                        />
                         <div
-                          key={user.id}
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            padding: "8px 0",
-                            borderBottom: "1px solid #f0f0f0",
+                            marginTop: "8px",
+                            fontSize: "12px",
+                            opacity: 0.8,
                           }}
                         >
-                          <Avatar src={user.avatar} icon={<UserOutlined />} />
-                          <div style={{ marginLeft: "12px", flex: 1 }}>
-                            <div style={{ fontWeight: 600 }}>{user.name}</div>
-                            <div style={{ fontSize: "12px", color: "#666" }}>
-                              Joined{" "}
-                              {new Date(user.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                          {user.is_verified && (
-                            <SafetyCertificateOutlined
-                              style={{ color: "#52c41a" }}
-                            />
-                          )}
-                          {user.is_admin && (
-                            <CrownOutlined
-                              style={{ color: "#faad14", marginLeft: "4px" }}
-                            />
-                          )}
+                          <RiseOutlined /> +{stats.monthlyGrowth}% this month
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                  <Card
-                    title="Recent Causes"
-                    extra={
-                      <Button
-                        type="link"
-                        onClick={() => setActiveTab("causes")}
+                      </Card>
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                      <Card
+                        bordered={false}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                          color: "white",
+                        }}
                       >
-                        View All
-                      </Button>
-                    }
-                  >
-                    <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-                      {causes.slice(0, 5).map((cause) => (
+                        <Statistic
+                          title={
+                            <span style={{ color: "rgba(255,255,255,0.9)" }}>
+                              Total Causes
+                            </span>
+                          }
+                          value={stats.totalCauses}
+                          prefix={<HeartOutlined />}
+                          valueStyle={{ color: "white", fontSize: "28px" }}
+                        />
                         <div
-                          key={cause.id}
                           style={{
-                            padding: "8px 0",
-                            borderBottom: "1px solid #f0f0f0",
+                            marginTop: "8px",
+                            fontSize: "12px",
+                            opacity: 0.8,
                           }}
                         >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "start",
-                            }}
+                          {stats.activeCauses} active
+                        </div>
+                      </Card>
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                      <Card
+                        bordered={false}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                          color: "white",
+                        }}
+                      >
+                        <Statistic
+                          title={
+                            <span style={{ color: "rgba(255,255,255,0.9)" }}>
+                              Comments
+                            </span>
+                          }
+                          value={stats.totalComments}
+                          prefix={<MessageOutlined />}
+                          valueStyle={{ color: "white", fontSize: "28px" }}
+                        />
+                        <div
+                          style={{
+                            marginTop: "8px",
+                            fontSize: "12px",
+                            opacity: 0.8,
+                          }}
+                        >
+                          {stats.pendingApprovals} pending
+                        </div>
+                      </Card>
+                    </Col>
+
+                    <Col xs={24} sm={12} lg={6}>
+                      <Card
+                        bordered={false}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                          color: "white",
+                        }}
+                      >
+                        <Statistic
+                          title={
+                            <span style={{ color: "rgba(255,255,255,0.9)" }}>
+                              Donations
+                            </span>
+                          }
+                          value={stats.totalDonations}
+                          prefix={<DollarOutlined />}
+                          valueStyle={{ color: "white", fontSize: "28px" }}
+                        />
+                        <div
+                          style={{
+                            marginTop: "8px",
+                            fontSize: "12px",
+                            opacity: 0.8,
+                          }}
+                        >
+                          Platform impact
+                        </div>
+                      </Card>
+                    </Col>
+                  </Row>
+
+                  {/* Quick Actions */}
+                  <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
+                    <Col xs={24} lg={8}>
+                      <Card
+                        title="Quick Actions"
+                        bordered={false}
+                        style={{ height: "100%" }}
+                      >
+                        <Space direction="vertical" style={{ width: "100%" }}>
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            block
+                            onClick={() => setActiveTab("causes")}
                           >
-                            <div style={{ flex: 1 }}>
-                              <div
-                                style={{
-                                  fontWeight: 600,
-                                  marginBottom: "4px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                }}
-                              >
-                                {getCategoryIcon(cause.category_name)}
-                                {cause.title}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: "12px",
-                                  color: "#666",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                by {cause.creator_name} •{" "}
-                                {new Date(
-                                  cause.created_at,
-                                ).toLocaleDateString()}
-                              </div>
-                              <Space>
-                                <Tag color={getStatusColor(cause.status)}>
-                                  {cause.status}
-                                </Tag>
-                                {cause.is_featured && (
-                                  <Tag color="gold" icon={<StarOutlined />}>
-                                    Featured
-                                  </Tag>
-                                )}
-                              </Space>
-                            </div>
+                            Review Causes
+                          </Button>
+                          <Button
+                            icon={<UserOutlined />}
+                            block
+                            onClick={() => setActiveTab("users")}
+                          >
+                            Manage Users
+                          </Button>
+                          <Button
+                            icon={<MessageOutlined />}
+                            block
+                            onClick={() => setActiveTab("comments")}
+                          >
+                            Moderate Comments
+                          </Button>
+                        </Space>
+                      </Card>
+                    </Col>
+
+                    <Col xs={24} lg={16}>
+                      <Card
+                        title="Recent Activity"
+                        extra={
+                          <Button
+                            type="link"
+                            onClick={() => setActiveTab("users")}
+                          >
+                            View All
+                          </Button>
+                        }
+                        bordered={false}
+                        style={{ height: "100%" }}
+                      >
+                        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                          {users.slice(0, 5).map((user) => (
                             <div
+                              key={user.id}
                               style={{
-                                textAlign: "right",
-                                fontSize: "12px",
-                                color: "#666",
+                                display: "flex",
+                                alignItems: "center",
+                                padding: "8px 0",
+                                borderBottom: "1px solid #f0f0f0",
                               }}
                             >
-                              <div>👁 {cause.view_count}</div>
-                              <div>❤️ {cause.like_count}</div>
+                              <Avatar
+                                src={user.avatar}
+                                icon={<UserOutlined />}
+                              />
+                              <div style={{ marginLeft: "12px", flex: 1 }}>
+                                <div style={{ fontWeight: 500 }}>
+                                  {user.name}
+                                </div>
+                                <div
+                                  style={{ fontSize: "12px", color: "#666" }}
+                                >
+                                  Joined{" "}
+                                  {new Date(
+                                    user.created_at,
+                                  ).toLocaleDateString()}
+                                </div>
+                              </div>
+                              {user.is_admin && (
+                                <CrownOutlined style={{ color: "#faad14" }} />
+                              )}
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-                </Col>
-              </Row>
-            </motion.div>
-          )}
+                      </Card>
+                    </Col>
+                  </Row>
+                </motion.div>
+              )}
 
-          {activeTab === "users" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Card
-                title="User Management"
-                extra={
-                  <Space>
-                    <Search
-                      placeholder="Search users..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{ width: 200 }}
-                    />
-                    <Button icon={<FilterOutlined />}>Filter</Button>
-                    <Button icon={<ExportOutlined />}>Export</Button>
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      onClick={handleCreateUser}
-                    >
-                      Add User
-                    </Button>
-                  </Space>
-                }
-              >
-                <Table
-                  columns={userColumns}
-                  dataSource={filteredUsers}
-                  rowKey="id"
-                  pagination={{ pageSize: 10, showSizeChanger: true }}
-                />
-              </Card>
-            </motion.div>
-          )}
-
-          {activeTab === "causes" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Card
-                title="Cause Management"
-                extra={
-                  <Space>
-                    <Search
-                      placeholder="Search causes..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{ width: 200 }}
-                    />
-                    <Button icon={<FilterOutlined />}>Filter</Button>
-                    <Button icon={<ExportOutlined />}>Export</Button>
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      onClick={handleCreateCause}
-                    >
-                      Add Cause
-                    </Button>
-                  </Space>
-                }
-              >
-                <Table
-                  columns={causeColumns}
-                  dataSource={filteredCauses}
-                  rowKey="id"
-                  pagination={{ pageSize: 10, showSizeChanger: true }}
-                />
-              </Card>
-            </motion.div>
-          )}
-
-          {activeTab === "comments" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Card
-                title="Comment Management"
-                extra={
-                  <Space>
-                    <Search
-                      placeholder="Search comments..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{ width: 200 }}
-                    />
-                    <Button icon={<FilterOutlined />}>Filter</Button>
-                    <Button icon={<ExportOutlined />}>Export</Button>
-                  </Space>
-                }
-              >
-                <Table
-                  columns={commentColumns}
-                  dataSource={filteredComments}
-                  rowKey="id"
-                  pagination={{ pageSize: 10, showSizeChanger: true }}
-                  expandable={{
-                    expandedRowRender: (record) => (
-                      <div
-                        style={{
-                          margin: 0,
-                          padding: "16px",
-                          background: "#fafafa",
-                        }}
+              {/* Users Management */}
+              {activeTab === "users" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <Title level={2} style={{ margin: 0 }}>
+                      User Management
+                    </Title>
+                    <Space>
+                      <Search
+                        placeholder="Search users..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: 250 }}
+                      />
+                      <Button icon={<FilterOutlined />}>Filter</Button>
+                      <Button icon={<ExportOutlined />}>Export</Button>
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setUserModalVisible(true)}
                       >
-                        <strong>Full Comment:</strong>
-                        <p style={{ marginTop: "8px", marginBottom: 0 }}>
-                          {record.content}
-                        </p>
-                        {record.reports_count > 0 && (
-                          <div style={{ marginTop: "8px" }}>
-                            <Tag color="red">
-                              <WarningOutlined /> {record.reports_count} reports
-                            </Tag>
+                        Add User
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <Card bordered={false}>
+                    <Table
+                      columns={userColumns}
+                      dataSource={filteredUsers}
+                      rowKey="id"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) =>
+                          `${range[0]}-${range[1]} of ${total} users`,
+                      }}
+                      scroll={{ x: 1000 }}
+                    />
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Causes Management */}
+              {activeTab === "causes" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <Title level={2} style={{ margin: 0 }}>
+                      Cause Management
+                    </Title>
+                    <Space>
+                      <Search
+                        placeholder="Search causes..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: 250 }}
+                      />
+                      <Button icon={<FilterOutlined />}>Filter</Button>
+                      <Button icon={<ExportOutlined />}>Export</Button>
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setCauseModalVisible(true)}
+                      >
+                        Add Cause
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <Card bordered={false}>
+                    <Table
+                      columns={causeColumns}
+                      dataSource={filteredCauses}
+                      rowKey="id"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) =>
+                          `${range[0]}-${range[1]} of ${total} causes`,
+                      }}
+                      scroll={{ x: 1200 }}
+                    />
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Comments Management */}
+              {activeTab === "comments" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <Title level={2} style={{ margin: 0 }}>
+                      Comment Management
+                    </Title>
+                    <Space>
+                      <Search
+                        placeholder="Search comments..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: 250 }}
+                      />
+                      <Button icon={<FilterOutlined />}>Filter</Button>
+                      <Button icon={<CheckCircleOutlined />} type="primary">
+                        Bulk Approve
+                      </Button>
+                      <Button icon={<CloseCircleOutlined />} danger>
+                        Bulk Reject
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <Card bordered={false}>
+                    <Table
+                      columns={commentColumns}
+                      dataSource={filteredComments}
+                      rowKey="id"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) =>
+                          `${range[0]}-${range[1]} of ${total} comments`,
+                      }}
+                      scroll={{ x: 1000 }}
+                      expandable={{
+                        expandedRowRender: (record) => (
+                          <div
+                            style={{
+                              margin: 0,
+                              padding: "16px",
+                              background: "#fafafa",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            <strong>Full Comment:</strong>
+                            <p style={{ marginTop: "8px", marginBottom: 0 }}>
+                              {record.content}
+                            </p>
+                            {record.reports_count > 0 && (
+                              <div style={{ marginTop: "8px" }}>
+                                <Tag color="red">
+                                  <WarningOutlined /> {record.reports_count}{" "}
+                                  reports
+                                </Tag>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ),
-                  }}
-                />
-              </Card>
-            </motion.div>
-          )}
+                        ),
+                      }}
+                    />
+                  </Card>
+                </motion.div>
+              )}
 
-          {activeTab === "analytics" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Alert
-                message="Analytics Dashboard"
-                description="Advanced analytics and reporting features will be implemented here."
-                type="info"
-                showIcon
-              />
-            </motion.div>
-          )}
+              {/* Analytics */}
+              {activeTab === "analytics" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Title level={2} style={{ marginBottom: "24px" }}>
+                    Analytics Dashboard
+                  </Title>
+                  <Alert
+                    message="Analytics Dashboard"
+                    description="Advanced analytics and reporting features will be implemented here."
+                    type="info"
+                    showIcon
+                    style={{ borderRadius: "8px" }}
+                  />
+                </motion.div>
+              )}
 
-          {activeTab === "settings" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Alert
-                message="System Settings"
-                description="System configuration and settings will be implemented here."
-                type="info"
-                showIcon
-              />
-            </motion.div>
+              {/* Settings */}
+              {activeTab === "settings" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Title level={2} style={{ marginBottom: "24px" }}>
+                    System Settings
+                  </Title>
+                  <Alert
+                    message="System Settings"
+                    description="System configuration and settings will be implemented here."
+                    type="info"
+                    showIcon
+                    style={{ borderRadius: "8px" }}
+                  />
+                </motion.div>
+              )}
+            </>
           )}
-        </div>
-      </div>
+        </Content>
+      </Layout>
 
       {/* User Modal */}
       <Modal
@@ -2000,7 +1814,61 @@ export default function AdminDashboard() {
           </div>
         </Form>
       </Modal>
-      </div>
-    </MainLayout>
+
+      {/* Add Custom Styles */}
+      <style jsx global>{`
+        .loading-spinner {
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #1890ff;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        .ant-layout-sider {
+          position: fixed !important;
+          height: 100vh;
+          left: 0;
+          top: 0;
+          z-index: 100;
+        }
+
+        .ant-layout {
+          margin-left: 280px;
+        }
+
+        .ant-layout.ant-layout-has-sider .ant-layout {
+          margin-left: 0;
+        }
+
+        .ant-menu-item {
+          transition: all 0.3s ease;
+        }
+
+        .ant-menu-item:hover {
+          transform: translateX(4px);
+        }
+
+        .ant-card {
+          border-radius: 8px !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        .ant-table-thead > tr > th {
+          background: #fafafa !important;
+          font-weight: 600 !important;
+        }
+      `}</style>
+    </Layout>
   );
 }
