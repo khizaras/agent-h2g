@@ -4,6 +4,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { UserService } from "./database";
 import bcrypt from "bcryptjs";
 
+// Validate required environment variables
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error("NEXTAUTH_SECRET is required");
+}
+
 export const authConfig: NextAuthConfig = {
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
@@ -91,6 +96,19 @@ export const authConfig: NextAuthConfig = {
     error: "/auth/error",
   },
   debug: process.env.NODE_ENV === "development",
+  logger: {
+    error(error: Error) {
+      console.error("NextAuth Error:", error);
+    },
+    warn(code: string) {
+      console.warn("NextAuth Warning:", code);
+    },
+    debug(code: string, metadata?: any) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("NextAuth Debug:", code, metadata);
+      }
+    },
+  },
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

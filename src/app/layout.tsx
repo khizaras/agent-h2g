@@ -55,7 +55,19 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+
+        {/* Favicon Configuration */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+
+        {/* Apple Touch Icon */}
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+
+        {/* Web App Manifest */}
+        <meta name="theme-color" content="#2563eb" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -69,36 +81,36 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
               <QueryClientProvider client={queryClient}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                disableTransitionOnChange={false}
-              >
-                <ConfigProvider theme={antdTheme}>
-                  <MotionConfig
-                    transition={{
-                      type: "spring",
-                      damping: 25,
-                      stiffness: 120,
-                      mass: 0.8,
-                    }}
-                    reducedMotion="user"
-                  >
-                    <div className="relative">
-                      {children}
-                      <Toaster
-                        position="top-right"
-                        theme="light"
-                        richColors
-                        closeButton
-                        duration={4000}
-                        visibleToasts={5}
-                      />
-                    </div>
-                  </MotionConfig>
-                </ConfigProvider>
-              </ThemeProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="light"
+                  enableSystem
+                  disableTransitionOnChange={false}
+                >
+                  <ConfigProvider theme={antdTheme}>
+                    <MotionConfig
+                      transition={{
+                        type: "spring",
+                        damping: 25,
+                        stiffness: 120,
+                        mass: 0.8,
+                      }}
+                      reducedMotion="user"
+                    >
+                      <div className="relative">
+                        {children}
+                        <Toaster
+                          position="top-right"
+                          theme="light"
+                          richColors
+                          closeButton
+                          duration={4000}
+                          visibleToasts={5}
+                        />
+                      </div>
+                    </MotionConfig>
+                  </ConfigProvider>
+                </ThemeProvider>
                 <ReactQueryDevtools
                   initialIsOpen={false}
                   buttonPosition="bottom-right"
