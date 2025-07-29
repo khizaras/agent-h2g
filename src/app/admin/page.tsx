@@ -160,10 +160,22 @@ export default function AdminDashboard() {
   // Check admin access
   useEffect(() => {
     if (status === "loading") return;
-    if (!session || !(session.user as any)?.is_admin) {
+    
+    console.log("Session data:", session);
+    console.log("User admin status:", (session?.user as any)?.is_admin);
+    
+    if (!session?.user) {
+      router.push("/auth/signin");
+      return;
+    }
+    
+    // Check if user has admin flag
+    if (!(session.user as any)?.is_admin) {
+      console.log("User is not admin, redirecting...");
       router.push("/");
       return;
     }
+    
     fetchAdminData();
   }, [session, status, router]);
 
@@ -878,7 +890,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!session || !(session.user as any)?.is_admin) {
+  if (!session?.user || !(session.user as any)?.is_admin) {
     return (
       <MainLayout>
         <div style={{ padding: "50px", textAlign: "center" }}>

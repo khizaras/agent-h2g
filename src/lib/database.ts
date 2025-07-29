@@ -72,7 +72,7 @@ export class Database {
 export class UserService {
   static async findByEmail(email: string) {
     const result = (await Database.query(
-      "SELECT * FROM users WHERE email = ?",
+      "SELECT * FROM users WHERE LOWER(email) = LOWER(?)",
       [email],
     )) as any[];
     return result[0] || null;

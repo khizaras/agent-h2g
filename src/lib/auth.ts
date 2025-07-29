@@ -49,8 +49,8 @@ export const authConfig: NextAuthConfig = {
             email: user.email,
             name: user.name,
             avatar: user.avatar,
-            is_admin: user.is_admin || false,
-            is_verified: user.is_verified || false,
+            is_admin: Boolean(user.is_admin),
+            is_verified: Boolean(user.is_verified),
           };
         } catch (error) {
           console.error("Auth error:", error);
