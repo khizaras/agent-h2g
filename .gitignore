@@ -54,3 +54,4 @@ tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
 .env.example
 .env.prod
+public/debug.html

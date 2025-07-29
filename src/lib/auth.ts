@@ -30,25 +30,60 @@ export const authConfig: NextAuthConfig = {
         }
 
         try {
+          console.log("🔐 Auth attempt for:", credentials.email);
+
+          // Log database configuration (without sensitive info)
+          console.log("🔧 Database config check:");
+          console.log("   DB_HOST:", process.env.DB_HOST || "localhost");
+          console.log("   DB_NAME:", process.env.DB_NAME || "next_h2g");
+          console.log("   DB_PORT:", process.env.DB_PORT || "3306");
+          console.log("   DB_USER:", process.env.DB_USER || "root");
+          console.log(
+            "   DB_PASSWORD:",
+            process.env.DB_PASSWORD ? "SET" : "NOT SET",
+          );
+
+          // First, check database connectivity
+          console.log("🏥 Checking database health...");
+          const { Database } = await import("@/lib/database");
+          const healthCheck = await Database.healthCheck();
+          console.log("🏥 Database health:", healthCheck);
+
+          if (healthCheck.status !== "healthy") {
+            console.error("💀 Database is unhealthy:", healthCheck.error);
+            throw new Error(
+              `Database connectivity issue: ${healthCheck.error}`,
+            );
+          }
+
           // Find user by email
           const user = await UserService.findByEmail(credentials.email);
+          console.log("👤 User found:", user ? "YES" : "NO");
 
           if (!user) {
+            console.log("❌ User not found in database");
             return null;
           }
 
           // Verify password
           if (user.password) {
+            console.log("🔑 Verifying password...");
             const isPasswordValid = await bcrypt.compare(
               credentials.password,
               user.password,
             );
+            console.log("✅ Password valid:", isPasswordValid);
 
             if (!isPasswordValid) {
+              console.log("❌ Invalid password");
               return null;
             }
+          } else {
+            console.log("⚠️ User has no password set");
+            return null;
           }
 
+          console.log("🎉 Authentication successful for:", user.email);
           return {
             id: user.id.toString(),
             email: user.email,
@@ -58,7 +93,11 @@ export const authConfig: NextAuthConfig = {
             is_verified: Boolean(user.is_verified),
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("💥 Auth error details:", {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            email: credentials.email,
+          });
           return null;
         }
       },

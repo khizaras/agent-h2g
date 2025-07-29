@@ -6,5 +6,5 @@ console.log("NextAuth route handler loaded");
 export const { GET, POST } = handlers;
 
 // Add runtime configuration
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";

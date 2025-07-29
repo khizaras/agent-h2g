@@ -7,6 +7,7 @@ The error `https://localhost:3000/auth/error?error=Configuration` means NextAuth
 ### ✅ **Immediate Fix Required:**
 
 1. **Set Environment Variables on Your Hosting Provider:**
+
    ```bash
    NEXTAUTH_URL="https://youractualdomainname.com"
    NEXTAUTH_SECRET="generate-a-secure-32-char-secret"
@@ -14,6 +15,7 @@ The error `https://localhost:3000/auth/error?error=Configuration` means NextAuth
    ```
 
 2. **Generate Secure Secret:**
+
    ```bash
    # Run this command to generate NEXTAUTH_SECRET:
    openssl rand -base64 32
@@ -27,6 +29,7 @@ The error `https://localhost:3000/auth/error?error=Configuration` means NextAuth
 ### 🔧 **How to Fix on Different Hosting Providers:**
 
 #### **Vercel:**
+
 1. Go to your project dashboard
 2. Settings → Environment Variables
 3. Add:
@@ -35,16 +38,20 @@ The error `https://localhost:3000/auth/error?error=Configuration` means NextAuth
    - `DATABASE_URL` = `your-production-db-url`
 
 #### **Netlify:**
+
 1. Site settings → Environment variables
 2. Add the same variables
 
 #### **Railway/Render:**
+
 1. Environment tab → Add variables
 
 #### **Heroku:**
+
 1. Settings → Config Vars → Add variables
 
 #### **VPS/Custom Server:**
+
 1. Create `.env.production` file with variables
 2. Ensure `NODE_ENV=production`
 

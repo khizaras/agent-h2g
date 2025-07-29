@@ -17,15 +17,23 @@ import {
   Space,
   message,
 } from "antd";
-import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus, FiRefreshCw, FiShare2 } from "react-icons/fi";
+import {
+  FiHeart,
+  FiMapPin,
+  FiSearch,
+  FiUser,
+  FiPlus,
+  FiRefreshCw,
+  FiShare2,
+} from "react-icons/fi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { 
-  fetchCauses, 
+import {
+  fetchCauses,
   loadMoreCauses,
-  setFilters, 
+  setFilters,
   setSearchQuery,
   selectCausesList,
   selectCausesLoading,
@@ -33,13 +41,12 @@ import {
   selectCausesError,
   selectCausesFilters,
   selectCausesPagination,
-  selectCausesHasMore
+  selectCausesHasMore,
 } from "@/store/slices/causesSlice";
 
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
-
 
 export default function CausesPage() {
   const dispatch = useAppDispatch();
@@ -50,7 +57,7 @@ export default function CausesPage() {
   const filters = useAppSelector(selectCausesFilters);
   const pagination = useAppSelector(selectCausesPagination);
   const hasMore = useAppSelector(selectCausesHasMore);
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
@@ -59,7 +66,7 @@ export default function CausesPage() {
 
   const categories = [
     "food",
-    "clothes", 
+    "clothes",
     "education",
     "healthcare",
     "housing",
@@ -82,7 +89,7 @@ export default function CausesPage() {
       urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
       page: 1, // Reset to first page when filters change
     };
-    
+
     dispatch(setFilters(newFilters));
     dispatch(fetchCauses(newFilters));
   }, [searchTerm, selectedCategory, selectedUrgency, dispatch]);
@@ -96,8 +103,8 @@ export default function CausesPage() {
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore && infiniteScrollEnabled) {
       const nextPage = pagination.page + 1;
-      const newFilters = { 
-        ...filters, 
+      const newFilters = {
+        ...filters,
         page: nextPage,
         search: searchTerm || undefined,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
@@ -105,7 +112,17 @@ export default function CausesPage() {
       };
       dispatch(loadMoreCauses(newFilters));
     }
-  }, [dispatch, loadingMore, hasMore, infiniteScrollEnabled, pagination.page, filters, searchTerm, selectedCategory, selectedUrgency]);
+  }, [
+    dispatch,
+    loadingMore,
+    hasMore,
+    infiniteScrollEnabled,
+    pagination.page,
+    filters,
+    searchTerm,
+    selectedCategory,
+    selectedUrgency,
+  ]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -120,9 +137,9 @@ export default function CausesPage() {
       },
       {
         root: null,
-        rootMargin: '100px',
+        rootMargin: "100px",
         threshold: 0.1,
-      }
+      },
     );
 
     const currentRef = loadingRef.current;
@@ -154,7 +171,7 @@ export default function CausesPage() {
       case "critical":
         return "#f5222d";
       case "high":
-        return "#fa8c16"; 
+        return "#fa8c16";
       case "medium":
         return "#faad14";
       case "low":
@@ -170,6 +187,136 @@ export default function CausesPage() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // New helper functions for compact cards
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "food":
+        return "#ff6b6b";
+      case "clothes":
+        return "#4ecdc4";
+      case "education":
+        return "#45b7d1";
+      case "healthcare":
+        return "#f9ca24";
+      case "housing":
+        return "#6c5ce7";
+      default:
+        return "#a4b0be";
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "food":
+        return "🍽️";
+      case "clothes":
+        return "👕";
+      case "education":
+        return "📚";
+      case "healthcare":
+        return "🏥";
+      case "housing":
+        return "🏠";
+      default:
+        return "🤝";
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case "food":
+        return "Food";
+      case "clothes":
+        return "Clothes";
+      case "education":
+        return "Education";
+      case "healthcare":
+        return "Healthcare";
+      case "housing":
+        return "Housing";
+      default:
+        return "General";
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M";
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "K";
+    }
+    return num.toString();
+  };
+
+  const getCategoryDetails = (category: string) => {
+    switch (category) {
+      case "food":
+        return {
+          info: "🍽️ Providing meals & nutrition",
+          detail: "Food assistance program",
+        };
+      case "clothes":
+        return {
+          info: "👕 Clothing & essentials",
+          detail: "Clothing donation drive",
+        };
+      case "education":
+        return {
+          info: "📚 Learning & development",
+          detail: "Educational support",
+        };
+      case "healthcare":
+        return {
+          info: "🏥 Health & medical care",
+          detail: "Healthcare assistance",
+        };
+      case "housing":
+        return {
+          info: "🏠 Shelter & housing",
+          detail: "Housing support program",
+        };
+      default:
+        return {
+          info: "🤝 Community support",
+          detail: "General assistance",
+        };
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    if (!dateString) return "Recent";
+
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 2592000)
+      return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  const getCategoryActionText = (category: string) => {
+    switch (category) {
+      case "food":
+        return "🍽️ Support Food";
+      case "clothes":
+        return "👕 Donate Clothes";
+      case "education":
+        return "📚 Support Learning";
+      case "healthcare":
+        return "🏥 Support Health";
+      case "housing":
+        return "🏠 Support Housing";
+      default:
+        return "🤝 Support Cause";
+    }
   };
 
   return (
@@ -258,8 +405,18 @@ export default function CausesPage() {
                 </Select>
               </Col>
               <Col xs={24} md={4}>
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Space
+                  direction="vertical"
+                  size="small"
+                  style={{ width: "100%" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
                     <Switch
                       checked={infiniteScrollEnabled}
                       onChange={setInfiniteScrollEnabled}
@@ -291,7 +448,9 @@ export default function CausesPage() {
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <Title level={4} type="danger">Error loading causes</Title>
+                <Title level={4} type="danger">
+                  Error loading causes
+                </Title>
                 <p>{error}</p>
                 <Button onClick={() => dispatch(fetchCauses(filters))}>
                   Try Again
@@ -309,375 +468,363 @@ export default function CausesPage() {
                 </Link>
               </Empty>
             ) : (
-              <Row gutter={[24, 24]}>
-                {Array.isArray(causes) && causes.map((cause, index) => (
-                  <Col xs={24} sm={12} lg={8} key={cause.id}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ y: -8 }}
-                      whileTap={{ scale: 0.98 }}
-                      style={{ height: "100%" }}
-                    >
-                      <Card 
-                        className="modern-cause-card" 
-                        hoverable
-                        style={{
-                          height: "100%",
-                          borderRadius: "16px",
-                          overflow: "hidden",
-                          border: "1px solid #e8e8e8",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                          cursor: "pointer",
-                          position: "relative"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.12)";
-                          e.currentTarget.style.transform = "translateY(-4px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)";
-                          e.currentTarget.style.transform = "translateY(0)";
-                        }}
-                      >
-                        <div 
-                          className="cause-image"
-                          style={{
-                            position: "relative",
-                            overflow: "hidden",
-                            borderRadius: "12px 12px 0 0",
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                          }}
+              <div className="causes-grid-container">
+                <Row gutter={[16, 16]}>
+                  {Array.isArray(causes) &&
+                    causes.map((cause, index) => (
+                      <Col xs={24} sm={12} md={8} lg={6} xl={6} key={cause.id}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: index * 0.05 }}
+                          whileHover={{ y: -4, scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          style={{ height: "100%" }}
                         >
-                          <motion.img 
-                            src={cause.image || '/placeholder-cause.jpg'} 
-                            alt={cause.title}
-                            style={{ 
-                              width: '100%', 
-                              height: '220px', 
-                              objectFit: 'cover',
-                              transition: 'transform 0.4s ease'
+                          <Card
+                            className="compact-cause-card"
+                            hoverable
+                            style={{
+                              height: "100%",
+                              borderRadius: "12px",
+                              overflow: "hidden",
+                              border: "1px solid #f0f0f0",
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                              transition: "all 0.2s ease",
+                              cursor: "pointer",
                             }}
-                            whileHover={{ scale: 1.05 }}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder-cause.jpg';
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.boxShadow =
+                                "0 8px 24px rgba(0,0,0,0.15)";
+                              e.currentTarget.style.transform =
+                                "translateY(-2px)";
                             }}
-                          />
-                          
-                          {/* Gradient overlay */}
-                          <div style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)",
-                            pointerEvents: "none"
-                          }} />
-                          
-                          {/* Interactive badges */}
-                          <div style={{
-                            position: "absolute",
-                            top: "12px",
-                            left: "12px",
-                            right: "12px",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            zIndex: 2
-                          }}>
-                            <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.3 }}
-                            >
-                              <Tag
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.boxShadow =
+                                "0 1px 3px rgba(0,0,0,0.1)";
+                              e.currentTarget.style.transform = "translateY(0)";
+                            }}
+                            cover={
+                              <div
                                 style={{
-                                  backgroundColor: "rgba(255,255,255,0.9)",
-                                  color: "#1890ff",
-                                  border: "none",
-                                  borderRadius: "20px",
-                                  padding: "2px 12px",
-                                  fontSize: "11px",
-                                  fontWeight: "600",
-                                  backdropFilter: "blur(10px)"
+                                  position: "relative",
+                                  height: "180px",
+                                  overflow: "hidden",
                                 }}
                               >
-                                {cause.category_name || 'General'}
-                              </Tag>
-                            </motion.div>
-                            
-                            <motion.div
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.4 }}
-                            >
-                              <Tag
+                                <motion.img
+                                  src={cause.image || "/placeholder-cause.jpg"}
+                                  alt={cause.title}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    transition: "transform 0.3s ease",
+                                  }}
+                                  whileHover={{ scale: 1.05 }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "/placeholder-cause.jpg";
+                                  }}
+                                />
+
+                                {/* Quick action buttons */}
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "8px",
+                                    right: "8px",
+                                    display: "flex",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    style={{
+                                      background: "rgba(255,255,255,0.9)",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      cursor: "pointer",
+                                      color: "#ff4757",
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      message.success("Added to favorites!");
+                                    }}
+                                  >
+                                    <FiHeart size={12} />
+                                  </motion.button>
+                                </div>
+
+                                {/* Category badge */}
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "8px",
+                                    left: "8px",
+                                  }}
+                                >
+                                  <Tag
+                                    style={{
+                                      backgroundColor: getCategoryColor(
+                                        cause.category_name,
+                                      ),
+                                      color: "white",
+                                      border: "none",
+                                      borderRadius: "12px",
+                                      padding: "2px 8px",
+                                      fontSize: "10px",
+                                      fontWeight: "600",
+                                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                                    }}
+                                  >
+                                    {getCategoryIcon(cause.category_name)}{" "}
+                                    {getCategoryLabel(cause.category_name)}
+                                  </Tag>
+                                </div>
+
+                                {/* Priority indicator */}
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    bottom: "8px",
+                                    right: "8px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: "8px",
+                                      height: "8px",
+                                      borderRadius: "50%",
+                                      backgroundColor: getUrgencyColor(
+                                        cause.priority || "medium",
+                                      ),
+                                      boxShadow: "0 0 8px rgba(0,0,0,0.3)",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            }
+                          >
+                            <div style={{ padding: "12px" }}>
+                              {/* Title */}
+                              <Title
+                                level={5}
                                 style={{
-                                  backgroundColor: getUrgencyColor(cause.priority || 'medium'),
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: "20px",
-                                  padding: "2px 12px",
-                                  fontSize: "11px",
-                                  fontWeight: "700",
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.5px",
-                                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-                                }}
-                              >
-                                {cause.priority || 'medium'}
-                              </Tag>
-                            </motion.div>
-                          </div>
-                          
-                          {/* Interactive action buttons overlay */}
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            whileHover={{ opacity: 1 }}
-                            style={{
-                              position: "absolute",
-                              bottom: "12px",
-                              right: "12px",
-                              display: "flex",
-                              gap: "8px",
-                              zIndex: 2
-                            }}
-                          >
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              style={{
-                                background: "rgba(255,255,255,0.9)",
-                                border: "none",
-                                borderRadius: "50%",
-                                width: "36px",
-                                height: "36px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                cursor: "pointer",
-                                backdropFilter: "blur(10px)",
-                                color: "#ff4757"
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                message.success("Added to favorites!");
-                              }}
-                            >
-                              <FiHeart size={16} />
-                            </motion.button>
-                            
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              style={{
-                                background: "rgba(255,255,255,0.9)",
-                                border: "none",
-                                borderRadius: "50%",
-                                width: "36px",
-                                height: "36px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                cursor: "pointer",
-                                backdropFilter: "blur(10px)",
-                                color: "#3742fa"
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.share?.({ 
-                                  title: cause.title, 
-                                  url: window.location.origin + `/causes/${cause.id}` 
-                                }) || message.info("Link copied to clipboard!");
-                              }}
-                            >
-                              <FiShare2 size={16} />
-                            </motion.button>
-                          </motion.div>
-                        </div>
-
-                        <div 
-                          className="cause-content"
-                          style={{
-                            padding: "20px",
-                            display: "flex",
-                            flexDirection: "column",
-                            height: "calc(100% - 220px)"
-                          }}
-                        >
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                          >
-                            <Title 
-                              level={4} 
-                              className="cause-title"
-                              style={{
-                                margin: "0 0 8px 0",
-                                fontSize: "18px",
-                                fontWeight: "600",
-                                color: "#1f2937",
-                                lineHeight: "1.3",
-                                minHeight: "48px",
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 2,
-                                overflow: "hidden"
-                              }}
-                            >
-                              {cause.title}
-                            </Title>
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            style={{ flex: 1 }}
-                          >
-                            <Paragraph 
-                              className="cause-description"
-                              style={{
-                                color: "#6b7280",
-                                fontSize: "14px",
-                                lineHeight: "1.5",
-                                margin: "0 0 16px 0",
-                                minHeight: "60px",
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 3,
-                                overflow: "hidden"
-                              }}
-                            >
-                              {cause.description || "No description available"}
-                            </Paragraph>
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="cause-meta"
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "8px",
-                              marginBottom: "16px",
-                              padding: "12px",
-                              backgroundColor: "#f8fafc",
-                              borderRadius: "8px",
-                              border: "1px solid #e2e8f0"
-                            }}
-                          >
-                            <div 
-                              className="meta-item"
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                fontSize: "13px",
-                                color: "#64748b"
-                              }}
-                            >
-                              <FiMapPin size={14} style={{ color: "#ef4444" }} />
-                              <span>{cause.location || 'Location TBD'}</span>
-                            </div>
-                            <div 
-                              className="meta-item"
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                fontSize: "13px",
-                                color: "#64748b"
-                              }}
-                            >
-                              <FiUser size={14} style={{ color: "#3b82f6" }} />
-                              <span>by {cause.user_name || 'Anonymous'}</span>
-                            </div>
-
-                            {/* Category-specific information */}
-                            <div style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              fontSize: "12px",
-                              color: "#6366f1",
-                              backgroundColor: "#f0f9ff",
-                              padding: "6px 10px",
-                              borderRadius: "6px",
-                              border: "1px solid #e0f2fe",
-                              marginTop: "4px"
-                            }}>
-                              <span style={{ fontWeight: "600" }}>
-                                {cause.category_name === 'food' && '🍽️ Food Assistance'}
-                                {cause.category_name === 'clothes' && '👕 Clothing Donation'}
-                                {cause.category_name === 'education' && '📚 Education & Training'}
-                                {cause.category_name === 'healthcare' && '🏥 Healthcare Support'}
-                                {cause.category_name === 'housing' && '🏠 Housing Assistance'}
-                                {!cause.category_name && '🤝 Community Support'}
-                              </span>
-                            </div>
-                            
-                            {/* Engagement metrics */}
-                            <div style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              marginTop: "4px",
-                              fontSize: "12px",
-                              color: "#9ca3af"
-                            }}>
-                              <span>👁 {cause.view_count || 0} views</span>
-                              <span>❤️ {cause.like_count || 0} likes</span>
-                              <span>💬 {cause.comment_count || 0} comments</span>
-                            </div>
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                          >
-                            <Link href={`/causes/${cause.id}`}>
-                              <Button
-                                type="primary"
-                                block
-                                size="large"
-                                style={{
-                                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                  border: "none",
-                                  borderRadius: "10px",
-                                  height: "44px",
-                                  fontWeight: "600",
+                                  margin: "0 0 6px 0",
                                   fontSize: "14px",
-                                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-                                  transition: "all 0.3s ease"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform = "translateY(-2px)";
-                                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(102, 126, 234, 0.4)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = "translateY(0)";
-                                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.3)";
+                                  fontWeight: "600",
+                                  color: "#1f2937",
+                                  lineHeight: "1.4",
+                                  display: "-webkit-box",
+                                  WebkitBoxOrient: "vertical",
+                                  WebkitLineClamp: 2,
+                                  overflow: "hidden",
+                                  minHeight: "36px",
                                 }}
                               >
-                                <FiHeart style={{ marginRight: 8 }} />
-                                Support This Cause
-                              </Button>
-                            </Link>
-                          </motion.div>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  </Col>
-                ))}
-              </Row>
+                                {cause.title}
+                              </Title>
+
+                              {/* Description (2 lines max) */}
+                              <div
+                                style={{
+                                  fontSize: "12px",
+                                  color: "#6b7280",
+                                  lineHeight: "1.4",
+                                  marginBottom: "8px",
+                                  display: "-webkit-box",
+                                  WebkitBoxOrient: "vertical",
+                                  WebkitLineClamp: 2,
+                                  overflow: "hidden",
+                                  minHeight: "32px",
+                                }}
+                              >
+                                {cause.description ||
+                                  "Help make a difference in the community..."}
+                              </div>
+
+                              {/* Category-specific information */}
+                              <div
+                                style={{
+                                  backgroundColor: "#f8fafc",
+                                  border: "1px solid #e2e8f0",
+                                  borderRadius: "6px",
+                                  padding: "6px 8px",
+                                  marginBottom: "8px",
+                                  fontSize: "11px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    color: "#374151",
+                                  }}
+                                >
+                                  <span style={{ fontWeight: "600" }}>
+                                    {
+                                      getCategoryDetails(cause.category_name)
+                                        .info
+                                    }
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: "10px",
+                                      color: getUrgencyColor(
+                                        cause.priority || "medium",
+                                      ),
+                                      fontWeight: "700",
+                                      textTransform: "uppercase",
+                                    }}
+                                  >
+                                    {cause.priority || "medium"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Location and author */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  marginBottom: "8px",
+                                  fontSize: "12px",
+                                  color: "#6b7280",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <FiMapPin size={10} />
+                                  <span>
+                                    {cause.location?.slice(0, 15) ||
+                                      "Location TBD"}
+                                    {cause.location?.length > 15 ? "..." : ""}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <FiUser size={10} />
+                                  <span>
+                                    {cause.user_name?.slice(0, 10) ||
+                                      "Anonymous"}
+                                    {cause.user_name?.length > 10 ? "..." : ""}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Engagement metrics */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  marginBottom: "10px",
+                                  padding: "6px 8px",
+                                  backgroundColor: "#f8fafc",
+                                  borderRadius: "6px",
+                                  fontSize: "11px",
+                                  color: "#64748b",
+                                  border: "1px solid #e2e8f0",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "2px",
+                                  }}
+                                >
+                                  <span style={{ color: "#3b82f6" }}>👁</span>
+                                  <span>
+                                    {formatNumber(
+                                      (cause as any).view_count || 0,
+                                    )}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "2px",
+                                  }}
+                                >
+                                  <span style={{ color: "#ef4444" }}>❤️</span>
+                                  <span>
+                                    {formatNumber(
+                                      (cause as any).like_count || 0,
+                                    )}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "2px",
+                                  }}
+                                >
+                                  <span style={{ color: "#10b981" }}>💬</span>
+                                  <span>
+                                    {formatNumber(
+                                      (cause as any).comment_count || 0,
+                                    )}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "10px",
+                                    color: "#6b7280",
+                                    fontStyle: "italic",
+                                  }}
+                                >
+                                  {getTimeAgo(cause.created_at)}
+                                </div>
+                              </div>
+
+                              {/* Action button */}
+                              <Link href={`/causes/${cause.id}`}>
+                                <Button
+                                  type="primary"
+                                  block
+                                  size="small"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${getCategoryColor(cause.category_name)} 0%, ${getCategoryColor(cause.category_name)}dd 100%)`,
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    height: "32px",
+                                    fontWeight: "600",
+                                    fontSize: "12px",
+                                    boxShadow: `0 2px 6px ${getCategoryColor(cause.category_name)}40`,
+                                  }}
+                                >
+                                  {getCategoryActionText(cause.category_name)}
+                                </Button>
+                              </Link>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      </Col>
+                    ))}
+                </Row>
+              </div>
             )}
 
             {/* Load More & Pagination */}
@@ -685,16 +832,29 @@ export default function CausesPage() {
               <>
                 {/* Infinite Scroll Loading Trigger */}
                 {infiniteScrollEnabled && (
-                  <div ref={loadingRef} style={{ padding: '20px', textAlign: 'center' }}>
+                  <div
+                    ref={loadingRef}
+                    style={{ padding: "20px", textAlign: "center" }}
+                  >
                     {loadingMore && (
-                      <div style={{ marginBottom: '16px' }}>
+                      <div style={{ marginBottom: "16px" }}>
                         <Spin size="large" />
-                        <p style={{ marginTop: '12px', color: '#666' }}>Loading more causes...</p>
+                        <p style={{ marginTop: "12px", color: "#666" }}>
+                          Loading more causes...
+                        </p>
                       </div>
                     )}
                     {!hasMore && causes.length > 0 && (
-                      <div style={{ padding: '40px 20px', textAlign: 'center', color: '#999' }}>
-                        <p>🎉 You've reached the end! No more causes to load.</p>
+                      <div
+                        style={{
+                          padding: "40px 20px",
+                          textAlign: "center",
+                          color: "#999",
+                        }}
+                      >
+                        <p>
+                          🎉 You've reached the end! No more causes to load.
+                        </p>
                         <Button onClick={handleRefresh} type="link">
                           Go back to top
                         </Button>
@@ -705,13 +865,13 @@ export default function CausesPage() {
 
                 {/* Load More Button (fallback for infinite scroll) */}
                 {infiniteScrollEnabled && hasMore && !loadingMore && (
-                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                    <Button 
-                      type="primary" 
-                      size="large" 
+                  <div style={{ textAlign: "center", marginTop: "24px" }}>
+                    <Button
+                      type="primary"
+                      size="large"
                       onClick={loadMore}
                       loading={loadingMore}
-                      style={{ minWidth: '200px' }}
+                      style={{ minWidth: "200px" }}
                     >
                       Load More Causes
                     </Button>
@@ -720,7 +880,10 @@ export default function CausesPage() {
 
                 {/* Traditional Pagination */}
                 {!infiniteScrollEnabled && pagination.totalPages > 1 && (
-                  <div className="pagination-container" style={{ marginTop: '32px', textAlign: 'center' }}>
+                  <div
+                    className="pagination-container"
+                    style={{ marginTop: "32px", textAlign: "center" }}
+                  >
                     <Pagination
                       current={pagination.page}
                       total={pagination.total}

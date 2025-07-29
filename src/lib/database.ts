@@ -56,13 +56,41 @@ export class Database {
   // Health check
   static async healthCheck() {
     try {
-      await this.query("SELECT 1");
-      return { status: "healthy", timestamp: new Date().toISOString() };
+      console.log("🔍 Testing database connection...");
+      const start = Date.now();
+
+      await this.query("SELECT 1 as test");
+
+      const duration = Date.now() - start;
+      console.log(`✅ Database query successful (${duration}ms)`);
+
+      return {
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        responseTime: duration,
+        config: {
+          host: process.env.DB_HOST || "localhost",
+          database: process.env.DB_NAME || "next_h2g",
+          port: process.env.DB_PORT || "3306",
+          user: process.env.DB_USER || "root",
+        },
+      };
     } catch (error) {
+      console.error("💀 Database health check failed:", error);
+
       return {
         status: "unhealthy",
         error: error instanceof Error ? error.message : "Unknown error",
+        errorCode: (error as any)?.code,
+        errorNumber: (error as any)?.errno,
+        sqlState: (error as any)?.sqlState,
         timestamp: new Date().toISOString(),
+        config: {
+          host: process.env.DB_HOST || "localhost",
+          database: process.env.DB_NAME || "next_h2g",
+          port: process.env.DB_PORT || "3306",
+          user: process.env.DB_USER || "root",
+        },
       };
     }
   }
@@ -71,11 +99,25 @@ export class Database {
 // User service
 export class UserService {
   static async findByEmail(email: string) {
-    const result = (await Database.query(
-      "SELECT * FROM users WHERE LOWER(email) = LOWER(?)",
-      [email],
-    )) as any[];
-    return result[0] || null;
+    console.log("🔍 UserService.findByEmail called with:", email);
+    try {
+      const result = (await Database.query(
+        "SELECT * FROM users WHERE LOWER(email) = LOWER(?)",
+        [email],
+      )) as any[];
+
+      console.log("📊 Query result:", {
+        rowsFound: result.length,
+        userExists: !!result[0],
+        userId: result[0]?.id,
+        userEmail: result[0]?.email,
+      });
+
+      return result[0] || null;
+    } catch (error) {
+      console.error("💥 UserService.findByEmail error:", error);
+      throw error;
+    }
   }
 
   static async findById(id: number) {
