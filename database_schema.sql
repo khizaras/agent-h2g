@@ -283,6 +283,9 @@ CREATE TABLE IF NOT EXISTS `education_details` (
   `course_language` VARCHAR(50) NOT NULL DEFAULT 'English',
   `subtitles_available` JSON NULL DEFAULT NULL,
   `difficulty_rating` INT NOT NULL DEFAULT 1,
+  `course_modules` JSON NULL DEFAULT NULL COMMENT 'JSON array of course modules with title, description, duration, resources, assessment',
+  `instructors` JSON NULL DEFAULT NULL COMMENT 'JSON array of multiple instructors with name, email, phone, bio, qualifications, avatar',
+  `enhanced_prerequisites` JSON NULL DEFAULT NULL COMMENT 'JSON array of structured prerequisites with title, description, resources',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -297,7 +300,7 @@ CREATE TABLE IF NOT EXISTS `education_details` (
     REFERENCES `causes` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Enhanced education course details with support for course modules, multiple instructors, and structured prerequisites';
 
 -- -----------------------------------------------------
 -- Table `registrations`

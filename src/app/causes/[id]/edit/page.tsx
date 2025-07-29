@@ -1,97 +1,146 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
+  Card,
   Form,
   Input,
+  Button,
   Select,
   DatePicker,
   InputNumber,
-  Upload,
-  Button,
-  Card,
+  Typography,
   Row,
   Col,
-  Typography,
-  Space,
-  message,
   Steps,
+  message,
   Divider,
-  Tag,
-  Spin,
+  Progress,
   Alert,
+  Spin,
 } from "antd";
 import {
-  SaveOutlined,
-  ArrowLeftOutlined,
-  CloudUploadOutlined,
-  DeleteOutlined,
-  PlusOutlined,
+  InfoCircleOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  HeartOutlined,
+  BookOutlined,
+  FileTextOutlined,
+  RightOutlined,
+  LeftOutlined,
   EditOutlined,
+  ArrowLeftOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
-import { motion } from "framer-motion";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { useRouter, useParams } from "next/navigation";
 import dayjs from "dayjs";
+import { MainLayout } from "@/components/layout/MainLayout";
+import FoodDetailsForm from "@/components/forms/FoodDetailsForm";
+import ClothesDetailsForm from "@/components/forms/ClothesDetailsForm";
+import EducationDetailsForm from "@/components/forms/EducationDetailsForm";
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
 const { TextArea } = Input;
-const { Step } = Steps;
+const { Option } = Select;
 
-interface Cause {
+interface CauseData {
   id: number;
   title: string;
   description: string;
-  detailedDescription?: string;
-  category: string;
+  short_description?: string;
   category_name: string;
-  urgencyLevel: string;
+  priority: string;
   location: string;
-  deadline?: string;
-  image?: string;
+  expires_at?: string;
   gallery?: string[];
-  creator_id: number;
-  verified: boolean;
+  user_id: number;
+  creator_id?: number;
   status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface CategoryDetails {
   // Food details
   food_type?: string;
-  servings_count?: number;
+  quantity?: number;
   dietary_restrictions?: string[];
-  preparation_time?: number;
-  cooking_instructions?: string;
+  storage_requirements?: string;
+  pickup_instructions?: string;
 
   // Clothes details
-  clothing_type?: string;
-  sizes_available?: string[];
-  gender?: string;
+  clothes_type?: string;
+  size_range?: string[];
+  age_group?: string;
   season?: string;
   condition?: string;
 
-  // Education details
+  // Education details - basic fields
   education_type?: string;
   skill_level?: string;
   topics?: string[];
   max_trainees?: number;
   duration_hours?: number;
+  number_of_days?: number;
   prerequisites?: string;
   learning_objectives?: string[];
+  start_date?: string;
+  end_date?: string;
+  registration_deadline?: string;
+  delivery_method?: string;
+  location_details?: string;
+  meeting_platform?: string;
+  meeting_link?: string;
+  meeting_id?: string;
+  meeting_password?: string;
   instructor_name?: string;
   instructor_email?: string;
+  instructor_bio?: string;
+  instructor_qualifications?: string;
   certification?: boolean;
+  certification_body?: string;
+  materials_provided?: string[];
+  equipment_required?: string[];
+  software_required?: string[];
+  price?: number;
+  is_free?: boolean;
+  course_language?: string;
+  subtitles_available?: string[];
+  difficulty_rating?: number;
+
+  // Enhanced education fields
+  course_modules?: any[];
+  instructors?: any[];
+  enhanced_prerequisites?: any[];
 }
 
 const categories = [
-  { value: "food", label: "Food Assistance" },
-  { value: "clothes", label: "Clothing Drive" },
-  { value: "education", label: "Education & Training" },
+  {
+    value: "food",
+    label: "Food Assistance",
+    description: "Share meals and food supplies with those in need",
+    icon: <HeartOutlined style={{ fontSize: "48px" }} />,
+    color: "#FF6B35",
+  },
+  {
+    value: "clothes",
+    label: "Clothing Donation",
+    description: "Donate and request clothing items for all ages",
+    icon: <HeartOutlined style={{ fontSize: "48px" }} />,
+    color: "#4ECDC4",
+  },
+  {
+    value: "education",
+    label: "Education & Training",
+    description: "Share knowledge through courses, workshops, and mentoring",
+    icon: <BookOutlined style={{ fontSize: "48px" }} />,
+    color: "#45B7D1",
+  },
 ];
 
-const urgencyLevels = [
+const priorityLevels = [
   { value: "low", label: "Low Priority" },
   { value: "medium", label: "Medium Priority" },
   { value: "high", label: "High Priority" },
@@ -99,45 +148,27 @@ const urgencyLevels = [
 ];
 
 export default function EditCausePage() {
-  const params = useParams();
-  const router = useRouter();
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const params = useParams();
   const [form] = Form.useForm();
-  const [cause, setCause] = useState<Cause | null>(null);
-  const [categoryDetails, setCategoryDetails] = useState<CategoryDetails>({});
+
+  // State
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [causeData, setCauseData] = useState<CauseData | null>(null);
+  const [categoryDetails, setCategoryDetails] = useState<CategoryDetails>({});
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [stepFormValues, setStepFormValues] = useState<any>({});
 
-  // Enhanced education state
-  const [courseModules, setCourseModules] = useState<
-    Array<{
-      title: string;
-      description: string;
-      duration: string;
-      resources: string[];
-      assessment: string;
-    }>
-  >([]);
-  const [instructors, setInstructors] = useState<
-    Array<{
-      name: string;
-      email: string;
-      phone?: string;
-      bio?: string;
-      qualifications?: string[];
-      avatar?: string;
-    }>
-  >([]);
-  const [enhancedPrerequisites, setEnhancedPrerequisites] = useState<
-    Array<{
-      title: string;
-      description: string;
-      resources: string[];
-    }>
-  >([]);
+  // Enhanced education fields state
+  const [enhancedEducationFields, setEnhancedEducationFields] = useState({
+    courseModules: [],
+    instructors: [],
+    enhancedPrerequisites: [],
+  });
 
   useEffect(() => {
     if (status === "loading") return;
@@ -155,60 +186,70 @@ export default function EditCausePage() {
       const response = await fetch(`/api/causes/${params.id}`);
       const result = await response.json();
 
-      if (result.success) {
-        const causeData = result.data.cause;
-
-        // Check if user is the owner - handle both string and number comparison
-        const sessionUserId = session?.user?.id;
-        const causeCreatorId = causeData.creator_id || causeData.user_id;
-
-        if (
-          sessionUserId &&
-          causeCreatorId &&
-          sessionUserId.toString() !== causeCreatorId.toString()
-        ) {
-          message.error("You can only edit your own causes");
-          router.push(`/causes/${params.id}`);
-          return;
-        }
-
-        setCause(causeData);
-        setCategoryDetails(result.data.categoryDetails || {});
-        setSelectedCategory(causeData.category_name || "");
-        setImageUrls(causeData.gallery || []);
-
-        // Set enhanced education fields if they exist
-        if (
-          result.data.categoryDetails &&
-          causeData.category_name === "education"
-        ) {
-          const details = result.data.categoryDetails;
-          if (details.course_modules) {
-            setCourseModules(details.course_modules);
-          }
-          if (details.instructors) {
-            setInstructors(details.instructors);
-          }
-          if (details.enhanced_prerequisites) {
-            setEnhancedPrerequisites(details.enhanced_prerequisites);
-          }
-        }
-
-        // Populate form with existing data
-        form.setFieldsValue({
-          title: causeData.title,
-          description: causeData.description,
-          detailedDescription: causeData.detailedDescription,
-          category: causeData.category_name,
-          urgencyLevel: causeData.urgencyLevel,
-          location: causeData.location,
-          deadline: causeData.deadline ? dayjs(causeData.deadline) : undefined,
-          ...result.data.categoryDetails,
-        });
-      } else {
+      if (!result.success) {
         message.error("Failed to load cause details");
         router.push("/causes");
+        return;
       }
+
+      const cause = result.data.cause;
+      const details = result.data.categoryDetails || {};
+
+      // Check ownership
+      const sessionUserId = session?.user?.id;
+      const causeCreatorId = cause.creator_id || cause.user_id;
+
+      if (
+        sessionUserId &&
+        causeCreatorId &&
+        sessionUserId.toString() !== causeCreatorId.toString()
+      ) {
+        message.error("You can only edit your own causes");
+        router.push(`/causes/${params.id}`);
+        return;
+      }
+
+      setCauseData(cause);
+      setCategoryDetails(details);
+      setSelectedCategory(cause.category_name);
+      setImageUrls(cause.gallery || []);
+
+      // Populate form with existing data
+      const formValues = {
+        title: cause.title,
+        shortDescription: cause.short_description,
+        description: cause.description,
+        category: cause.category_name,
+        priority: cause.priority,
+        location: cause.location,
+        deadline: cause.expires_at ? dayjs(cause.expires_at) : undefined,
+        ...details,
+      };
+
+      // Handle education-specific date fields
+      if (cause.category_name === "education" && details) {
+        if (details.start_date) {
+          formValues.startDate = dayjs(details.start_date);
+        }
+        if (details.end_date) {
+          formValues.endDate = dayjs(details.end_date);
+        }
+        if (details.registration_deadline) {
+          formValues.registrationDeadline = dayjs(
+            details.registration_deadline,
+          );
+        }
+
+        // Handle enhanced education fields
+        setEnhancedEducationFields({
+          courseModules: details.course_modules || [],
+          instructors: details.instructors || [],
+          enhancedPrerequisites: details.enhanced_prerequisites || [],
+        });
+      }
+
+      form.setFieldsValue(formValues);
+      setStepFormValues(formValues); // Store initial values for step navigation
     } catch (error) {
       console.error("Error fetching cause:", error);
       message.error("Failed to load cause details");
@@ -218,16 +259,522 @@ export default function EditCausePage() {
     }
   };
 
-  const handleSubmit = async (values: any) => {
+  const getStepsForCategory = () => {
+    const baseSteps = [
+      {
+        title: "Basic Info",
+        description: "Update basic information",
+        icon: <InfoCircleOutlined />,
+      },
+    ];
+
+    if (selectedCategory === "food") {
+      return [
+        ...baseSteps,
+        {
+          title: "Food Details",
+          description: "Food-specific information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Contact & Location",
+          description: "Contact info and location",
+          icon: <EnvironmentOutlined />,
+        },
+      ];
+    } else if (selectedCategory === "clothes") {
+      return [
+        ...baseSteps,
+        {
+          title: "Clothing Details",
+          description: "Clothing-specific information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Contact & Location",
+          description: "Contact info and location",
+          icon: <EnvironmentOutlined />,
+        },
+      ];
+    } else if (selectedCategory === "education") {
+      return [
+        ...baseSteps,
+        {
+          title: "Education Details",
+          description: "Course and training information",
+          icon: <FileTextOutlined />,
+        },
+        {
+          title: "Schedule & Delivery",
+          description: "Dates and delivery method",
+          icon: <CalendarOutlined />,
+        },
+        {
+          title: "Contact & Location",
+          description: "Contact info and location",
+          icon: <EnvironmentOutlined />,
+        },
+      ];
+    }
+
+    return baseSteps;
+  };
+
+  const steps = getStepsForCategory();
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return renderBasicInfoStep();
+      case 1:
+        if (selectedCategory === "food") {
+          return <FoodDetailsForm form={form} />;
+        } else if (selectedCategory === "clothes") {
+          return <ClothesDetailsForm form={form} />;
+        } else if (selectedCategory === "education") {
+          return (
+            <EducationDetailsForm
+              form={form}
+              onEnhancedFieldsChange={setEnhancedEducationFields}
+            />
+          );
+        }
+        break;
+      case 2:
+        if (selectedCategory === "education") {
+          return renderEducationScheduleStep();
+        } else {
+          return renderContactLocationStep();
+        }
+      case 3:
+        if (selectedCategory === "education") {
+          return renderContactLocationStep();
+        }
+        break;
+      default:
+        return renderBasicInfoStep();
+    }
+  };
+
+  const renderBasicInfoStep = () => {
+    return (
+      <div className="modern-form-step">
+        <div className="step-header">
+          <InfoCircleOutlined className="step-icon" />
+          <Title level={3}>Basic Information</Title>
+          <Paragraph>
+            Update the basic information about your{" "}
+            {categories
+              .find((c) => c.value === selectedCategory)
+              ?.label.toLowerCase()}
+          </Paragraph>
+        </div>
+
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[
+            { required: true, message: "Please enter a title" },
+            { min: 10, message: "Title should be at least 10 characters" },
+            { max: 255, message: "Title should not exceed 255 characters" },
+          ]}
+        >
+          <Input
+            size="large"
+            placeholder="e.g., Fresh Meals for Homeless Shelter"
+            showCount
+            maxLength={255}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="shortDescription"
+          label="Short Description"
+          rules={[
+            { required: true, message: "Please enter a short description" },
+            {
+              max: 500,
+              message: "Description should not exceed 500 characters",
+            },
+          ]}
+        >
+          <TextArea
+            rows={3}
+            placeholder="A brief summary that will appear in listings"
+            showCount
+            maxLength={500}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="description"
+          label="Detailed Description"
+          rules={[
+            {
+              required: true,
+              message: "Please provide a detailed description",
+            },
+            {
+              min: 50,
+              message: "Description should be at least 50 characters",
+            },
+          ]}
+        >
+          <TextArea
+            rows={6}
+            placeholder="Provide comprehensive details about your cause..."
+            showCount
+          />
+        </Form.Item>
+
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="category"
+              label="Category"
+              rules={[{ required: true, message: "Please select a category" }]}
+            >
+              <Select
+                size="large"
+                disabled
+                placeholder="Category (cannot be changed)"
+              >
+                {categories.map((cat) => (
+                  <Option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="priority"
+              label="Priority Level"
+              rules={[{ required: true, message: "Please select priority" }]}
+            >
+              <Select size="large" placeholder="Select priority level">
+                {priorityLevels.map((level) => (
+                  <Option key={level.value} value={level.value}>
+                    {level.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item name="deadline" label="Deadline (Optional)">
+          <DatePicker style={{ width: "100%" }} size="large" />
+        </Form.Item>
+      </div>
+    );
+  };
+
+  const renderEducationScheduleStep = () => {
+    return (
+      <div className="modern-form-step">
+        <div className="step-header">
+          <CalendarOutlined className="step-icon" />
+          <Title level={3}>Schedule & Delivery</Title>
+          <Paragraph>
+            Set up the schedule and delivery method for your course
+          </Paragraph>
+        </div>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="startDate"
+              label="Start Date"
+              rules={[{ required: true, message: "Please select start date" }]}
+            >
+              <DatePicker style={{ width: "100%" }} size="large" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="endDate"
+              label="End Date"
+              rules={[{ required: true, message: "Please select end date" }]}
+            >
+              <DatePicker style={{ width: "100%" }} size="large" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="registrationDeadline"
+              label="Registration Deadline"
+            >
+              <DatePicker style={{ width: "100%" }} size="large" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="delivery_method"
+              label="Delivery Method"
+              rules={[
+                { required: true, message: "Please select delivery method" },
+              ]}
+            >
+              <Select placeholder="Select delivery method" size="large">
+                <Option value="online">Online</Option>
+                <Option value="in-person">In-Person</Option>
+                <Option value="hybrid">Hybrid</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="meeting_platform"
+              label="Meeting Platform (if online)"
+            >
+              <Select placeholder="Select platform" size="large">
+                <Option value="zoom">Zoom</Option>
+                <Option value="teams">Microsoft Teams</Option>
+                <Option value="meet">Google Meet</Option>
+                <Option value="webex">Cisco Webex</Option>
+                <Option value="skype">Skype</Option>
+                <Option value="other">Other</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="meeting_link" label="Meeting Link (Optional)">
+              <Input placeholder="https://..." size="large" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="price" label="Price ($)">
+              <InputNumber
+                min={0}
+                step={0.01}
+                style={{ width: "100%" }}
+                size="large"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="is_free" label="Free Course">
+              <Select placeholder="Is this course free?" size="large">
+                <Option value={true}>Yes, Free</Option>
+                <Option value={false}>No, Paid</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  const renderContactLocationStep = () => {
+    return (
+      <div className="modern-form-step">
+        <div className="step-header">
+          <EnvironmentOutlined className="step-icon" />
+          <Title level={3}>Contact & Location</Title>
+          <Paragraph>Provide location and contact information</Paragraph>
+        </div>
+
+        <Form.Item
+          name="location"
+          label="Location"
+          rules={[{ required: true, message: "Please enter location" }]}
+        >
+          <Input size="large" placeholder="City, State/Province, Country" />
+        </Form.Item>
+
+        {selectedCategory === "education" && (
+          <Form.Item
+            name="location_details"
+            label="Detailed Location Information"
+          >
+            <TextArea
+              rows={3}
+              placeholder="Provide complete address and any special instructions"
+            />
+          </Form.Item>
+        )}
+      </div>
+    );
+  };
+
+  const handleNext = async () => {
+    try {
+      const fieldsToValidate = getFieldsToValidate(currentStep);
+      if (fieldsToValidate.length > 0) {
+        await form.validateFields(fieldsToValidate);
+      }
+      
+      // Store current step values
+      const currentStepValues = form.getFieldsValue();
+      setStepFormValues((prev: any) => ({
+        ...prev,
+        ...currentStepValues
+      }));
+      
+      setCurrentStep(currentStep + 1);
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  const handlePrevious = () => {
+    // Store current step values before going back
+    const currentStepValues = form.getFieldsValue();
+    setStepFormValues((prev: any) => ({
+      ...prev,
+      ...currentStepValues
+    }));
+    
+    setCurrentStep(currentStep - 1);
+  };
+
+  const getFieldsToValidate = (step: number) => {
+    if (selectedCategory === "education") {
+      switch (step) {
+        case 0: // Basic Info
+          return [
+            "title",
+            "shortDescription",
+            "description",
+            "category",
+            "priority",
+          ];
+        case 1: // Education Details
+          return [
+            "educationType",
+            "skillLevel",
+            "topics",
+            "maxTrainees",
+            "durationHours",
+            "numberOfDays",
+            "instructorName",
+            "instructorEmail",
+          ];
+        case 2: // Schedule & Delivery
+          return ["startDate", "endDate", "delivery_method"];
+        case 3: // Contact & Location
+          return ["location"];
+        default:
+          return [];
+      }
+    } else {
+      switch (step) {
+        case 0: // Basic Info
+          return [
+            "title",
+            "shortDescription",
+            "description",
+            "category",
+            "priority",
+          ];
+        case 2: // Contact & Location
+          return ["location"];
+        default:
+          return [];
+      }
+    }
+  };
+
+  const getCategorySpecificData = (values: any) => {
+    switch (selectedCategory) {
+      case "food":
+        return {
+          food_type: values.foodType ?? "meals",
+          quantity: values.quantity ?? 1,
+          dietary_restrictions: values.dietaryRestrictions ?? [],
+          storage_requirements: values.storageRequirements ?? "",
+          pickup_instructions: values.pickupInstructions ?? "",
+        };
+      case "clothes":
+        return {
+          clothes_type: values.clothesType ?? "shirts",
+          size_range: values.sizeRange ?? [],
+          age_group: values.ageGroup ?? "adult",
+          season: values.season ?? "all-season",
+          condition: values.condition ?? "good",
+        };
+      case "education":
+        return {
+          education_type: values.educationType ?? "course",
+          skill_level: values.skillLevel ?? "all-levels",
+          topics: values.topics ?? [],
+          max_trainees: values.maxTrainees ?? 20,
+          current_trainees: values.currentTrainees ?? 0,
+          duration_hours: values.durationHours ?? 1,
+          number_of_days: values.numberOfDays ?? 1,
+          prerequisites: values.prerequisites ?? "",
+          learning_objectives: values.learningObjectives ?? [],
+          start_date: values.startDate
+            ? values.startDate.format("YYYY-MM-DD")
+            : null,
+          end_date: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
+          registration_deadline: values.registrationDeadline
+            ? values.registrationDeadline.format("YYYY-MM-DD")
+            : null,
+          schedule: values.schedule ?? [],
+          delivery_method: values.delivery_method ?? "in-person",
+          location_details: values.location_details ?? "",
+          meeting_platform: values.meeting_platform ?? null,
+          meeting_link: values.meeting_link ?? null,
+          meeting_id: values.meeting_id ?? null,
+          meeting_password: values.meeting_password ?? null,
+          instructor_name: values.instructorName ?? "",
+          instructor_email: values.instructorEmail ?? "",
+          instructor_bio: values.instructorBio ?? "",
+          instructor_qualifications: values.instructorQualifications ?? "",
+          instructor_rating: values.instructorRating ?? 0,
+          certification: values.certification ?? false,
+          certification_body: values.certificationBody ?? null,
+          materials_provided: values.materialsProvided ?? [],
+          equipment_required: values.equipmentRequired ?? [],
+          software_required: values.softwareRequired ?? [],
+          price: values.price ?? 0,
+          is_free: values.is_free ?? true,
+          course_language: values.courseLanguage ?? "English",
+          subtitles_available: values.subtitlesAvailable ?? [],
+          difficulty_rating: values.difficultyRating ?? 1,
+          course_modules: enhancedEducationFields.courseModules,
+          instructors: enhancedEducationFields.instructors,
+          enhanced_prerequisites: enhancedEducationFields.enhancedPrerequisites,
+        };
+      default:
+        return {};
+    }
+  };
+
+  const handleSubmit = async () => {
     try {
       setSaving(true);
 
-      const updateData = {
-        ...values,
-        deadline: values.deadline ? values.deadline.format("YYYY-MM-DD") : null,
-        gallery: imageUrls,
-        categoryDetails: getCategorySpecificData(values),
+      // Store final step values
+      const currentStepValues = form.getFieldsValue();
+      const allFormValues = {
+        ...stepFormValues,
+        ...currentStepValues
       };
+
+      console.log("Submit function combined values:", allFormValues); // Debug log
+      console.log("Step values stored:", stepFormValues); // Debug log
+      console.log("Current step values:", currentStepValues); // Debug log
+      console.log("Current selectedCategory:", selectedCategory); // Debug log
+
+      const updateData = {
+        title: allFormValues.title,
+        description: allFormValues.description,
+        detailedDescription: allFormValues.shortDescription,
+        category: selectedCategory,
+        urgencyLevel: allFormValues.priority,
+        location: allFormValues.location,
+        deadline: allFormValues.deadline
+          ? allFormValues.deadline.format("YYYY-MM-DD")
+          : null,
+        gallery: imageUrls,
+        categoryDetails: getCategorySpecificData(allFormValues),
+      };
+
+      console.log("Final payload being sent:", updateData);
 
       const response = await fetch(`/api/causes/${params.id}`, {
         method: "PUT",
@@ -253,576 +800,6 @@ export default function EditCausePage() {
     }
   };
 
-  const getCategorySpecificData = (values: any) => {
-    switch (selectedCategory) {
-      case "food":
-        return {
-          food_type: values.food_type ?? "meals",
-          servings_count: values.servings_count ?? 1,
-          dietary_restrictions: values.dietary_restrictions ?? [],
-          preparation_time: values.preparation_time ?? 0,
-          cooking_instructions: values.cooking_instructions ?? "",
-        };
-      case "clothes":
-        return {
-          clothing_type: values.clothing_type ?? "shirts",
-          sizes_available: values.sizes_available ?? [],
-          gender: values.gender ?? "unisex",
-          season: values.season ?? "all-season",
-          condition: values.condition ?? "good",
-        };
-      case "education":
-        return {
-          education_type: values.education_type ?? "course",
-          skill_level: values.skill_level ?? "beginner",
-          topics: values.topics ?? [],
-          max_trainees: values.max_trainees ?? 20,
-          duration_hours: values.duration_hours ?? 1,
-          prerequisites: values.prerequisites ?? "",
-          learning_objectives: values.learning_objectives ?? [],
-          instructor_name: values.instructor_name ?? "",
-          instructor_email: values.instructor_email ?? "",
-          certification: values.certification ?? false,
-          // Enhanced education fields
-          course_modules: courseModules.length > 0 ? courseModules : null,
-          instructors: instructors.length > 0 ? instructors : null,
-          enhanced_prerequisites:
-            enhancedPrerequisites.length > 0 ? enhancedPrerequisites : null,
-        };
-      default:
-        return {};
-    }
-  };
-
-  const renderCategorySpecificFields = () => {
-    switch (selectedCategory) {
-      case "food":
-        return (
-          <>
-            <Col xs={24} md={12}>
-              <Form.Item name="food_type" label="Food Type">
-                <Select placeholder="Select food type">
-                  <Option value="meals">Ready Meals</Option>
-                  <Option value="groceries">Groceries</Option>
-                  <Option value="snacks">Snacks</Option>
-                  <Option value="beverages">Beverages</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="servings_count" label="Number of Servings">
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item
-                name="dietary_restrictions"
-                label="Dietary Restrictions"
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="Select dietary restrictions"
-                >
-                  <Option value="vegetarian">Vegetarian</Option>
-                  <Option value="vegan">Vegan</Option>
-                  <Option value="halal">Halal</Option>
-                  <Option value="kosher">Kosher</Option>
-                  <Option value="gluten-free">Gluten Free</Option>
-                  <Option value="dairy-free">Dairy Free</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="preparation_time"
-                label="Preparation Time (minutes)"
-              >
-                <InputNumber min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item
-                name="cooking_instructions"
-                label="Cooking Instructions"
-              >
-                <TextArea
-                  rows={3}
-                  placeholder="Provide cooking or serving instructions"
-                />
-              </Form.Item>
-            </Col>
-          </>
-        );
-
-      case "clothes":
-        return (
-          <>
-            <Col xs={24} md={12}>
-              <Form.Item name="clothing_type" label="Clothing Type">
-                <Select placeholder="Select clothing type">
-                  <Option value="shirts">Shirts</Option>
-                  <Option value="pants">Pants</Option>
-                  <Option value="jackets">Jackets</Option>
-                  <Option value="shoes">Shoes</Option>
-                  <Option value="accessories">Accessories</Option>
-                  <Option value="undergarments">Undergarments</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="gender" label="Gender">
-                <Select placeholder="Select target gender">
-                  <Option value="male">Male</Option>
-                  <Option value="female">Female</Option>
-                  <Option value="unisex">Unisex</Option>
-                  <Option value="kids">Kids</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item name="sizes_available" label="Available Sizes">
-                <Select mode="multiple" placeholder="Select available sizes">
-                  <Option value="XS">XS</Option>
-                  <Option value="S">S</Option>
-                  <Option value="M">M</Option>
-                  <Option value="L">L</Option>
-                  <Option value="XL">XL</Option>
-                  <Option value="XXL">XXL</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="season" label="Season">
-                <Select placeholder="Select season">
-                  <Option value="spring">Spring</Option>
-                  <Option value="summer">Summer</Option>
-                  <Option value="fall">Fall</Option>
-                  <Option value="winter">Winter</Option>
-                  <Option value="all-season">All Season</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="condition" label="Condition">
-                <Select placeholder="Select condition">
-                  <Option value="new">New</Option>
-                  <Option value="like-new">Like New</Option>
-                  <Option value="good">Good</Option>
-                  <Option value="fair">Fair</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </>
-        );
-
-      case "education":
-        return (
-          <>
-            <Col xs={24} md={12}>
-              <Form.Item name="education_type" label="Education Type">
-                <Select placeholder="Select education type">
-                  <Option value="workshop">Workshop</Option>
-                  <Option value="course">Course</Option>
-                  <Option value="seminar">Seminar</Option>
-                  <Option value="certification">Certification Program</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="skill_level" label="Skill Level">
-                <Select placeholder="Select skill level">
-                  <Option value="beginner">Beginner</Option>
-                  <Option value="intermediate">Intermediate</Option>
-                  <Option value="advanced">Advanced</Option>
-                  <Option value="expert">Expert</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item name="topics" label="Topics Covered">
-                <Select mode="tags" placeholder="Enter topics covered">
-                  <Option value="programming">Programming</Option>
-                  <Option value="design">Design</Option>
-                  <Option value="marketing">Marketing</Option>
-                  <Option value="business">Business</Option>
-                  <Option value="language">Language</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="max_trainees" label="Maximum Trainees">
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="duration_hours" label="Duration (hours)">
-                <InputNumber min={1} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item name="prerequisites" label="Prerequisites">
-                <TextArea rows={2} placeholder="List any prerequisites" />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item name="learning_objectives" label="Learning Objectives">
-                <Select mode="tags" placeholder="Enter learning objectives" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="instructor_name" label="Instructor Name">
-                <Input placeholder="Enter instructor name" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="instructor_email" label="Instructor Email">
-                <Input type="email" placeholder="Enter instructor email" />
-              </Form.Item>
-            </Col>
-            <Col xs={24}>
-              <Form.Item
-                name="certification"
-                label="Certification Provided"
-                valuePropName="checked"
-              >
-                <Select placeholder="Certification available?">
-                  <Option value={true}>Yes</Option>
-                  <Option value={false}>No</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-
-            {/* Enhanced Education Fields */}
-            <Col xs={24}>
-              <Divider>Course Curriculum</Divider>
-            </Col>
-
-            {/* Course Modules */}
-            <Col xs={24}>
-              <Card
-                title="Course Modules"
-                size="small"
-                style={{ marginBottom: 16 }}
-              >
-                {courseModules.map((module, index) => (
-                  <Card
-                    key={index}
-                    size="small"
-                    style={{ marginBottom: 8 }}
-                    extra={
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                          const newModules = courseModules.filter(
-                            (_, i) => i !== index,
-                          );
-                          setCourseModules(newModules);
-                        }}
-                      />
-                    }
-                  >
-                    <Row gutter={[8, 8]}>
-                      <Col xs={24} md={12}>
-                        <Input
-                          placeholder="Module Title"
-                          value={module.title}
-                          onChange={(e) => {
-                            const newModules = [...courseModules];
-                            newModules[index].title = e.target.value;
-                            setCourseModules(newModules);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Input
-                          placeholder="Duration (e.g., 2 weeks)"
-                          value={module.duration}
-                          onChange={(e) => {
-                            const newModules = [...courseModules];
-                            newModules[index].duration = e.target.value;
-                            setCourseModules(newModules);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24}>
-                        <TextArea
-                          placeholder="Module Description"
-                          rows={2}
-                          value={module.description}
-                          onChange={(e) => {
-                            const newModules = [...courseModules];
-                            newModules[index].description = e.target.value;
-                            setCourseModules(newModules);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Select
-                          mode="tags"
-                          placeholder="Resources (videos, PDFs, etc.)"
-                          value={module.resources}
-                          onChange={(values) => {
-                            const newModules = [...courseModules];
-                            newModules[index].resources = values;
-                            setCourseModules(newModules);
-                          }}
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Input
-                          placeholder="Assessment Method"
-                          value={module.assessment}
-                          onChange={(e) => {
-                            const newModules = [...courseModules];
-                            newModules[index].assessment = e.target.value;
-                            setCourseModules(newModules);
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </Card>
-                ))}
-                <Button
-                  type="dashed"
-                  icon={<PlusOutlined />}
-                  onClick={() =>
-                    setCourseModules([
-                      ...courseModules,
-                      {
-                        title: "",
-                        description: "",
-                        duration: "",
-                        resources: [],
-                        assessment: "",
-                      },
-                    ])
-                  }
-                  block
-                >
-                  Add Course Module
-                </Button>
-              </Card>
-            </Col>
-
-            {/* Multiple Instructors */}
-            <Col xs={24}>
-              <Card
-                title="Instructors"
-                size="small"
-                style={{ marginBottom: 16 }}
-              >
-                {instructors.map((instructor, index) => (
-                  <Card
-                    key={index}
-                    size="small"
-                    style={{ marginBottom: 8 }}
-                    extra={
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                          const newInstructors = instructors.filter(
-                            (_, i) => i !== index,
-                          );
-                          setInstructors(newInstructors);
-                        }}
-                      />
-                    }
-                  >
-                    <Row gutter={[8, 8]}>
-                      <Col xs={24} md={8}>
-                        <Input
-                          placeholder="Instructor Name"
-                          value={instructor.name}
-                          onChange={(e) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].name = e.target.value;
-                            setInstructors(newInstructors);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={8}>
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          value={instructor.email}
-                          onChange={(e) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].email = e.target.value;
-                            setInstructors(newInstructors);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={8}>
-                        <Input
-                          placeholder="Phone (optional)"
-                          value={instructor.phone || ""}
-                          onChange={(e) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].phone = e.target.value;
-                            setInstructors(newInstructors);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24}>
-                        <TextArea
-                          placeholder="Bio (optional)"
-                          rows={2}
-                          value={instructor.bio || ""}
-                          onChange={(e) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].bio = e.target.value;
-                            setInstructors(newInstructors);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Select
-                          mode="tags"
-                          placeholder="Qualifications (optional)"
-                          value={instructor.qualifications || []}
-                          onChange={(values) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].qualifications = values;
-                            setInstructors(newInstructors);
-                          }}
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Input
-                          placeholder="Avatar URL (optional)"
-                          value={instructor.avatar || ""}
-                          onChange={(e) => {
-                            const newInstructors = [...instructors];
-                            newInstructors[index].avatar = e.target.value;
-                            setInstructors(newInstructors);
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </Card>
-                ))}
-                <Button
-                  type="dashed"
-                  icon={<PlusOutlined />}
-                  onClick={() =>
-                    setInstructors([
-                      ...instructors,
-                      {
-                        name: "",
-                        email: "",
-                        phone: "",
-                        bio: "",
-                        qualifications: [],
-                        avatar: "",
-                      },
-                    ])
-                  }
-                  block
-                >
-                  Add Instructor
-                </Button>
-              </Card>
-            </Col>
-
-            {/* Enhanced Prerequisites */}
-            <Col xs={24}>
-              <Card
-                title="Detailed Prerequisites"
-                size="small"
-                style={{ marginBottom: 16 }}
-              >
-                {enhancedPrerequisites.map((prereq, index) => (
-                  <Card
-                    key={index}
-                    size="small"
-                    style={{ marginBottom: 8 }}
-                    extra={
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                          const newPrereqs = enhancedPrerequisites.filter(
-                            (_, i) => i !== index,
-                          );
-                          setEnhancedPrerequisites(newPrereqs);
-                        }}
-                      />
-                    }
-                  >
-                    <Row gutter={[8, 8]}>
-                      <Col xs={24} md={12}>
-                        <Input
-                          placeholder="Prerequisite Title"
-                          value={prereq.title}
-                          onChange={(e) => {
-                            const newPrereqs = [...enhancedPrerequisites];
-                            newPrereqs[index].title = e.target.value;
-                            setEnhancedPrerequisites(newPrereqs);
-                          }}
-                        />
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Select
-                          mode="tags"
-                          placeholder="Resources"
-                          value={prereq.resources}
-                          onChange={(values) => {
-                            const newPrereqs = [...enhancedPrerequisites];
-                            newPrereqs[index].resources = values;
-                            setEnhancedPrerequisites(newPrereqs);
-                          }}
-                          style={{ width: "100%" }}
-                        />
-                      </Col>
-                      <Col xs={24}>
-                        <TextArea
-                          placeholder="Description"
-                          rows={2}
-                          value={prereq.description}
-                          onChange={(e) => {
-                            const newPrereqs = [...enhancedPrerequisites];
-                            newPrereqs[index].description = e.target.value;
-                            setEnhancedPrerequisites(newPrereqs);
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </Card>
-                ))}
-                <Button
-                  type="dashed"
-                  icon={<PlusOutlined />}
-                  onClick={() =>
-                    setEnhancedPrerequisites([
-                      ...enhancedPrerequisites,
-                      {
-                        title: "",
-                        description: "",
-                        resources: [],
-                      },
-                    ])
-                  }
-                  block
-                >
-                  Add Prerequisite
-                </Button>
-              </Card>
-            </Col>
-          </>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   if (loading || status === "loading") {
     return (
       <MainLayout>
@@ -834,7 +811,7 @@ export default function EditCausePage() {
     );
   }
 
-  if (!cause) {
+  if (!causeData) {
     return (
       <MainLayout>
         <div style={{ textAlign: "center", padding: "100px 20px" }}>
@@ -856,193 +833,126 @@ export default function EditCausePage() {
     );
   }
 
-  const steps = [
-    {
-      title: "Basic Information",
-      content: (
-        <Row gutter={[16, 16]}>
-          <Col xs={24}>
-            <Form.Item
-              name="title"
-              label="Cause Title"
-              rules={[{ required: true, message: "Please enter a title" }]}
-            >
-              <Input placeholder="Enter a descriptive title" size="large" />
-            </Form.Item>
-          </Col>
-          <Col xs={24}>
-            <Form.Item
-              name="description"
-              label="Short Description"
-              rules={[
-                { required: true, message: "Please enter a description" },
-              ]}
-            >
-              <TextArea
-                rows={3}
-                placeholder="Brief description of your cause"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24}>
-            <Form.Item name="detailedDescription" label="Detailed Description">
-              <TextArea
-                rows={6}
-                placeholder="Provide detailed information about your cause"
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="category"
-              label="Category"
-              rules={[{ required: true, message: "Please select a category" }]}
-            >
-              <Select
-                placeholder="Select category"
-                size="large"
-                onChange={(value) => setSelectedCategory(value)}
-              >
-                {categories.map((cat) => (
-                  <Option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="urgencyLevel"
-              label="Priority Level"
-              rules={[
-                { required: true, message: "Please select priority level" },
-              ]}
-            >
-              <Select placeholder="Select priority" size="large">
-                {urgencyLevels.map((level) => (
-                  <Option key={level.value} value={level.value}>
-                    {level.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-      ),
-    },
-    {
-      title: "Details & Location",
-      content: (
-        <Row gutter={[16, 16]}>
-          <Col xs={24} md={12}>
-            <Form.Item name="deadline" label="Deadline (Optional)">
-              <DatePicker style={{ width: "100%" }} size="large" />
-            </Form.Item>
-          </Col>
-          <Col xs={24}>
-            <Form.Item
-              name="location"
-              label="Location"
-              rules={[{ required: true, message: "Please enter location" }]}
-            >
-              <Input placeholder="City, State/Province, Country" size="large" />
-            </Form.Item>
-          </Col>
-          {renderCategorySpecificFields()}
-        </Row>
-      ),
-    },
-  ];
-
   return (
     <MainLayout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* Header */}
-          <div style={{ marginBottom: "32px" }}>
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={() => router.back()}
-              style={{ marginBottom: "16px" }}
-            >
-              Back
-            </Button>
-            <Title level={2} style={{ margin: 0 }}>
-              <EditOutlined style={{ marginRight: "8px" }} />
+      <div className="modern-cause-create-page">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{ textAlign: "center", marginBottom: "40px" }}
+          >
+            <Title level={1} style={{ marginBottom: "16px" }}>
               Edit Cause
             </Title>
-            <Text type="secondary">
-              Update your cause information and details
-            </Text>
-          </div>
+            <Paragraph
+              style={{
+                fontSize: "16px",
+                color: "#666",
+                maxWidth: "600px",
+                margin: "0 auto",
+              }}
+            >
+              Update your cause details and make necessary changes.
+            </Paragraph>
+          </motion.div>
 
-          {/* Progress Steps */}
-          <Card style={{ marginBottom: "24px" }}>
-            <Steps current={currentStep} onChange={setCurrentStep}>
-              {steps.map((step, index) => (
-                <Step key={index} title={step.title} />
-              ))}
-            </Steps>
-          </Card>
-
-          {/* Form */}
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            size="middle"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Card>
-              <div style={{ minHeight: "400px" }}>
-                {steps[currentStep].content}
-              </div>
-
-              <Divider />
-
-              {/* Navigation Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+            {/* Progress Bar */}
+            <div style={{ marginBottom: "24px" }}>
+              <Progress
+                percent={((currentStep + 1) / steps.length) * 100}
+                showInfo={false}
+                strokeColor={{
+                  "0%": "#87d068",
+                  "100%": "#52c41a",
                 }}
-              >
-                <div>
-                  {currentStep > 0 && (
-                    <Button onClick={() => setCurrentStep(currentStep - 1)}>
-                      Previous
-                    </Button>
-                  )}
-                </div>
-                <div>
-                  {currentStep < steps.length - 1 ? (
-                    <Button
-                      type="primary"
-                      onClick={() => setCurrentStep(currentStep + 1)}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="primary"
-                      size="large"
-                      icon={<SaveOutlined />}
-                      htmlType="submit"
-                      loading={saving}
-                    >
-                      Update Cause
-                    </Button>
-                  )}
-                </div>
-              </div>
+              />
+            </div>
+
+            {/* Steps */}
+            <Card className="steps-card">
+              <Steps current={currentStep} className="custom-steps">
+                {steps.map((step, index) => (
+                  <Steps.Step
+                    key={index}
+                    title={step.title}
+                    description={step.description}
+                    icon={step.icon}
+                  />
+                ))}
+              </Steps>
             </Card>
-          </Form>
-        </motion.div>
+
+            {/* Form */}
+            <Form
+              form={form}
+              layout="vertical"
+              className="modern-form"
+              size="middle"
+            >
+              <Card className="form-card">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="step-content"
+                  >
+                    {renderStepContent()}
+                  </motion.div>
+                </AnimatePresence>
+
+                <Divider />
+
+                {/* Navigation */}
+                <div className="form-navigation">
+                  <div className="nav-left">
+                    {currentStep > 0 && (
+                      <Button
+                        size="large"
+                        onClick={handlePrevious}
+                        icon={<LeftOutlined />}
+                      >
+                        Previous
+                      </Button>
+                    )}
+                  </div>
+                  <div className="nav-right">
+                    {currentStep < steps.length - 1 ? (
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={handleNext}
+                        icon={<RightOutlined />}
+                        iconPosition="end"
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={handleSubmit}
+                        loading={saving}
+                        icon={<SaveOutlined />}
+                      >
+                        Update Cause
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </Form>
+          </motion.div>
+        </div>
       </div>
     </MainLayout>
   );

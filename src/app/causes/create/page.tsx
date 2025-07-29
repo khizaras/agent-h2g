@@ -359,9 +359,16 @@ export default function CreateCausePage() {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = async (values: CauseFormData) => {
+  const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Get all validated form values
+      const values = await form.validateFields();
+
+      console.log("Create form validated values:", values); // Debug log
+      console.log("Current formData state:", formData); // Debug log
+      console.log("Selected category:", selectedCategory); // Debug log
+
       const submitData = {
         ...formData,
         ...values,
@@ -373,6 +380,8 @@ export default function CreateCausePage() {
       if (selectedCategory === "education") {
         submitData.enhancedEducationFields = enhancedEducationFields;
       }
+
+      console.log("Final create payload:", submitData); // Debug log
 
       const response = await fetch("/api/causes", {
         method: "POST",
@@ -1143,7 +1152,6 @@ export default function CreateCausePage() {
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={handleSubmit}
                 initialValues={formData}
                 size="large"
               >
@@ -1196,7 +1204,7 @@ export default function CreateCausePage() {
                     ) : (
                       <Button
                         type="primary"
-                        htmlType="submit"
+                        onClick={handleSubmit}
                         loading={loading}
                         size="large"
                         className="nav-btn primary"

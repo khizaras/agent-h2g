@@ -71,12 +71,13 @@ export default function SignUpPage() {
     },
   ];
 
-  const onFinish = async (values: SignUpFormData) => {
+  const onFinish = async () => {
     setLoading(true);
     try {
-      // Get current form values and merge with accumulated data
-      const currentValues = await form.getFieldsValue();
-      const allFormData = { ...formData, ...currentValues, ...values };
+      // Get all validated form values
+      const allFormData = await form.validateFields();
+
+      console.log("Signup form validated values:", allFormData); // Debug log
 
       // Prepare data for the registration API
       const registrationData = {
@@ -342,7 +343,6 @@ export default function SignUpPage() {
           <Form
             form={form}
             name="signup"
-            onFinish={onFinish}
             layout="vertical"
             size="large"
             autoComplete="off"
@@ -374,7 +374,7 @@ export default function SignUpPage() {
               ) : (
                 <Button
                   type="primary"
-                  htmlType="submit"
+                  onClick={onFinish}
                   loading={loading}
                   size="large"
                   className="auth-btn-primary auth-btn-next"
