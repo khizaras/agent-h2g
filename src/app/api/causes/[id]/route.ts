@@ -336,7 +336,7 @@ export async function PUT(
                   size_range = ?, 
                   age_group = ?, 
                   season = ?, 
-                  condition = ?
+                  \`condition\` = ?
               WHERE cause_id = ?
             `,
               [
@@ -352,7 +352,7 @@ export async function PUT(
             await Database.query(
               `
               INSERT INTO clothes_details 
-              (cause_id, clothes_type, category, age_group, size_range, condition, season, quantity)
+              (cause_id, clothes_type, category, age_group, size_range, \`condition\`, season, quantity)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `,
               [

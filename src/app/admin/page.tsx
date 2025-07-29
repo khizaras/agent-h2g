@@ -942,22 +942,22 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
-      {/* Fixed Sidebar */}
-      <div
-        style={{
-          width: "280px",
-          position: "fixed",
-          left: 0,
-          top: 0,
-          height: "100vh",
-          background: "#ffffff",
-          borderRight: "1px solid #e5e7eb",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          zIndex: 1000,
-          overflowY: "auto",
-        }}
-      >
+    <MainLayout>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#fafbfc" }}>
+        {/* Modern Dark Sidebar */}
+        <div
+          style={{
+            width: "260px",
+            position: "fixed",
+            left: 0,
+            top: 0,
+            height: "100vh",
+            background: "#1f2937",
+            boxShadow: "4px 0 16px rgba(0,0,0,0.1)",
+            zIndex: 1000,
+            overflowY: "auto",
+          }}
+        >
         <div
           style={{
             padding: "24px 20px",
@@ -1016,15 +1016,16 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div
-        style={{
-          marginLeft: "280px",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+        {/* Main Content Area */}
+        <div
+          style={{
+            marginLeft: "260px",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+          }}
+        >
         {/* Header */}
         <div
           style={{
@@ -1999,6 +2000,7 @@ export default function AdminDashboard() {
           </div>
         </Form>
       </Modal>
-    </div>
+      </div>
+    </MainLayout>
   );
 }

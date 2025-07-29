@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
 
         const clothesQuery = `
           INSERT INTO clothes_details (
-            cause_id, clothes_type, category, age_group, size_range, condition,
+            cause_id, clothes_type, category, age_group, size_range, \`condition\`,
             season, quantity, colors, brands, material_composition,
             care_instructions, special_requirements, pickup_instructions,
             delivery_available, delivery_radius, is_urgent, is_cleaned,
