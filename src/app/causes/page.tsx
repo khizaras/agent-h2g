@@ -15,8 +15,9 @@ import {
   Empty,
   Switch,
   Space,
+  message,
 } from "antd";
-import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus, FiRefreshCw } from "react-icons/fi";
+import { FiHeart, FiMapPin, FiSearch, FiUser, FiPlus, FiRefreshCw, FiShare2 } from "react-icons/fi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -315,67 +316,362 @@ export default function CausesPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
+                      whileHover={{ y: -8 }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{ height: "100%" }}
                     >
-                      <Card className="modern-cause-card" hoverable>
-                        <div className="cause-image">
-                          <img 
+                      <Card 
+                        className="modern-cause-card" 
+                        hoverable
+                        style={{
+                          height: "100%",
+                          borderRadius: "16px",
+                          overflow: "hidden",
+                          border: "1px solid #e8e8e8",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          cursor: "pointer",
+                          position: "relative"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.12)";
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }}
+                      >
+                        <div 
+                          className="cause-image"
+                          style={{
+                            position: "relative",
+                            overflow: "hidden",
+                            borderRadius: "12px 12px 0 0",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                          }}
+                        >
+                          <motion.img 
                             src={cause.image || '/placeholder-cause.jpg'} 
                             alt={cause.title}
-                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                            style={{ 
+                              width: '100%', 
+                              height: '220px', 
+                              objectFit: 'cover',
+                              transition: 'transform 0.4s ease'
+                            }}
+                            whileHover={{ scale: 1.05 }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/placeholder-cause.jpg';
                             }}
                           />
-                          <Tag
-                            className={`urgency-tag urgency-${cause.priority || 'medium'}`}
+                          
+                          {/* Gradient overlay */}
+                          <div style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)",
+                            pointerEvents: "none"
+                          }} />
+                          
+                          {/* Interactive badges */}
+                          <div style={{
+                            position: "absolute",
+                            top: "12px",
+                            left: "12px",
+                            right: "12px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            zIndex: 2
+                          }}>
+                            <motion.div
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.3 }}
+                            >
+                              <Tag
+                                style={{
+                                  backgroundColor: "rgba(255,255,255,0.9)",
+                                  color: "#1890ff",
+                                  border: "none",
+                                  borderRadius: "20px",
+                                  padding: "2px 12px",
+                                  fontSize: "11px",
+                                  fontWeight: "600",
+                                  backdropFilter: "blur(10px)"
+                                }}
+                              >
+                                {cause.category_name || 'General'}
+                              </Tag>
+                            </motion.div>
+                            
+                            <motion.div
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.4 }}
+                            >
+                              <Tag
+                                style={{
+                                  backgroundColor: getUrgencyColor(cause.priority || 'medium'),
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: "20px",
+                                  padding: "2px 12px",
+                                  fontSize: "11px",
+                                  fontWeight: "700",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.5px",
+                                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+                                }}
+                              >
+                                {cause.priority || 'medium'}
+                              </Tag>
+                            </motion.div>
+                          </div>
+                          
+                          {/* Interactive action buttons overlay */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
                             style={{
-                              backgroundColor: getUrgencyColor(cause.priority || 'medium'),
-                              position: 'absolute',
-                              top: '8px',
-                              right: '8px',
-                              zIndex: 1,
-                              color: 'white',
-                              border: 'none',
-                              fontWeight: 'bold'
+                              position: "absolute",
+                              bottom: "12px",
+                              right: "12px",
+                              display: "flex",
+                              gap: "8px",
+                              zIndex: 2
                             }}
                           >
-                            {(cause.priority || 'medium').toUpperCase()}
-                          </Tag>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              style={{
+                                background: "rgba(255,255,255,0.9)",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "36px",
+                                height: "36px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                backdropFilter: "blur(10px)",
+                                color: "#ff4757"
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                message.success("Added to favorites!");
+                              }}
+                            >
+                              <FiHeart size={16} />
+                            </motion.button>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              style={{
+                                background: "rgba(255,255,255,0.9)",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "36px",
+                                height: "36px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                backdropFilter: "blur(10px)",
+                                color: "#3742fa"
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.share?.({ 
+                                  title: cause.title, 
+                                  url: window.location.origin + `/causes/${cause.id}` 
+                                }) || message.info("Link copied to clipboard!");
+                              }}
+                            >
+                              <FiShare2 size={16} />
+                            </motion.button>
+                          </motion.div>
                         </div>
 
-                        <div className="cause-content">
-                          <div className="cause-category">{cause.category_name || 'General'}</div>
+                        <div 
+                          className="cause-content"
+                          style={{
+                            padding: "20px",
+                            display: "flex",
+                            flexDirection: "column",
+                            height: "calc(100% - 220px)"
+                          }}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <Title 
+                              level={4} 
+                              className="cause-title"
+                              style={{
+                                margin: "0 0 8px 0",
+                                fontSize: "18px",
+                                fontWeight: "600",
+                                color: "#1f2937",
+                                lineHeight: "1.3",
+                                minHeight: "48px",
+                                display: "-webkit-box",
+                                WebkitBoxOrient: "vertical",
+                                WebkitLineClamp: 2,
+                                overflow: "hidden"
+                              }}
+                            >
+                              {cause.title}
+                            </Title>
+                          </motion.div>
 
-                          <Title level={4} className="cause-title">
-                            {cause.title}
-                          </Title>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            style={{ flex: 1 }}
+                          >
+                            <Paragraph 
+                              className="cause-description"
+                              style={{
+                                color: "#6b7280",
+                                fontSize: "14px",
+                                lineHeight: "1.5",
+                                margin: "0 0 16px 0",
+                                minHeight: "60px",
+                                display: "-webkit-box",
+                                WebkitBoxOrient: "vertical",
+                                WebkitLineClamp: 3,
+                                overflow: "hidden"
+                              }}
+                            >
+                              {cause.description || "No description available"}
+                            </Paragraph>
+                          </motion.div>
 
-                          <Paragraph className="cause-description">
-                            {cause.description?.substring(0, 120)}...
-                          </Paragraph>
-
-                          <div className="cause-meta">
-                            <div className="meta-item">
-                              <FiMapPin size={14} />
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="cause-meta"
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                              marginBottom: "16px",
+                              padding: "12px",
+                              backgroundColor: "#f8fafc",
+                              borderRadius: "8px",
+                              border: "1px solid #e2e8f0"
+                            }}
+                          >
+                            <div 
+                              className="meta-item"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                fontSize: "13px",
+                                color: "#64748b"
+                              }}
+                            >
+                              <FiMapPin size={14} style={{ color: "#ef4444" }} />
                               <span>{cause.location || 'Location TBD'}</span>
                             </div>
-                            <div className="meta-item">
-                              <FiUser size={14} />
+                            <div 
+                              className="meta-item"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                fontSize: "13px",
+                                color: "#64748b"
+                              }}
+                            >
+                              <FiUser size={14} style={{ color: "#3b82f6" }} />
                               <span>by {cause.user_name || 'Anonymous'}</span>
                             </div>
-                          </div>
 
-                          <Link href={`/causes/${cause.id}`}>
-                            <Button
-                              type="primary"
-                              block
-                              className="modern-btn-primary"
-                            >
-                              <FiHeart style={{ marginRight: 8 }} />
-                              Support This Cause
-                            </Button>
-                          </Link>
+                            {/* Category-specific information */}
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              fontSize: "12px",
+                              color: "#6366f1",
+                              backgroundColor: "#f0f9ff",
+                              padding: "6px 10px",
+                              borderRadius: "6px",
+                              border: "1px solid #e0f2fe",
+                              marginTop: "4px"
+                            }}>
+                              <span style={{ fontWeight: "600" }}>
+                                {cause.category_name === 'food' && '🍽️ Food Assistance'}
+                                {cause.category_name === 'clothes' && '👕 Clothing Donation'}
+                                {cause.category_name === 'education' && '📚 Education & Training'}
+                                {cause.category_name === 'healthcare' && '🏥 Healthcare Support'}
+                                {cause.category_name === 'housing' && '🏠 Housing Assistance'}
+                                {!cause.category_name && '🤝 Community Support'}
+                              </span>
+                            </div>
+                            
+                            {/* Engagement metrics */}
+                            <div style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              marginTop: "4px",
+                              fontSize: "12px",
+                              color: "#9ca3af"
+                            }}>
+                              <span>👁 {cause.view_count || 0} views</span>
+                              <span>❤️ {cause.like_count || 0} likes</span>
+                              <span>💬 {cause.comment_count || 0} comments</span>
+                            </div>
+                          </motion.div>
+
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <Link href={`/causes/${cause.id}`}>
+                              <Button
+                                type="primary"
+                                block
+                                size="large"
+                                style={{
+                                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                  border: "none",
+                                  borderRadius: "10px",
+                                  height: "44px",
+                                  fontWeight: "600",
+                                  fontSize: "14px",
+                                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+                                  transition: "all 0.3s ease"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = "translateY(-2px)";
+                                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(102, 126, 234, 0.4)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = "translateY(0)";
+                                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.3)";
+                                }}
+                              >
+                                <FiHeart style={{ marginRight: 8 }} />
+                                Support This Cause
+                              </Button>
+                            </Link>
+                          </motion.div>
                         </div>
                       </Card>
                     </motion.div>

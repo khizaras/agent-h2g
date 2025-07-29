@@ -451,7 +451,7 @@ export default function CauseDetailsPage() {
         {/* Hero Section */}
         <section className="modern-cause-hero">
           <div className="hero-background">
-            {/* Image Carousel */}
+            {/* Enhanced Gallery View */}
             {(() => {
               // Get all available images from different sources
               const allImages = [
@@ -464,32 +464,72 @@ export default function CauseDetailsPage() {
                 .filter((img, index, arr) => arr.indexOf(img) === index); // Remove duplicates
 
               return allImages.length > 1 ? (
-                <Carousel
-                  autoplay
-                  autoplaySpeed={4000}
-                  fade
-                  dots={{ className: "hero-carousel-dots" }}
-                  style={{ height: "400px", width: "100%" }}
-                  effect="fade"
-                >
-                  {allImages.map((image, index) => (
-                    <div key={index}>
-                      <div
-                        style={{
-                          height: "400px",
-                          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image || "/placeholder-cause.svg"})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          backgroundRepeat: "no-repeat",
-                          position: "relative",
-                          transition: "all 0.6s ease-in-out",
-                        }}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
+                <div style={{ position: "relative" }}>
+                  <Carousel
+                    autoplay
+                    autoplaySpeed={5000}
+                    fade
+                    dots={{
+                      className: "hero-carousel-dots"
+                    }}
+                    style={{ height: "400px", width: "100%" }}
+                    effect="fade"
+                  >
+                    {allImages.map((image, index) => (
+                      <div key={index}>
+                        <motion.div
+                          initial={{ opacity: 0, scale: 1.1 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.8 }}
+                          style={{
+                            height: "400px",
+                            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image || "/placeholder-cause.svg"})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            position: "relative",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            // Open image in modal/lightbox
+                            window.open(image, '_blank');
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </Carousel>
+                  
+                  {/* Gallery count indicator */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    style={{
+                      position: "absolute",
+                      bottom: "16px",
+                      right: "16px",
+                      background: "rgba(0,0,0,0.7)",
+                      color: "white",
+                      padding: "8px 16px",
+                      borderRadius: "20px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      backdropFilter: "blur(10px)",
+                      zIndex: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <span>📸</span>
+                    <span>{allImages.length} Photos</span>
+                  </motion.div>
+                </div>
               ) : (
-                <div
+                <motion.div
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6 }}
                   style={{
                     height: "400px",
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${allImages[0] || "/placeholder-cause.svg"})`,
@@ -497,6 +537,12 @@ export default function CauseDetailsPage() {
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     position: "relative",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    if (allImages[0]) {
+                      window.open(allImages[0], '_blank');
+                    }
                   }}
                 />
               );
@@ -645,6 +691,94 @@ export default function CauseDetailsPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Image Gallery Section */}
+        {(() => {
+          const allImages = [
+            ...(cause.gallery || []),
+            ...(cause.images || []),
+            cause.image,
+            cause.imageUrl,
+          ]
+            .filter(Boolean)
+            .filter((img, index, arr) => arr.indexOf(img) === index);
+
+          return allImages.length > 1 ? (
+            <section className="image-gallery-section" style={{ padding: "60px 0", backgroundColor: "#fafafa" }}>
+              <div className="container">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <Title level={3} style={{ textAlign: "center", marginBottom: "40px", color: "#1f2937" }}>
+                    📸 Photo Gallery ({allImages.length} Images)
+                  </Title>
+                  
+                  <Row gutter={[16, 16]}>
+                    {allImages.map((image, index) => (
+                      <Col xs={12} sm={8} md={6} lg={4} key={index}>
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                          viewport={{ once: true }}
+                          whileHover={{ scale: 1.05, y: -5 }}
+                          style={{
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            cursor: "pointer",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                            transition: "all 0.3s ease"
+                          }}
+                          onClick={() => window.open(image, '_blank')}
+                        >
+                          <img
+                            src={image}
+                            alt={`Gallery image ${index + 1}`}
+                            style={{
+                              width: "100%",
+                              height: "150px",
+                              objectFit: "cover",
+                              transition: "transform 0.3s ease"
+                            }}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder-cause.svg';
+                            }}
+                          />
+                          
+                          {/* Hover overlay */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: "rgba(0,0,0,0.5)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: "600"
+                            }}
+                          >
+                            🔍 View Full Size
+                          </motion.div>
+                        </motion.div>
+                      </Col>
+                    ))}
+                  </Row>
+                </motion.div>
+              </div>
+            </section>
+          ) : null;
+        })()}
 
         {/* Description & Stats Section */}
         <section className="cause-description-section">
