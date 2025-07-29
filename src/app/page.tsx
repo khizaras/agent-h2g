@@ -12,6 +12,7 @@ import {
   Avatar,
   Rate,
   Spin,
+  Tag,
 } from "antd";
 import {
   FiHeart,
@@ -22,20 +23,31 @@ import {
   FiGlobe,
   FiTarget,
   FiCheckCircle,
+  FiPlay,
+  FiDollarSign,
+  FiAward,
+  FiStar,
+  FiPlus,
 } from "react-icons/fi";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { 
-  fetchFeaturedCauses, 
+import {
+  fetchFeaturedCauses,
   selectFeaturedCauses,
-  selectCausesLoading 
+  selectCausesLoading,
 } from "@/store/slices/causesSlice";
 
 const { Title, Paragraph, Text } = Typography;
 
 // Simple animated counter with basic counting
-function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
+function AnimatedCounter({
+  value,
+  suffix = "",
+}: {
+  value: number;
+  suffix?: string;
+}) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -49,12 +61,11 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 
   return (
     <span>
-      {count.toLocaleString()}{suffix}
+      {count.toLocaleString()}
+      {suffix}
     </span>
   );
 }
-
-
 
 export default function HomePage() {
   const dispatch = useAppDispatch();
@@ -65,13 +76,13 @@ export default function HomePage() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -84,19 +95,22 @@ export default function HomePage() {
     {
       icon: <FiHeart size={40} />,
       title: "Community Driven",
-      description: "Connect with like-minded individuals working together to make a real difference in local communities.",
+      description:
+        "Connect with like-minded individuals working together to make a real difference in local communities.",
       color: "#52c41a",
     },
     {
       icon: <FiShield size={40} />,
       title: "Safe & Transparent",
-      description: "Every donation is tracked with complete transparency. See exactly how your contributions create impact.",
+      description:
+        "Every donation is tracked with complete transparency. See exactly how your contributions create impact.",
       color: "#1890ff",
     },
     {
       icon: <FiTrendingUp size={40} />,
       title: "Proven Results",
-      description: "Join thousands who have already created measurable change. Your impact starts immediately.",
+      description:
+        "Join thousands who have already created measurable change. Your impact starts immediately.",
       color: "#722ed1",
     },
   ];
@@ -132,301 +146,268 @@ export default function HomePage() {
     {
       name: "Sarah Johnson",
       role: "Community Volunteer",
-      content: "Hands2gether made it simple to connect with families in need. I've helped organize meal distributions for over 150 households.",
+      content:
+        "Hands2gether made it simple to connect with families in need. I've helped organize meal distributions for over 150 households.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face",
+      avatar:
+        "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face",
     },
     {
       name: "Michael Chen",
       role: "Cause Creator",
-      content: "The platform made launching our food rescue program effortless. We've saved over 10,000 pounds of food from waste.",
+      content:
+        "The platform made launching our food rescue program effortless. We've saved over 10,000 pounds of food from waste.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     },
     {
       name: "Emily Rodriguez",
       role: "Monthly Donor",
-      content: "The transparency is incredible. I can see exactly how my contributions create real impact in my community.",
+      content:
+        "The transparency is incredible. I can see exactly how my contributions create real impact in my community.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
     },
   ];
-
 
   if (!mounted) return null;
 
   return (
     <MainLayout>
-      <div className="modern-home-page">
-        {/* Hero Section with Parallax */}
-        <section className="parallax-hero">
-          {/* Parallax Background */}
-          <div className="parallax-bg">
-            <motion.div 
-              className="parallax-image"
-              style={{
-                backgroundImage: 'url("https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2070&auto=format&fit=crop")',
-                transform: `translateY(${scrollY * 0.5}px)`,
-              }}
-            />
-            <div className="parallax-overlay" />
-          </div>
-
-          {/* Hero Content */}
-          <div className="parallax-hero-content">
-            <div className="container">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="hero-text-center"
+      <div className="page-container">
+        {/* Hero Section */}
+        <section
+          className="section-wrapper-hero"
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            className="hero-background"
+            src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            alt="Community helping hands"
+          />
+          <div className="hero-overlay" />
+          <div className="container-standard">
+            <div className="card-content-hero">
+              <motion.h1
+                className="hero-title"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
               >
-                <Title level={1} className="parallax-hero-title">
-                  Building stronger communities,
-                  <span className="title-gradient"> together</span>
-                </Title>
-                
-                <Paragraph className="parallax-hero-subtitle">
-                  Connect with your community to fight hunger and create lasting change. 
-                  Every contribution matters, every action counts.
-                </Paragraph>
-
-                <motion.div 
-                  className="hero-actions"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                >
+                Building <span className="hero-title-accent">Communities</span>{" "}
+                Together
+              </motion.h1>
+              <motion.p
+                className="hero-subtitle"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                Connect with your neighbors, create meaningful causes, and make
+                a lasting impact in your community through the power of
+                collective action.
+              </motion.p>
+              <motion.div
+                className="hero-actions-section"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                <div className="hero-actions">
                   <Link href="/causes">
-                    <Button type="primary" size="large" className="hero-btn-primary">
-                      <FiHeart style={{ marginRight: 8 }} />
+                    <Button className="btn-hero-primary">
+                      <FiHeart style={{ marginRight: "8px" }} />
                       Explore Causes
                     </Button>
                   </Link>
                   <Link href="/causes/create">
-                    <Button size="large" className="hero-btn-secondary">
+                    <Button className="btn-hero-secondary">
+                      <FiPlay style={{ marginRight: "8px" }} />
                       Create a Cause
-                      <FiArrowRight style={{ marginLeft: 8 }} />
                     </Button>
                   </Link>
-                </motion.div>
-
-                {/* Trust Indicators */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="hero-trust-indicators"
-                >
-                  <div className="trust-grid">
-                    <div className="trust-item">
-                      <div className="trust-icon">
-                        <FiShield size={24} />
-                      </div>
-                      <span>Secure Platform</span>
-                    </div>
-                    <div className="trust-item">
-                      <div className="trust-icon">
-                        <FiCheckCircle size={24} />
-                      </div>
-                      <span>Verified Causes</span>
-                    </div>
-                    <div className="trust-item">
-                      <div className="trust-icon">
-                        <FiGlobe size={24} />
-                      </div>
-                      <span>Global Community</span>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-
-              {/* Floating Elements */}
-              <motion.div 
-                className="floating-elements"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.6 }}
-              >
-                <motion.div 
-                  className="floating-element element-1"
-                  animate={{ y: [-10, 10, -10] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <FiHeart size={32} />
-                </motion.div>
-                <motion.div 
-                  className="floating-element element-2"
-                  animate={{ y: [10, -10, 10] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <FiUsers size={28} />
-                </motion.div>
-                <motion.div 
-                  className="floating-element element-3"
-                  animate={{ y: [-5, 15, -5] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <FiTarget size={24} />
-                </motion.div>
+                </div>
               </motion.div>
             </div>
           </div>
-
-          {/* Scroll Indicator */}
-          <motion.div 
-            className="scroll-indicator"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1 }}
-          >
-            <motion.div 
-              className="scroll-arrow"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <FiArrowRight style={{ transform: 'rotate(90deg)' }} size={20} />
-            </motion.div>
-            <span>Scroll to explore</span>
-          </motion.div>
         </section>
 
-        {/* Statistics Section */}
-        <section className="modern-stats-section">
-          <div className="container">
-            <Row gutter={[32, 32]}>
+        {/* Stats Section */}
+        <section
+          className="section-wrapper"
+          style={{ background: "var(--bg-secondary)" }}
+        >
+          <div className="container-standard">
+            <motion.div
+              className="grid-4"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
               {stats.map((stat, index) => (
-                <Col xs={12} md={6} key={index}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="stat-card"
+                <motion.div
+                  key={index}
+                  className="card-hero"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div
+                    className="feature-icon-wrapper"
+                    style={{ background: stat.color, marginBottom: "16px" }}
                   >
-                    <div className="stat-icon" style={{ color: stat.color }}>
-                      {stat.icon}
-                    </div>
-                    <div className="stat-number">
-                      <AnimatedCounter value={stat.value} />
-                    </div>
-                    <div className="stat-label">{stat.label}</div>
-                  </motion.div>
-                </Col>
+                    {stat.icon}
+                  </div>
+                  <h3 className="card-title mb-xs">
+                    <AnimatedCounter value={stat.value} />
+                  </h3>
+                  <p className="card-subtitle mb-0">{stat.label}</p>
+                </motion.div>
               ))}
-            </Row>
+            </motion.div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="modern-features-section">
-          <div className="container">
+        <section className="section-wrapper">
+          <div className="container-standard">
             <div className="section-header">
-              <Title level={2} className="section-title">
-                Why Choose Hands2gether?
-              </Title>
-              <Paragraph className="section-subtitle">
-                Simple, transparent, and effective community support
-              </Paragraph>
+              <h2 className="section-title">Why Choose Hands2gether?</h2>
+              <p className="section-subtitle">
+                Our platform makes it easy to create meaningful change in your
+                community with powerful tools and unwavering support.
+              </p>
             </div>
 
-            <Row gutter={[32, 32]}>
+            <div className="grid-3">
               {features.map((feature, index) => (
-                <Col xs={24} md={8} key={index}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                <motion.div
+                  key={index}
+                  className="card-feature"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <div
+                    className="feature-icon-wrapper"
+                    style={{ background: feature.color }}
                   >
-                    <Card className="modern-feature-card">
-                      <div className="feature-icon" style={{ color: feature.color }}>
-                        {feature.icon}
-                      </div>
-                      <Title level={4} className="feature-title">
-                        {feature.title}
-                      </Title>
-                      <Paragraph className="feature-description">
-                        {feature.description}
-                      </Paragraph>
-                    </Card>
-                  </motion.div>
-                </Col>
+                    {feature.icon}
+                  </div>
+                  <h3 className="card-title">{feature.title}</h3>
+                  <p className="card-subtitle">{feature.description}</p>
+                </motion.div>
               ))}
-            </Row>
+            </div>
           </div>
         </section>
 
         {/* Featured Causes Section */}
-        <section className="modern-causes-section">
-          <div className="container">
+        <section
+          className="section-wrapper"
+          style={{ background: "var(--bg-secondary)" }}
+        >
+          <div className="container-standard">
             <div className="section-header">
-              <Title level={2} className="section-title">
-                Featured Causes
-              </Title>
-              <Paragraph className="section-subtitle">
-                Support meaningful initiatives in your community
-              </Paragraph>
+              <h2 className="section-title">Featured Causes</h2>
+              <p className="section-subtitle">
+                Discover urgent causes making real impact in communities
+                worldwide
+              </p>
             </div>
 
             {loading ? (
-              <div className="text-center py-12">
+              <div className="text-center p-xl">
                 <Spin size="large" />
-                <p className="mt-4">Loading featured causes...</p>
-              </div>
-            ) : featuredCauses.length === 0 ? (
-              <div className="text-center py-12">
-                <Title level={4}>No featured causes available</Title>
-                <Paragraph>Check back soon for featured community initiatives.</Paragraph>
-                <Link href="/causes">
-                  <Button type="primary">
-                    Browse All Causes
-                  </Button>
-                </Link>
               </div>
             ) : (
-              <Row gutter={[24, 24]}>
+              <div className="grid-3">
                 {featuredCauses.slice(0, 3).map((cause, index) => (
-                  <Col xs={24} md={8} key={cause.id}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                    >
-                      <Card className="modern-cause-card" hoverable>
-                        <div className="cause-image">
-                          <img src={cause.image || '/placeholder-cause.jpg'} alt={cause.title} />
+                  <motion.div
+                    key={cause.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="card-modern">
+                      <div className="card-image">
+                        <img
+                          src={
+                            cause.image ||
+                            "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&h=250&fit=crop"
+                          }
+                          alt={cause.title}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "16px",
+                            left: "16px",
+                          }}
+                        >
+                          <Tag color="green">
+                            {String(cause.category?.name || cause.category)}
+                          </Tag>
                         </div>
-                        <div className="cause-content">
-                          <Title level={4} className="cause-title">
-                            {cause.title}
-                          </Title>
-                          <Paragraph className="cause-description">
-                            {cause.description?.substring(0, 100)}...
-                          </Paragraph>
-                          
-                          <div className="cause-meta">
-                            <Text type="secondary">
-                              {cause.category_name || 'General'} • {cause.location || 'Location TBD'}
-                            </Text>
-                          </div>
-
-                          <Link href={`/causes/${cause.id}`}>
-                            <Button type="primary" block className="modern-btn-primary">
-                              Support This Cause
-                            </Button>
-                          </Link>
+                      </div>
+                      <div className="card-content">
+                        <h3 className="card-title">{cause.title}</h3>
+                        <p className="card-subtitle mb-lg">
+                          {cause.description}
+                        </p>
+                        <div className="flex-between mb-md">
+                          <Text strong>
+                            ${(cause as any).raised?.toLocaleString() || "0"}
+                          </Text>
+                          <Text type="secondary">
+                            of ${(cause as any).goal?.toLocaleString() || "0"}
+                          </Text>
                         </div>
-                      </Card>
-                    </motion.div>
-                  </Col>
+                        <div
+                          style={{
+                            background: "#f0f0f0",
+                            height: "8px",
+                            borderRadius: "4px",
+                            marginBottom: "16px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              background: "var(--brand-primary)",
+                              height: "8px",
+                              borderRadius: "4px",
+                              width: `${Math.min(((cause as any).raised / (cause as any).goal) * 100 || 0, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <Link href={`/causes/${cause.id}`}>
+                          <Button className="btn-primary-large" block>
+                            <FiHeart style={{ marginRight: "8px" }} />
+                            Support This Cause
+                          </Button>
+                        </Link>
+                      </div>
+                    </Card>
+                  </motion.div>
                 ))}
-              </Row>
+              </div>
             )}
 
-            <div className="causes-cta">
+            <div className="text-center mt-xl">
               <Link href="/causes">
-                <Button size="large" className="modern-btn-secondary">
+                <Button className="btn-secondary-large">
+                  <FiArrowRight style={{ marginRight: "8px" }} />
                   View All Causes
-                  <FiArrowRight style={{ marginLeft: 8 }} />
                 </Button>
               </Link>
             </div>
@@ -434,76 +415,76 @@ export default function HomePage() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="modern-testimonials-section">
-          <div className="container">
+        <section className="section-wrapper">
+          <div className="container-standard">
             <div className="section-header">
-              <Title level={2} className="section-title">
-                Community Stories
-              </Title>
-              <Paragraph className="section-subtitle">
-                Real impact from real people in our community
-              </Paragraph>
+              <h2 className="section-title">Community Stories</h2>
+              <p className="section-subtitle">
+                Real stories from real people making a difference every day
+              </p>
             </div>
 
-            <Row gutter={[24, 24]}>
+            <div className="grid-2">
               {testimonials.map((testimonial, index) => (
-                <Col xs={24} md={8} key={index}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Card className="modern-testimonial-card">
-                      <Rate disabled defaultValue={testimonial.rating} className="rating" />
-                      
-                      <Paragraph className="testimonial-content">
-                        "{testimonial.content}"
-                      </Paragraph>
-
-                      <div className="testimonial-author">
-                        <Avatar size={48} src={testimonial.avatar} />
-                        <div className="author-info">
-                          <Text strong className="author-name">
-                            {testimonial.name}
-                          </Text>
-                          <Text type="secondary" className="author-role">
-                            {testimonial.role}
-                          </Text>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.div>
-                </Col>
+                <motion.div
+                  key={index}
+                  className="card-testimonial"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="flex mb-md">
+                    <Avatar
+                      src={testimonial.avatar}
+                      size={64}
+                      style={{ marginRight: "16px" }}
+                    />
+                    <div>
+                      <Text strong style={{ fontSize: "18px" }}>
+                        {testimonial.name}
+                      </Text>
+                      <br />
+                      <Text type="secondary">{testimonial.role}</Text>
+                      <br />
+                      <Rate
+                        disabled
+                        defaultValue={testimonial.rating}
+                        style={{ fontSize: "14px" }}
+                      />
+                    </div>
+                  </div>
+                  <p className="card-subtitle">"{testimonial.content}"</p>
+                </motion.div>
               ))}
-            </Row>
+            </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="modern-cta-section">
-          <div className="container">
+        <section className="cta-section">
+          <div className="container-standard">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="cta-content"
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
             >
-              <Title level={2} className="cta-title">
-                Ready to Make a Difference?
-              </Title>
-              <Paragraph className="cta-description">
-                Join thousands of community members creating positive change. 
-                Every action counts, every contribution matters.
-              </Paragraph>
+              <h2 className="cta-title">Ready to Make a Difference?</h2>
+              <p className="cta-description">
+                Join thousands of community members who are already creating
+                positive change. Start your impact journey today.
+              </p>
               <div className="cta-actions">
-                <Link href="/auth/signup">
-                  <Button type="primary" size="large" className="modern-btn-primary">
-                    <FiUsers style={{ marginRight: 8 }} />
-                    Join Community
+                <Link href="/causes">
+                  <Button className="cta-btn-primary">
+                    <FiHeart style={{ marginRight: "8px" }} />
+                    Explore Causes
                   </Button>
                 </Link>
                 <Link href="/causes/create">
-                  <Button size="large" className="modern-btn-secondary">
+                  <Button className="cta-btn-secondary">
+                    <FiPlus style={{ marginRight: "8px" }} />
                     Start a Cause
                   </Button>
                 </Link>

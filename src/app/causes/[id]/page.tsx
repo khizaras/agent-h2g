@@ -18,24 +18,32 @@ import {
   Tabs,
   Breadcrumb,
   Carousel,
+  Progress,
+  Divider,
 } from "antd";
 import {
-  HeartOutlined,
-  ShareAltOutlined,
-  TeamOutlined,
-  CalendarOutlined,
-  EnvironmentOutlined,
-  UserOutlined,
-  BookOutlined,
-  MessageOutlined,
-  LikeOutlined,
-  HomeOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  EyeOutlined,
-  SafetyCertificateOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+  FiHeart,
+  FiShare2,
+  FiUsers,
+  FiCalendar,
+  FiMapPin,
+  FiUser,
+  FiBook,
+  FiMessageCircle,
+  FiThumbsUp,
+  FiHome,
+  FiCheckCircle,
+  FiClock,
+  FiEye,
+  FiShield,
+  FiEdit,
+  FiArrowLeft,
+  FiTarget,
+  FiTrendingUp,
+  FiDollarSign,
+  FiStar,
+  FiFlag,
+} from "react-icons/fi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -398,9 +406,9 @@ export default function CauseDetailsPage() {
                   </Title>
                   <div className="update-meta">
                     <Space>
-                      <UserOutlined />
+                      <FiUser />
                       <span>{update.author || update.user_name}</span>
-                      <CalendarOutlined />
+                      <FiCalendar />
                       <span>
                         {formatDate(update.date || update.created_at)}
                       </span>
@@ -470,7 +478,7 @@ export default function CauseDetailsPage() {
                     autoplaySpeed={5000}
                     fade
                     dots={{
-                      className: "hero-carousel-dots"
+                      className: "hero-carousel-dots",
                     }}
                     style={{ height: "400px", width: "100%" }}
                     effect="fade"
@@ -492,13 +500,13 @@ export default function CauseDetailsPage() {
                           }}
                           onClick={() => {
                             // Open image in modal/lightbox
-                            window.open(image, '_blank');
+                            window.open(image, "_blank");
                           }}
                         />
                       </div>
                     ))}
                   </Carousel>
-                  
+
                   {/* Gallery count indicator */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -518,7 +526,7 @@ export default function CauseDetailsPage() {
                       zIndex: 3,
                       display: "flex",
                       alignItems: "center",
-                      gap: "6px"
+                      gap: "6px",
                     }}
                   >
                     <span>📸</span>
@@ -541,7 +549,7 @@ export default function CauseDetailsPage() {
                   }}
                   onClick={() => {
                     if (allImages[0]) {
-                      window.open(allImages[0], '_blank');
+                      window.open(allImages[0], "_blank");
                     }
                   }}
                 />
@@ -577,7 +585,7 @@ export default function CauseDetailsPage() {
               <Breadcrumb className="modern-breadcrumb">
                 <Breadcrumb.Item>
                   <Link href="/">
-                    <HomeOutlined /> Home
+                    <FiHome style={{ marginRight: "4px" }} /> Home
                   </Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
@@ -600,7 +608,7 @@ export default function CauseDetailsPage() {
                 <Tag className="category-tag">{cause.category}</Tag>
                 {cause.verified && (
                   <Tag className="verified-tag">
-                    <CheckCircleOutlined /> Verified
+                    <FiCheckCircle style={{ marginRight: "4px" }} /> Verified
                   </Tag>
                 )}
               </div>
@@ -613,16 +621,16 @@ export default function CauseDetailsPage() {
               {/* Essential Meta Information Only */}
               <div className="hero-meta-minimal">
                 <div className="meta-item">
-                  <EnvironmentOutlined />
+                  <FiMapPin style={{ marginRight: "4px" }} />
                   <span>{cause.location}</span>
                 </div>
                 <div className="meta-item">
-                  <CalendarOutlined />
+                  <FiCalendar style={{ marginRight: "4px" }} />
                   <span>Created {formatDate(cause.createdAt)}</span>
                 </div>
                 {daysLeft && (
                   <div className="meta-item">
-                    <ClockCircleOutlined />
+                    <FiClock style={{ marginRight: "4px" }} />
                     <span>{daysLeft} days left</span>
                   </div>
                 )}
@@ -634,7 +642,7 @@ export default function CauseDetailsPage() {
                 {session?.user?.id === String(cause?.creator?.id) && (
                   <Button
                     size="large"
-                    icon={<EditOutlined />}
+                    icon={<FiEdit />}
                     onClick={() => router.push(`/causes/${cause.id}/edit`)}
                     className="hero-btn-edit"
                     style={{
@@ -654,14 +662,14 @@ export default function CauseDetailsPage() {
                     <Button
                       type="primary"
                       size="large"
-                      icon={<BookOutlined />}
+                      icon={<FiBook />}
                       className="hero-btn-primary"
                     >
                       Enroll Now
                     </Button>
                     <Button
                       size="large"
-                      icon={<ShareAltOutlined />}
+                      icon={<FiShare2 />}
                       className="hero-btn-secondary"
                     >
                       Share Course
@@ -672,7 +680,7 @@ export default function CauseDetailsPage() {
                     <Button
                       type="primary"
                       size="large"
-                      icon={<HeartOutlined />}
+                      icon={<FiHeart />}
                       onClick={() => setDonateModalVisible(true)}
                       className="hero-btn-primary"
                     >
@@ -680,7 +688,7 @@ export default function CauseDetailsPage() {
                     </Button>
                     <Button
                       size="large"
-                      icon={<ShareAltOutlined />}
+                      icon={<FiShare2 />}
                       className="hero-btn-secondary"
                     >
                       Share
@@ -704,7 +712,10 @@ export default function CauseDetailsPage() {
             .filter((img, index, arr) => arr.indexOf(img) === index);
 
           return allImages.length > 1 ? (
-            <section className="image-gallery-section" style={{ padding: "60px 0", backgroundColor: "#fafafa" }}>
+            <section
+              className="image-gallery-section"
+              style={{ padding: "60px 0", backgroundColor: "#fafafa" }}
+            >
               <div className="container">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -712,10 +723,17 @@ export default function CauseDetailsPage() {
                   transition={{ duration: 0.6 }}
                   viewport={{ once: true }}
                 >
-                  <Title level={3} style={{ textAlign: "center", marginBottom: "40px", color: "#1f2937" }}>
+                  <Title
+                    level={3}
+                    style={{
+                      textAlign: "center",
+                      marginBottom: "40px",
+                      color: "#1f2937",
+                    }}
+                  >
                     📸 Photo Gallery ({allImages.length} Images)
                   </Title>
-                  
+
                   <Row gutter={[16, 16]}>
                     {allImages.map((image, index) => (
                       <Col xs={12} sm={8} md={6} lg={4} key={index}>
@@ -730,9 +748,9 @@ export default function CauseDetailsPage() {
                             overflow: "hidden",
                             cursor: "pointer",
                             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            transition: "all 0.3s ease"
+                            transition: "all 0.3s ease",
                           }}
-                          onClick={() => window.open(image, '_blank')}
+                          onClick={() => window.open(image, "_blank")}
                         >
                           <img
                             src={image}
@@ -741,14 +759,14 @@ export default function CauseDetailsPage() {
                               width: "100%",
                               height: "150px",
                               objectFit: "cover",
-                              transition: "transform 0.3s ease"
+                              transition: "transform 0.3s ease",
                             }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder-cause.svg';
+                              target.src = "/placeholder-cause.svg";
                             }}
                           />
-                          
+
                           {/* Hover overlay */}
                           <motion.div
                             initial={{ opacity: 0 }}
@@ -765,7 +783,7 @@ export default function CauseDetailsPage() {
                               justifyContent: "center",
                               color: "white",
                               fontSize: "12px",
-                              fontWeight: "600"
+                              fontWeight: "600",
                             }}
                           >
                             🔍 View Full Size
@@ -811,7 +829,7 @@ export default function CauseDetailsPage() {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="stat-icon-container">
-                        <EyeOutlined className="stat-icon-enhanced" />
+                        <FiEye className="stat-icon-enhanced" />
                       </div>
                       <div className="stat-content-enhanced">
                         <motion.div
@@ -832,7 +850,7 @@ export default function CauseDetailsPage() {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="stat-icon-container">
-                        <TeamOutlined className="stat-icon-enhanced" />
+                        <FiUsers className="stat-icon-enhanced" />
                       </div>
                       <div className="stat-content-enhanced">
                         <motion.div
@@ -853,7 +871,7 @@ export default function CauseDetailsPage() {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="stat-icon-container">
-                        <ShareAltOutlined className="stat-icon-enhanced" />
+                        <FiShare2 className="stat-icon-enhanced" />
                       </div>
                       <div className="stat-content-enhanced">
                         <motion.div
@@ -874,7 +892,7 @@ export default function CauseDetailsPage() {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="stat-icon-container">
-                        <CalendarOutlined className="stat-icon-enhanced" />
+                        <FiCalendar className="stat-icon-enhanced" />
                       </div>
                       <div className="stat-content-enhanced">
                         <motion.div
@@ -910,7 +928,7 @@ export default function CauseDetailsPage() {
                           <Button
                             type="primary"
                             size="large"
-                            icon={<BookOutlined />}
+                            icon={<FiBook />}
                             block
                             className="action-button"
                           >
@@ -920,7 +938,7 @@ export default function CauseDetailsPage() {
                           <Button
                             type="primary"
                             size="large"
-                            icon={<HeartOutlined />}
+                            icon={<FiHeart />}
                             onClick={() => setDonateModalVisible(true)}
                             block
                             className="action-button"
@@ -930,7 +948,7 @@ export default function CauseDetailsPage() {
                         )}
                         <Button
                           size="large"
-                          icon={<ShareAltOutlined />}
+                          icon={<FiShare2 />}
                           block
                           className="action-button-secondary"
                         >
@@ -1027,7 +1045,7 @@ export default function CauseDetailsPage() {
                         <Button
                           type="primary"
                           size="large"
-                          icon={<BookOutlined />}
+                          icon={<FiBook />}
                           className="modern-btn-primary"
                           block
                         >
@@ -1037,7 +1055,7 @@ export default function CauseDetailsPage() {
                         <Button
                           type="primary"
                           size="large"
-                          icon={<HeartOutlined />}
+                          icon={<FiHeart />}
                           onClick={() => setDonateModalVisible(true)}
                           className="modern-btn-primary"
                           block
@@ -1047,13 +1065,10 @@ export default function CauseDetailsPage() {
                       )}
 
                       <div className="secondary-actions">
-                        <Button
-                          icon={<ShareAltOutlined />}
-                          className="action-btn"
-                        >
+                        <Button icon={<FiShare2 />} className="action-btn">
                           Share
                         </Button>
-                        <Button icon={<BookOutlined />} className="action-btn">
+                        <Button icon={<FiBook />} className="action-btn">
                           Save
                         </Button>
                       </div>
@@ -1071,7 +1086,7 @@ export default function CauseDetailsPage() {
                         <Avatar
                           size={60}
                           src={cause.creator?.avatar}
-                          icon={<UserOutlined />}
+                          icon={<FiUser />}
                         />
                         <div className="creator-info">
                           <div className="creator-name">
@@ -1092,19 +1107,19 @@ export default function CauseDetailsPage() {
                       {cause.creator?.verified && (
                         <div className="creator-badge">
                           <Tag className="verified-creator-tag">
-                            <SafetyCertificateOutlined /> Verified Creator
+                            <FiShield /> Verified Creator
                           </Tag>
                         </div>
                       )}
 
                       <div className="creator-actions">
                         <Button
-                          icon={<MessageOutlined />}
+                          icon={<FiMessageCircle />}
                           className="creator-btn"
                         >
                           Message
                         </Button>
-                        <Button icon={<UserOutlined />} className="creator-btn">
+                        <Button icon={<FiUser />} className="creator-btn">
                           Profile
                         </Button>
                       </div>
@@ -1131,7 +1146,7 @@ export default function CauseDetailsPage() {
                               <div className="contributor-main">
                                 <Avatar
                                   src={contributor.avatar}
-                                  icon={<UserOutlined />}
+                                  icon={<FiUser />}
                                   size={32}
                                 />
                                 <div className="contributor-info">
@@ -1219,4 +1234,743 @@ export default function CauseDetailsPage() {
       </div>
     </MainLayout>
   );
+}
+
+const styles = `
+/* Enhanced Design System for Cause Details Page */
+.cause-details-page {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+}
+
+/* Enhanced Hero Section */
+.modern-hero-section {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 100px 0 60px;
+  overflow: hidden;
+}
+
+.modern-hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.modern-breadcrumb {
+  margin-bottom: 24px;
+}
+
+.modern-breadcrumb .ant-breadcrumb-link {
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.3s ease;
+}
+
+.modern-breadcrumb .ant-breadcrumb-link:hover {
+  color: white;
+}
+
+.hero-tags {
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.urgency-tag {
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.urgency-critical {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+}
+
+.urgency-high {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+}
+
+.urgency-medium {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+}
+
+.category-tag {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+.hero-title {
+  font-size: 48px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  margin: 24px 0 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-description {
+  font-size: 20px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin-bottom: 32px !important;
+  line-height: 1.6 !important;
+  max-width: 800px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+  font-size: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.meta-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Enhanced Progress Section */
+.progress-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.raised-amount {
+  font-size: 24px;
+  color: white;
+}
+
+.target-amount {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ant-progress-line {
+  margin-bottom: 16px;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Enhanced Action Buttons */
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3) !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  padding: 0 32px !important;
+  border-radius: 24px !important;
+  transition: all 0.3s ease !important;
+}
+
+.hero-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4) !important;
+}
+
+.hero-btn-secondary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  backdrop-filter: blur(10px) !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  padding: 0 32px !important;
+  border-radius: 24px !important;
+  transition: all 0.3s ease !important;
+}
+
+.hero-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px) !important;
+  color: white !important;
+}
+
+/* Enhanced Stats Grid */
+.stats-grid-enhanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin: 48px 0;
+}
+
+.stat-item-enhanced {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 32px 24px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-item-enhanced:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon-container {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.stat-icon-enhanced {
+  font-size: 24px !important;
+  color: white;
+}
+
+.stat-content-enhanced {
+  text-align: center;
+}
+
+.stat-number-enhanced {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label-enhanced {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Enhanced Content Section */
+.main-content {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  margin-top: -40px;
+  position: relative;
+  z-index: 3;
+  padding: 48px 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Enhanced Cards */
+.modern-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modern-card .ant-card-body {
+  padding: 32px;
+}
+
+.modern-creator-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  transition: all 0.3s ease;
+}
+
+.modern-creator-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.creator-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.creator-info {
+  flex: 1;
+}
+
+.creator-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.creator-stats {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.creator-bio {
+  color: #475569 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 20px !important;
+}
+
+.creator-badge {
+  margin-bottom: 20px;
+}
+
+.verified-creator-tag {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+}
+
+.creator-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.creator-btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.creator-btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Enhanced Action Buttons */
+.action-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.action-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+}
+
+.action-button-secondary {
+  background: rgba(102, 126, 234, 0.1) !important;
+  border: 1px solid rgba(102, 126, 234, 0.2) !important;
+  color: #667eea !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  transition: all 0.3s ease !important;
+}
+
+.action-button-secondary:hover {
+  background: rgba(102, 126, 234, 0.15) !important;
+  transform: translateY(-2px) !important;
+  color: #667eea !important;
+}
+
+.modern-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+}
+
+.secondary-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.action-btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Enhanced Tabs */
+.ant-tabs .ant-tabs-tab {
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  padding: 16px 24px !important;
+  margin-right: 8px !important;
+  border-radius: 12px 12px 0 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ant-tabs .ant-tabs-tab:hover {
+  color: #667eea !important;
+}
+
+.ant-tabs .ant-tabs-tab-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+/* Enhanced Typography */
+.story-description {
+  font-size: 16px !important;
+  line-height: 1.8 !important;
+  color: #475569 !important;
+  text-align: justify;
+}
+
+/* Contributor Items */
+.contributor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.contributor-item:last-child {
+  border-bottom: none;
+}
+
+.contributor-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contributor-info {
+  flex: 1;
+}
+
+.contributor-name {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.contributor-amount {
+  font-weight: 700;
+  color: #10b981;
+  font-size: 16px;
+}
+
+/* Update Cards */
+.update-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.update-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.update-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.update-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin-bottom: 8px !important;
+}
+
+.update-meta {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-content {
+  padding: 20px 24px;
+}
+
+.update-text {
+  color: #475569 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 16px !important;
+}
+
+/* Comment System */
+.comment-item {
+  padding: 20px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.comment-date {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.comment-content {
+  color: #475569 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 12px !important;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.comment-action {
+  color: #64748b !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  transition: color 0.3s ease !important;
+}
+
+.comment-action:hover {
+  color: #667eea !important;
+}
+
+/* Modal Enhancements */
+.modern-donation-modal .ant-modal-content {
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.modern-donation-modal .ant-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 24px !important;
+}
+
+.modern-donation-modal .ant-modal-title {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+}
+
+.donation-content {
+  padding: 24px 0;
+}
+
+.donation-label {
+  display: block !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  font-size: 16px !important;
+}
+
+.donation-input {
+  margin-bottom: 24px !important;
+  border-radius: 12px !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+
+.preset-amounts {
+  text-align: center;
+}
+
+.preset-amount-btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  min-width: 80px !important;
+  transition: all 0.3s ease !important;
+}
+
+.preset-amount-btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 32px !important;
+  }
+  
+  .hero-description {
+    font-size: 16px !important;
+  }
+  
+  .hero-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .stats-grid-enhanced {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+  }
+  
+  .hero-btn-primary,
+  .hero-btn-secondary {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-enhanced {
+    grid-template-columns: 1fr;
+  }
+  
+  .container {
+    padding: 0 16px;
+  }
+  
+  .main-content {
+    padding: 32px 0;
+  }
+}
+
+/* Loading and Error States */
+.modern-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 20px;
+}
+
+.modern-not-found {
+  text-align: center;
+  padding: 80px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 20px;
+  margin: 24px;
+}
+
+.modern-not-found .ant-typography {
+  color: #64748b !important;
+  margin-bottom: 24px !important;
+}
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
 }
