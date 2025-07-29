@@ -599,7 +599,9 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({
                   </Text>
                   <br />
                   <Text style={{ color: theme.textSecondary }}>
-                    {typeof details.schedule === 'string' ? details.schedule : 'Schedule to be announced'}
+                    {typeof details.schedule === "string"
+                      ? details.schedule
+                      : "Schedule to be announced"}
                   </Text>
                 </div>
                 <div>
