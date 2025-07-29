@@ -322,51 +322,27 @@ export default function HomeUltimatePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1
-                style={{
-                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                  fontWeight: 800,
-                  color: "white",
-                  marginBottom: "24px",
-                  textShadow: "2px 2px 8px rgba(0, 0, 0, 0.8)",
-                  lineHeight: 1.1,
-                }}
-              >
+              <h1 className="hero-title">
                 Together We Make a{" "}
-                <span style={{ color: "#52c41a" }}>Difference</span>
+                <span className="hero-title-accent">Difference</span>
               </h1>
 
-              <p
-                style={{
-                  fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)",
-                  color: "white",
-                  textShadow: "1px 1px 4px rgba(0, 0, 0, 0.8)",
-                  marginBottom: "40px",
-                  lineHeight: 1.6,
-                }}
-              >
+              <p className="hero-subtitle">
                 Join our community-driven platform where every contribution
                 creates meaningful impact. From food assistance to education
                 support, your help changes lives.
               </p>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "16px",
-                  justifyContent: "center",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div className="hero-actions">
                 <Button
-                  className="hero-btn-primary"
+                  className="btn-hero-primary"
                   size="large"
                   icon={<FiHeart />}
                 >
                   Start Helping Today
                 </Button>
                 <Button
-                  className="hero-btn-secondary"
+                  className="btn-hero-secondary"
                   size="large"
                   icon={<FiPlay />}
                 >
