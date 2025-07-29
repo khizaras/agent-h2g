@@ -60,6 +60,8 @@ import {
   BookOutlined,
   HomeOutlined,
   MedicineBoxOutlined,
+  BellOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -160,22 +162,22 @@ export default function AdminDashboard() {
   // Check admin access
   useEffect(() => {
     if (status === "loading") return;
-    
+
     console.log("Session data:", session);
     console.log("User admin status:", (session?.user as any)?.is_admin);
-    
+
     if (!session?.user) {
       router.push("/auth/signin");
       return;
     }
-    
+
     // Check if user has admin flag
     if (!(session.user as any)?.is_admin) {
       console.log("User is not admin, redirecting...");
       router.push("/");
       return;
     }
-    
+
     fetchAdminData();
   }, [session, status, router]);
 
@@ -184,12 +186,13 @@ export default function AdminDashboard() {
       setLoading(true);
 
       // Fetch real data from API endpoints
-      const [statsResponse, usersResponse, causesResponse, commentsResponse] = await Promise.all([
-        fetch("/api/admin/stats"),
-        fetch("/api/admin/users?limit=50"),
-        fetch("/api/admin/causes?limit=50"),
-        fetch("/api/admin/comments?limit=50"),
-      ]);
+      const [statsResponse, usersResponse, causesResponse, commentsResponse] =
+        await Promise.all([
+          fetch("/api/admin/stats"),
+          fetch("/api/admin/users?limit=50"),
+          fetch("/api/admin/causes?limit=50"),
+          fetch("/api/admin/comments?limit=50"),
+        ]);
 
       // Handle stats
       if (statsResponse.ok) {
@@ -939,665 +942,1063 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <MainLayout>
-      <Layout style={{ minHeight: "100vh", background: "#f0f2f5" }}>
-        <Sider
-          width={250}
-          style={{ background: "#fff", boxShadow: "2px 0 8px rgba(0,0,0,0.1)" }}
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f5f5" }}>
+      {/* Fixed Sidebar */}
+      <div
+        style={{
+          width: "280px",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          height: "100vh",
+          background: "#ffffff",
+          borderRight: "1px solid #e5e7eb",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          zIndex: 1000,
+          overflowY: "auto",
+        }}
+      >
+        <div
+          style={{
+            padding: "24px 20px",
+            textAlign: "center",
+            borderBottom: "1px solid #f0f0f0",
+            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+            color: "white",
+          }}
+        >
+          <Title level={4} style={{ margin: 0, color: "white" }}>
+            <CrownOutlined /> Admin Dashboard
+          </Title>
+          <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
+            Hands2gether Management
+          </Text>
+        </div>
+        <div style={{ padding: "20px 0" }}>
+          {menuItems.map((item) => (
+            <div
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              style={{
+                padding: "12px 20px",
+                margin: "4px 12px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                fontSize: "14px",
+                fontWeight: "500",
+                color: activeTab === item.key ? "#2563eb" : "#6b7280",
+                backgroundColor:
+                  activeTab === item.key ? "#eff6ff" : "transparent",
+                transition: "all 0.2s ease",
+                border:
+                  activeTab === item.key
+                    ? "1px solid #bfdbfe"
+                    : "1px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== item.key) {
+                  e.currentTarget.style.backgroundColor = "#f8fafc";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== item.key) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div
+        style={{
+          marginLeft: "280px",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "16px 32px",
+            borderBottom: "1px solid #e5e7eb",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
         >
           <div
             style={{
-              padding: "20px",
-              textAlign: "center",
-              borderBottom: "1px solid #f0f0f0",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <Title level={4} style={{ margin: 0, color: "#1890ff" }}>
-              <CrownOutlined /> Admin Panel
-            </Title>
-          </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[activeTab]}
-            items={menuItems}
-            onClick={({ key }) => setActiveTab(key)}
-            style={{ border: "none", paddingTop: "20px" }}
-          />
-        </Sider>
-
-        <Layout>
-          <Header
-            style={{
-              background: "#fff",
-              padding: "0 24px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <div>
               <Title
                 level={3}
-                style={{ margin: 0, textTransform: "capitalize" }}
+                style={{
+                  margin: 0,
+                  fontSize: "20px",
+                  fontWeight: "600",
+                  color: "#111827",
+                }}
               >
                 {activeTab === "dashboard"
-                  ? "Dashboard"
+                  ? "Dashboard Overview"
                   : activeTab === "users"
-                    ? "Manage Users"
+                    ? "User Management"
                     : activeTab === "causes"
-                      ? "Manage Causes"
+                      ? "Cause Management"
                       : activeTab === "comments"
-                        ? "Manage Comments"
-                        : activeTab}
+                        ? "Comment Moderation"
+                        : activeTab === "analytics"
+                          ? "Analytics & Reports"
+                          : "System Settings"}
               </Title>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "16px" }}
-              >
-                <Badge count={stats.pendingApprovals} offset={[-5, 5]}>
-                  <Avatar src={session.user?.image} icon={<UserOutlined />} />
-                </Badge>
-                <span>Welcome, {session.user?.name}</span>
-              </div>
+              <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                {activeTab === "dashboard" &&
+                  "Monitor platform activity and key metrics"}
+                {activeTab === "users" &&
+                  "Manage user accounts and permissions"}
+                {activeTab === "causes" &&
+                  "Oversee cause listings and approvals"}
+                {activeTab === "comments" &&
+                  "Review and moderate user comments"}
+                {activeTab === "analytics" &&
+                  "View detailed analytics and insights"}
+                {activeTab === "settings" && "Configure system settings"}
+              </Text>
             </div>
-          </Header>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <Space>
+                <Badge count={stats.pendingApprovals} size="small">
+                  <Button icon={<BellOutlined />} type="text" />
+                </Badge>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <Avatar
+                    src={session.user?.image}
+                    icon={<UserOutlined />}
+                    size="small"
+                  />
+                  <div style={{ textAlign: "left" }}>
+                    <Text
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "500",
+                        color: "#111827",
+                      }}
+                    >
+                      {session.user?.name}
+                    </Text>
+                    <br />
+                    <Text style={{ fontSize: "11px", color: "#6b7280" }}>
+                      Admin
+                    </Text>
+                  </div>
+                </div>
+              </Space>
+            </div>
+          </div>
+        </div>
 
-          <Content style={{ padding: "24px" }}>
-            {activeTab === "dashboard" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+        {/* Content Area */}
+        <div style={{ padding: "24px 32px", flex: 1, overflowY: "auto" }}>
+          {activeTab === "dashboard" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Enhanced Stats Cards */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  gap: "20px",
+                  marginBottom: "32px",
+                }}
               >
-                {/* Stats Cards */}
-                <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
-                  <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                      <Statistic
-                        title="Total Users"
-                        value={stats.totalUsers}
-                        prefix={<TeamOutlined style={{ color: "#1890ff" }} />}
-                        valueStyle={{ color: "#1890ff" }}
-                      />
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div style={{ padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "16px",
+                      }}
+                    >
                       <div
                         style={{
-                          marginTop: "8px",
-                          fontSize: "12px",
-                          color: "#666",
+                          backgroundColor: "#eff6ff",
+                          padding: "12px",
+                          borderRadius: "10px",
                         }}
                       >
-                        <RiseOutlined /> +{stats.monthlyGrowth}% this month
-                      </div>
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                      <Statistic
-                        title="Total Causes"
-                        value={stats.totalCauses}
-                        prefix={<HeartOutlined style={{ color: "#52c41a" }} />}
-                        valueStyle={{ color: "#52c41a" }}
-                      />
-                      <div style={{ marginTop: "8px" }}>
-                        <Progress
-                          percent={Math.round(
-                            (stats.activeCauses / stats.totalCauses) * 100,
-                          )}
-                          size="small"
-                          format={() => `${stats.activeCauses} active`}
+                        <TeamOutlined
+                          style={{ color: "#2563eb", fontSize: "24px" }}
                         />
                       </div>
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                      <Statistic
-                        title="Total Comments"
-                        value={stats.totalComments}
-                        prefix={
-                          <MessageOutlined style={{ color: "#722ed1" }} />
-                        }
-                        valueStyle={{ color: "#722ed1" }}
-                      />
+                      <div style={{ textAlign: "right" }}>
+                        <Text style={{ fontSize: "12px", color: "#10b981" }}>
+                          <RiseOutlined /> +{stats.monthlyGrowth}%
+                        </Text>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: "8px" }}>
+                      <Text
+                        style={{
+                          fontSize: "32px",
+                          fontWeight: "700",
+                          color: "#111827",
+                        }}
+                      >
+                        {stats.totalUsers.toLocaleString()}
+                      </Text>
+                    </div>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Total Users
+                    </Text>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "8px 0",
+                        borderTop: "1px solid #f3f4f6",
+                      }}
+                    >
+                      <Text style={{ fontSize: "12px", color: "#6b7280" }}>
+                        {stats.monthlyGrowth}% growth this month
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div style={{ padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "16px",
+                      }}
+                    >
                       <div
                         style={{
-                          marginTop: "8px",
+                          backgroundColor: "#f0fdf4",
+                          padding: "12px",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        <HeartOutlined
+                          style={{ color: "#16a34a", fontSize: "24px" }}
+                        />
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <Text style={{ fontSize: "12px", color: "#16a34a" }}>
+                          {stats.activeCauses} active
+                        </Text>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: "8px" }}>
+                      <Text
+                        style={{
+                          fontSize: "32px",
+                          fontWeight: "700",
+                          color: "#111827",
+                        }}
+                      >
+                        {stats.totalCauses.toLocaleString()}
+                      </Text>
+                    </div>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Total Causes
+                    </Text>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "8px 0",
+                        borderTop: "1px solid #f3f4f6",
+                      }}
+                    >
+                      <Progress
+                        percent={Math.round(
+                          (stats.activeCauses / stats.totalCauses) * 100,
+                        )}
+                        size="small"
+                        strokeColor="#16a34a"
+                        format={() =>
+                          `${Math.round((stats.activeCauses / stats.totalCauses) * 100)}% active`
+                        }
+                      />
+                    </div>
+                  </div>
+                </Card>
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div style={{ padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: "#fdf4ff",
+                          padding: "12px",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        <MessageOutlined
+                          style={{ color: "#a855f7", fontSize: "24px" }}
+                        />
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <Badge
+                          count={stats.pendingApprovals}
+                          style={{ backgroundColor: "#f59e0b" }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: "8px" }}>
+                      <Text
+                        style={{
+                          fontSize: "32px",
+                          fontWeight: "700",
+                          color: "#111827",
+                        }}
+                      >
+                        {stats.totalComments.toLocaleString()}
+                      </Text>
+                    </div>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Total Comments
+                    </Text>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "8px 0",
+                        borderTop: "1px solid #f3f4f6",
+                      }}
+                    >
+                      <Text
+                        style={{
                           fontSize: "12px",
-                          color: "#666",
+                          color:
+                            stats.pendingApprovals > 0 ? "#f59e0b" : "#6b7280",
                         }}
                       >
                         {stats.pendingApprovals} pending approval
-                      </div>
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                      <Statistic
-                        title="Total Donations"
-                        value={stats.totalDonations}
-                        prefix="$"
-                        valueStyle={{ color: "#fa8c16" }}
-                      />
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div style={{ padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "16px",
+                      }}
+                    >
                       <div
                         style={{
-                          marginTop: "8px",
-                          fontSize: "12px",
-                          color: "#666",
+                          backgroundColor: "#fff7ed",
+                          padding: "12px",
+                          borderRadius: "10px",
                         }}
                       >
-                        Average: $
-                        {Math.round(stats.totalDonations / stats.totalCauses)}
+                        <DollarOutlined
+                          style={{ color: "#ea580c", fontSize: "24px" }}
+                        />
                       </div>
-                    </Card>
-                  </Col>
-                </Row>
-
-                {/* Recent Activity */}
-                <Row gutter={[24, 24]}>
-                  <Col xs={24} lg={12}>
-                    <Card
-                      title="Recent Users"
-                      extra={
-                        <Button
-                          type="link"
-                          onClick={() => setActiveTab("users")}
-                        >
-                          View All
-                        </Button>
-                      }
+                      <div style={{ textAlign: "right" }}>
+                        <Text style={{ fontSize: "12px", color: "#ea580c" }}>
+                          <TrophyOutlined /> Top Impact
+                        </Text>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: "8px" }}>
+                      <Text
+                        style={{
+                          fontSize: "32px",
+                          fontWeight: "700",
+                          color: "#111827",
+                        }}
+                      >
+                        ${stats.totalDonations.toLocaleString()}
+                      </Text>
+                    </div>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Total Donations
+                    </Text>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "8px 0",
+                        borderTop: "1px solid #f3f4f6",
+                      }}
                     >
-                      <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-                        {users.slice(0, 5).map((user) => (
+                      <Text style={{ fontSize: "12px", color: "#6b7280" }}>
+                        Avg: $
+                        {Math.round(
+                          stats.totalDonations / Math.max(stats.totalCauses, 1),
+                        ).toLocaleString()}{" "}
+                        per cause
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Interactive Quick Actions */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "32px",
+                }}
+              >
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  hoverable
+                  onClick={() => setActiveTab("users")}
+                >
+                  <div style={{ textAlign: "center", padding: "20px" }}>
+                    <div
+                      style={{
+                        backgroundColor: "#eff6ff",
+                        padding: "16px",
+                        borderRadius: "12px",
+                        display: "inline-block",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <UserOutlined
+                        style={{ fontSize: "32px", color: "#2563eb" }}
+                      />
+                    </div>
+                    <Title
+                      level={4}
+                      style={{ margin: "0 0 8px 0", color: "#111827" }}
+                    >
+                      Manage Users
+                    </Title>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Add, edit, or remove user accounts
+                    </Text>
+                  </div>
+                </Card>
+
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  hoverable
+                  onClick={() => setActiveTab("causes")}
+                >
+                  <div style={{ textAlign: "center", padding: "20px" }}>
+                    <div
+                      style={{
+                        backgroundColor: "#f0fdf4",
+                        padding: "16px",
+                        borderRadius: "12px",
+                        display: "inline-block",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <HeartOutlined
+                        style={{ fontSize: "32px", color: "#16a34a" }}
+                      />
+                    </div>
+                    <Title
+                      level={4}
+                      style={{ margin: "0 0 8px 0", color: "#111827" }}
+                    >
+                      Manage Causes
+                    </Title>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Review and moderate cause listings
+                    </Text>
+                  </div>
+                </Card>
+
+                <Card
+                  style={{
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  hoverable
+                  onClick={() => setActiveTab("comments")}
+                >
+                  <div style={{ textAlign: "center", padding: "20px" }}>
+                    <div
+                      style={{
+                        backgroundColor: "#fdf4ff",
+                        padding: "16px",
+                        borderRadius: "12px",
+                        display: "inline-block",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <MessageOutlined
+                        style={{ fontSize: "32px", color: "#a855f7" }}
+                      />
+                    </div>
+                    <Title
+                      level={4}
+                      style={{ margin: "0 0 8px 0", color: "#111827" }}
+                    >
+                      Moderate Comments
+                    </Title>
+                    <Text style={{ color: "#6b7280", fontSize: "14px" }}>
+                      Review flagged content and comments
+                    </Text>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Recent Activity Dashboard */}
+              <Row gutter={[24, 24]}>
+                <Col xs={24} lg={12}>
+                  <Card
+                    title="Recent Users"
+                    extra={
+                      <Button type="link" onClick={() => setActiveTab("users")}>
+                        View All
+                      </Button>
+                    }
+                  >
+                    <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                      {users.slice(0, 5).map((user) => (
+                        <div
+                          key={user.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            padding: "8px 0",
+                            borderBottom: "1px solid #f0f0f0",
+                          }}
+                        >
+                          <Avatar src={user.avatar} icon={<UserOutlined />} />
+                          <div style={{ marginLeft: "12px", flex: 1 }}>
+                            <div style={{ fontWeight: 600 }}>{user.name}</div>
+                            <div style={{ fontSize: "12px", color: "#666" }}>
+                              Joined{" "}
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          {user.is_verified && (
+                            <SafetyCertificateOutlined
+                              style={{ color: "#52c41a" }}
+                            />
+                          )}
+                          {user.is_admin && (
+                            <CrownOutlined
+                              style={{ color: "#faad14", marginLeft: "4px" }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </Col>
+                <Col xs={24} lg={12}>
+                  <Card
+                    title="Recent Causes"
+                    extra={
+                      <Button
+                        type="link"
+                        onClick={() => setActiveTab("causes")}
+                      >
+                        View All
+                      </Button>
+                    }
+                  >
+                    <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                      {causes.slice(0, 5).map((cause) => (
+                        <div
+                          key={cause.id}
+                          style={{
+                            padding: "8px 0",
+                            borderBottom: "1px solid #f0f0f0",
+                          }}
+                        >
                           <div
-                            key={user.id}
                             style={{
                               display: "flex",
-                              alignItems: "center",
-                              padding: "8px 0",
-                              borderBottom: "1px solid #f0f0f0",
+                              justifyContent: "space-between",
+                              alignItems: "start",
                             }}
                           >
-                            <Avatar src={user.avatar} icon={<UserOutlined />} />
-                            <div style={{ marginLeft: "12px", flex: 1 }}>
-                              <div style={{ fontWeight: 600 }}>{user.name}</div>
-                              <div style={{ fontSize: "12px", color: "#666" }}>
-                                Joined{" "}
-                                {new Date(user.created_at).toLocaleDateString()}
-                              </div>
-                            </div>
-                            {user.is_verified && (
-                              <SafetyCertificateOutlined
-                                style={{ color: "#52c41a" }}
-                              />
-                            )}
-                            {user.is_admin && (
-                              <CrownOutlined
-                                style={{ color: "#faad14", marginLeft: "4px" }}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-                  </Col>
-                  <Col xs={24} lg={12}>
-                    <Card
-                      title="Recent Causes"
-                      extra={
-                        <Button
-                          type="link"
-                          onClick={() => setActiveTab("causes")}
-                        >
-                          View All
-                        </Button>
-                      }
-                    >
-                      <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-                        {causes.slice(0, 5).map((cause) => (
-                          <div
-                            key={cause.id}
-                            style={{
-                              padding: "8px 0",
-                              borderBottom: "1px solid #f0f0f0",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "start",
-                              }}
-                            >
-                              <div style={{ flex: 1 }}>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                    marginBottom: "4px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "8px",
-                                  }}
-                                >
-                                  {getCategoryIcon(cause.category_name)}
-                                  {cause.title}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "#666",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  by {cause.creator_name} •{" "}
-                                  {new Date(
-                                    cause.created_at,
-                                  ).toLocaleDateString()}
-                                </div>
-                                <Space>
-                                  <Tag color={getStatusColor(cause.status)}>
-                                    {cause.status}
-                                  </Tag>
-                                  {cause.is_featured && (
-                                    <Tag color="gold" icon={<StarOutlined />}>
-                                      Featured
-                                    </Tag>
-                                  )}
-                                </Space>
+                            <div style={{ flex: 1 }}>
+                              <div
+                                style={{
+                                  fontWeight: 600,
+                                  marginBottom: "4px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                }}
+                              >
+                                {getCategoryIcon(cause.category_name)}
+                                {cause.title}
                               </div>
                               <div
                                 style={{
-                                  textAlign: "right",
                                   fontSize: "12px",
                                   color: "#666",
+                                  marginBottom: "4px",
                                 }}
                               >
-                                <div>👁 {cause.view_count}</div>
-                                <div>❤️ {cause.like_count}</div>
+                                by {cause.creator_name} •{" "}
+                                {new Date(
+                                  cause.created_at,
+                                ).toLocaleDateString()}
                               </div>
+                              <Space>
+                                <Tag color={getStatusColor(cause.status)}>
+                                  {cause.status}
+                                </Tag>
+                                {cause.is_featured && (
+                                  <Tag color="gold" icon={<StarOutlined />}>
+                                    Featured
+                                  </Tag>
+                                )}
+                              </Space>
+                            </div>
+                            <div
+                              style={{
+                                textAlign: "right",
+                                fontSize: "12px",
+                                color: "#666",
+                              }}
+                            >
+                              <div>👁 {cause.view_count}</div>
+                              <div>❤️ {cause.like_count}</div>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </Card>
-                  </Col>
-                </Row>
-              </motion.div>
-            )}
-
-            {activeTab === "users" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Card
-                  title="User Management"
-                  extra={
-                    <Space>
-                      <Search
-                        placeholder="Search users..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: 200 }}
-                      />
-                      <Button icon={<FilterOutlined />}>Filter</Button>
-                      <Button icon={<ExportOutlined />}>Export</Button>
-                      <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={handleCreateUser}
-                      >
-                        Add User
-                      </Button>
-                    </Space>
-                  }
-                >
-                  <Table
-                    columns={userColumns}
-                    dataSource={filteredUsers}
-                    rowKey="id"
-                    pagination={{ pageSize: 10, showSizeChanger: true }}
-                  />
-                </Card>
-              </motion.div>
-            )}
-
-            {activeTab === "causes" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Card
-                  title="Cause Management"
-                  extra={
-                    <Space>
-                      <Search
-                        placeholder="Search causes..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: 200 }}
-                      />
-                      <Button icon={<FilterOutlined />}>Filter</Button>
-                      <Button icon={<ExportOutlined />}>Export</Button>
-                      <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={handleCreateCause}
-                      >
-                        Add Cause
-                      </Button>
-                    </Space>
-                  }
-                >
-                  <Table
-                    columns={causeColumns}
-                    dataSource={filteredCauses}
-                    rowKey="id"
-                    pagination={{ pageSize: 10, showSizeChanger: true }}
-                  />
-                </Card>
-              </motion.div>
-            )}
-
-            {activeTab === "comments" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Card
-                  title="Comment Management"
-                  extra={
-                    <Space>
-                      <Search
-                        placeholder="Search comments..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: 200 }}
-                      />
-                      <Button icon={<FilterOutlined />}>Filter</Button>
-                      <Button icon={<ExportOutlined />}>Export</Button>
-                    </Space>
-                  }
-                >
-                  <Table
-                    columns={commentColumns}
-                    dataSource={filteredComments}
-                    rowKey="id"
-                    pagination={{ pageSize: 10, showSizeChanger: true }}
-                    expandable={{
-                      expandedRowRender: (record) => (
-                        <div
-                          style={{
-                            margin: 0,
-                            padding: "16px",
-                            background: "#fafafa",
-                          }}
-                        >
-                          <strong>Full Comment:</strong>
-                          <p style={{ marginTop: "8px", marginBottom: 0 }}>
-                            {record.content}
-                          </p>
-                          {record.reports_count > 0 && (
-                            <div style={{ marginTop: "8px" }}>
-                              <Tag color="red">
-                                <WarningOutlined /> {record.reports_count}{" "}
-                                reports
-                              </Tag>
-                            </div>
-                          )}
                         </div>
-                      ),
-                    }}
-                  />
-                </Card>
-              </motion.div>
-            )}
+                      ))}
+                    </div>
+                  </Card>
+                </Col>
+              </Row>
+            </motion.div>
+          )}
 
-            {activeTab === "analytics" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+          {activeTab === "users" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Card
+                title="User Management"
+                extra={
+                  <Space>
+                    <Search
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{ width: 200 }}
+                    />
+                    <Button icon={<FilterOutlined />}>Filter</Button>
+                    <Button icon={<ExportOutlined />}>Export</Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={handleCreateUser}
+                    >
+                      Add User
+                    </Button>
+                  </Space>
+                }
               >
-                <Alert
-                  message="Analytics Dashboard"
-                  description="Advanced analytics and reporting features will be implemented here."
-                  type="info"
-                  showIcon
+                <Table
+                  columns={userColumns}
+                  dataSource={filteredUsers}
+                  rowKey="id"
+                  pagination={{ pageSize: 10, showSizeChanger: true }}
                 />
-              </motion.div>
-            )}
+              </Card>
+            </motion.div>
+          )}
 
-            {activeTab === "settings" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+          {activeTab === "causes" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Card
+                title="Cause Management"
+                extra={
+                  <Space>
+                    <Search
+                      placeholder="Search causes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{ width: 200 }}
+                    />
+                    <Button icon={<FilterOutlined />}>Filter</Button>
+                    <Button icon={<ExportOutlined />}>Export</Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={handleCreateCause}
+                    >
+                      Add Cause
+                    </Button>
+                  </Space>
+                }
               >
-                <Alert
-                  message="System Settings"
-                  description="System configuration and settings will be implemented here."
-                  type="info"
-                  showIcon
+                <Table
+                  columns={causeColumns}
+                  dataSource={filteredCauses}
+                  rowKey="id"
+                  pagination={{ pageSize: 10, showSizeChanger: true }}
                 />
-              </motion.div>
-            )}
-          </Content>
-        </Layout>
+              </Card>
+            </motion.div>
+          )}
 
-        {/* User Modal */}
-        <Modal
-          title={selectedUser ? "Edit User" : "Create User"}
-          open={userModalVisible}
-          onCancel={() => setUserModalVisible(false)}
-          footer={null}
-          width={600}
-        >
-          <Form form={userForm} layout="vertical" onFinish={handleUserSubmit}>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="name"
-                  label="Full Name"
-                  rules={[{ required: true, message: "Please enter the name" }]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="email"
-                  label="Email"
-                  rules={[
-                    { required: true, message: "Please enter the email" },
-                    { type: "email", message: "Please enter a valid email" },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
+          {activeTab === "comments" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Card
+                title="Comment Management"
+                extra={
+                  <Space>
+                    <Search
+                      placeholder="Search comments..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{ width: 200 }}
+                    />
+                    <Button icon={<FilterOutlined />}>Filter</Button>
+                    <Button icon={<ExportOutlined />}>Export</Button>
+                  </Space>
+                }
+              >
+                <Table
+                  columns={commentColumns}
+                  dataSource={filteredComments}
+                  rowKey="id"
+                  pagination={{ pageSize: 10, showSizeChanger: true }}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <div
+                        style={{
+                          margin: 0,
+                          padding: "16px",
+                          background: "#fafafa",
+                        }}
+                      >
+                        <strong>Full Comment:</strong>
+                        <p style={{ marginTop: "8px", marginBottom: 0 }}>
+                          {record.content}
+                        </p>
+                        {record.reports_count > 0 && (
+                          <div style={{ marginTop: "8px" }}>
+                            <Tag color="red">
+                              <WarningOutlined /> {record.reports_count} reports
+                            </Tag>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  }}
+                />
+              </Card>
+            </motion.div>
+          )}
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="phone" label="Phone Number">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="status"
-                  label="Status"
-                  rules={[{ required: true, message: "Please select status" }]}
-                >
-                  <Select>
-                    <Option value="active">Active</Option>
-                    <Option value="inactive">Inactive</Option>
-                    <Option value="banned">Banned</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
+          {activeTab === "analytics" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Alert
+                message="Analytics Dashboard"
+                description="Advanced analytics and reporting features will be implemented here."
+                type="info"
+                showIcon
+              />
+            </motion.div>
+          )}
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="is_admin"
-                  label="Admin Status"
-                  valuePropName="checked"
-                >
-                  <Switch checkedChildren="Admin" unCheckedChildren="User" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="is_verified"
-                  label="Verification Status"
-                  valuePropName="checked"
-                >
-                  <Switch
-                    checkedChildren="Verified"
-                    unCheckedChildren="Unverified"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+          {activeTab === "settings" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Alert
+                message="System Settings"
+                description="System configuration and settings will be implemented here."
+                type="info"
+                showIcon
+              />
+            </motion.div>
+          )}
+        </div>
+      </div>
 
-            <Divider />
+      {/* User Modal */}
+      <Modal
+        title={selectedUser ? "Edit User" : "Create User"}
+        open={userModalVisible}
+        onCancel={() => setUserModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form form={userForm} layout="vertical" onFinish={handleUserSubmit}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="Full Name"
+                rules={[{ required: true, message: "Please enter the name" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: "Please enter the email" },
+                  { type: "email", message: "Please enter a valid email" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <div style={{ textAlign: "right" }}>
-              <Space>
-                <Button onClick={() => setUserModalVisible(false)}>
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit">
-                  {selectedUser ? "Update User" : "Create User"}
-                </Button>
-              </Space>
-            </div>
-          </Form>
-        </Modal>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="phone" label="Phone Number">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="Status"
+                rules={[{ required: true, message: "Please select status" }]}
+              >
+                <Select>
+                  <Option value="active">Active</Option>
+                  <Option value="inactive">Inactive</Option>
+                  <Option value="banned">Banned</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        {/* Cause Modal */}
-        <Modal
-          title={selectedCause ? "Edit Cause" : "Create Cause"}
-          open={causeModalVisible}
-          onCancel={() => setCauseModalVisible(false)}
-          footer={null}
-          width={800}
-        >
-          <Form form={causeForm} layout="vertical" onFinish={handleCauseSubmit}>
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item
-                  name="title"
-                  label="Title"
-                  rules={[
-                    { required: true, message: "Please enter the title" },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="is_admin"
+                label="Admin Status"
+                valuePropName="checked"
+              >
+                <Switch checkedChildren="Admin" unCheckedChildren="User" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="is_verified"
+                label="Verification Status"
+                valuePropName="checked"
+              >
+                <Switch
+                  checkedChildren="Verified"
+                  unCheckedChildren="Unverified"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="category_name"
-                  label="Category"
-                  rules={[
-                    { required: true, message: "Please select category" },
-                  ]}
-                >
-                  <Select>
-                    <Option value="food">Food</Option>
-                    <Option value="clothes">Clothes</Option>
-                    <Option value="education">Education</Option>
-                    <Option value="healthcare">Healthcare</Option>
-                    <Option value="housing">Housing</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="status"
-                  label="Status"
-                  rules={[{ required: true, message: "Please select status" }]}
-                >
-                  <Select>
-                    <Option value="active">Active</Option>
-                    <Option value="paused">Paused</Option>
-                    <Option value="completed">Completed</Option>
-                    <Option value="pending">Pending</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
+          <Divider />
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="priority"
-                  label="Priority"
-                  rules={[
-                    { required: true, message: "Please select priority" },
-                  ]}
-                >
-                  <Select>
-                    <Option value="low">Low</Option>
-                    <Option value="medium">Medium</Option>
-                    <Option value="high">High</Option>
-                    <Option value="critical">Critical</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="location" label="Location">
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
+          <div style={{ textAlign: "right" }}>
+            <Space>
+              <Button onClick={() => setUserModalVisible(false)}>Cancel</Button>
+              <Button type="primary" htmlType="submit">
+                {selectedUser ? "Update User" : "Create User"}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="goal_amount" label="Goal Amount ($)">
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="creator_name"
-                  label="Creator Name"
-                  rules={[
-                    { required: true, message: "Please enter creator name" },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
+      {/* Cause Modal */}
+      <Modal
+        title={selectedCause ? "Edit Cause" : "Create Cause"}
+        open={causeModalVisible}
+        onCancel={() => setCauseModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <Form form={causeForm} layout="vertical" onFinish={handleCauseSubmit}>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="title"
+                label="Title"
+                rules={[{ required: true, message: "Please enter the title" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <Divider />
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="category_name"
+                label="Category"
+                rules={[{ required: true, message: "Please select category" }]}
+              >
+                <Select>
+                  <Option value="food">Food</Option>
+                  <Option value="clothes">Clothes</Option>
+                  <Option value="education">Education</Option>
+                  <Option value="healthcare">Healthcare</Option>
+                  <Option value="housing">Housing</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="Status"
+                rules={[{ required: true, message: "Please select status" }]}
+              >
+                <Select>
+                  <Option value="active">Active</Option>
+                  <Option value="paused">Paused</Option>
+                  <Option value="completed">Completed</Option>
+                  <Option value="pending">Pending</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <div style={{ textAlign: "right" }}>
-              <Space>
-                <Button onClick={() => setCauseModalVisible(false)}>
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit">
-                  {selectedCause ? "Update Cause" : "Create Cause"}
-                </Button>
-              </Space>
-            </div>
-          </Form>
-        </Modal>
-      </Layout>
-    </MainLayout>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="priority"
+                label="Priority"
+                rules={[{ required: true, message: "Please select priority" }]}
+              >
+                <Select>
+                  <Option value="low">Low</Option>
+                  <Option value="medium">Medium</Option>
+                  <Option value="high">High</Option>
+                  <Option value="critical">Critical</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="location" label="Location">
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="goal_amount" label="Goal Amount ($)">
+                <Input type="number" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="creator_name"
+                label="Creator Name"
+                rules={[
+                  { required: true, message: "Please enter creator name" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Divider />
+
+          <div style={{ textAlign: "right" }}>
+            <Space>
+              <Button onClick={() => setCauseModalVisible(false)}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit">
+                {selectedCause ? "Update Cause" : "Create Cause"}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
+    </div>
   );
 }

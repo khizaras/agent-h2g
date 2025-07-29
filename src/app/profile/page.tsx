@@ -414,396 +414,564 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-6 py-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Header Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+      <div style={{ background: "#f5f5f5", minHeight: "100vh" }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px" }}>
+          {/* Modern Header Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{ paddingTop: "32px", paddingBottom: "24px" }}
+          >
+            <Card 
+              style={{ 
+                borderRadius: "12px", 
+                boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+                border: "1px solid #e8e8e8",
+                overflow: "hidden",
+                backgroundColor: "#ffffff"
+              }}
             >
-              <Card className="mb-6 overflow-hidden">
-                {/* Cover Background */}
-                <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
-                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+              {/* Professional Header Background */}
+              <div style={{ 
+                height: "140px", 
+                background: "linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)",
+                position: "relative"
+              }}>
+                <div style={{ 
+                  position: "absolute", 
+                  top: "24px", 
+                  right: "24px", 
+                  zIndex: 2 
+                }}>
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => setEditModalVisible(true)}
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      borderColor: "rgba(255,255,255,0.25)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
                 </div>
+              </div>
 
-                {/* Profile Info */}
-                <div className="relative px-6 pb-6">
-                  <div className="-mt-16 relative z-10">
-                    <Row gutter={[24, 24]} align="middle">
-                      <Col xs={24} sm={6} className="text-center sm:text-left">
-                        <div className="relative inline-block">
-                          <Avatar
-                            size={120}
-                            src={profile.avatar}
-                            icon={<UserOutlined />}
-                            className="border-4 border-white shadow-lg"
-                          />
-                          {profile.isVerified && (
-                            <Badge
-                              count={
-                                <SafetyCertificateOutlined
-                                  style={{ color: "#52c41a" }}
-                                />
-                              }
-                              offset={[-10, 10]}
-                            />
-                          )}
-                        </div>
-                      </Col>
-                      <Col xs={24} sm={12}>
-                        <div className="text-center sm:text-left mt-4 sm:mt-0">
-                          <Space align="center" size="small" className="mb-2">
-                            <Title level={2} className="mb-0">
-                              {profile.name}
-                            </Title>
-                            {profile.isVerified && (
-                              <Tooltip title="Verified User">
-                                <SafetyCertificateOutlined
-                                  style={{ color: "#52c41a", fontSize: "20px" }}
-                                />
-                              </Tooltip>
-                            )}
-                          </Space>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-center sm:justify-start text-gray-600">
-                              <MailOutlined className="mr-2" />
-                              <span>{profile.email}</span>
-                            </div>
-                            {profile.phone && (
-                              <div className="flex items-center justify-center sm:justify-start text-gray-600">
-                                <PhoneOutlined className="mr-2" />
-                                <span>{profile.phone}</span>
-                              </div>
-                            )}
-                            {profile.location && (
-                              <div className="flex items-center justify-center sm:justify-start text-gray-600">
-                                <EnvironmentOutlined className="mr-2" />
-                                <span>{profile.location}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center justify-center sm:justify-start text-gray-600">
-                              <CalendarOutlined className="mr-2" />
-                              <span>
-                                Joined {formatDate(profile.joinedDate)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </Col>
-                      <Col xs={24} sm={6} className="text-center sm:text-right">
-                        <Space
-                          direction="vertical"
-                          size="small"
-                          className="w-full"
-                        >
-                          <Button
-                            type="primary"
-                            icon={<EditOutlined />}
-                            onClick={() => setEditModalVisible(true)}
-                            size="large"
-                            className="w-full sm:w-auto"
-                          >
-                            Edit Profile
-                          </Button>
-                          <Button
-                            icon={<BellOutlined />}
-                            size="large"
-                            className="w-full sm:w-auto"
-                          >
-                            Notifications
-                          </Button>
-                        </Space>
-                      </Col>
-                    </Row>
-                    {profile.bio && (
-                      <div className="mt-6 pt-4 border-t text-center sm:text-left">
-                        <Paragraph className="text-gray-700 text-base leading-relaxed">
-                          {profile.bio}
-                        </Paragraph>
+              {/* Professional Profile Info */}
+              <div style={{ padding: "0 32px 32px 32px", position: "relative" }}>
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "flex-end", 
+                  gap: "20px",
+                  marginTop: "-50px",
+                  marginBottom: "20px"
+                }}>
+                  <div style={{ position: "relative" }}>
+                    <Avatar
+                      size={100}
+                      src={profile.avatar}
+                      icon={<UserOutlined />}
+                      style={{
+                        border: "3px solid white",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+                      }}
+                    />
+                    {profile.isVerified && (
+                      <div style={{
+                        position: "absolute",
+                        bottom: "8px",
+                        right: "8px",
+                        background: "#52c41a",
+                        borderRadius: "50%",
+                        padding: "4px",
+                        border: "2px solid white"
+                      }}>
+                        <SafetyCertificateOutlined 
+                          style={{ color: "white", fontSize: "16px" }} 
+                        />
                       </div>
                     )}
                   </div>
+                  
+                  <div style={{ flex: 1, paddingBottom: "8px" }}>
+                    <div style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "8px", 
+                      marginBottom: "8px" 
+                    }}>
+                      <Title 
+                        level={2} 
+                        style={{ 
+                          margin: 0, 
+                          fontSize: "24px", 
+                          fontWeight: "600",
+                          color: "#111827"
+                        }}
+                      >
+                        {profile.name}
+                      </Title>
+                      {profile.isVerified && (
+                        <Tooltip title="Verified User">
+                          <SafetyCertificateOutlined
+                            style={{ 
+                              color: "#52c41a", 
+                              fontSize: "20px",
+                              marginLeft: "4px"
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </div>
+                    
+                    <div style={{ 
+                      display: "flex", 
+                      flexWrap: "wrap", 
+                      gap: "16px",
+                      color: "#6b7280",
+                      fontSize: "14px"
+                    }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <MailOutlined />
+                        {profile.email}
+                      </span>
+                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <CalendarOutlined />
+                        Joined {formatDate(profile.joinedDate)}
+                      </span>
+                      {profile.location && (
+                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <EnvironmentOutlined />
+                          {profile.location}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px", paddingBottom: "8px" }}>
+                    <Space>
+                      <Button
+                        icon={<BellOutlined />}
+                        style={{
+                          borderColor: "#d1d5db",
+                          color: "#6b7280",
+                          height: "36px"
+                        }}
+                      >
+                        Notifications
+                      </Button>
+                      <Button
+                        icon={<SettingOutlined />}
+                        style={{
+                          borderColor: "#d1d5db",
+                          color: "#6b7280",
+                          height: "36px"
+                        }}
+                      >
+                        Settings
+                      </Button>
+                    </Space>
+                  </div>
+                </div>
+
+                {profile.bio && (
+                  <div style={{
+                    backgroundColor: "#f8fafc",
+                    padding: "16px 20px",
+                    borderRadius: "8px",
+                    border: "1px solid #e2e8f0",
+                    marginTop: "16px"
+                  }}>
+                    <Text style={{ 
+                      color: "#475569", 
+                      fontSize: "14px", 
+                      lineHeight: "1.5" 
+                    }}>
+                      {profile.bio}
+                    </Text>
+                  </div>
+                )}
+                
+                {/* Quick Stats Row */}
+                <div style={{
+                  display: "flex",
+                  gap: "20px",
+                  marginTop: "20px",
+                  padding: "16px 0",
+                  borderTop: "1px solid #f1f5f9"
+                }}>
+                  <div style={{ textAlign: "center", flex: 1 }}>
+                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
+                      {profile.stats.causesCreated}
+                    </Text>
+                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Causes</Text>
+                  </div>
+                  <div style={{ textAlign: "center", flex: 1 }}>
+                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
+                      ${profile.stats.totalRaised.toLocaleString()}
+                    </Text>
+                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Raised</Text>
+                  </div>
+                  <div style={{ textAlign: "center", flex: 1 }}>
+                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
+                      {profile.stats.volunteersHours}
+                    </Text>
+                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Hours</Text>
+                  </div>
+                  <div style={{ textAlign: "center", flex: 1 }}>
+                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
+                      {profile.stats.causesSupported}
+                    </Text>
+                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Supported</Text>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Simplified Stats Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ marginBottom: "24px" }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+              {/* Impact Metrics Cards */}
+              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ padding: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
+                    <div style={{ backgroundColor: "#eff6ff", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
+                      <HeartOutlined style={{ color: "#2563eb", fontSize: "20px" }} />
+                    </div>
+                    <div>
+                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Causes Created</Text>
+                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
+                        {profile.stats.causesCreated}
+                      </Text>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                    +{profile.stats.causesCreated > 0 ? Math.round((profile.stats.causesCreated / 5) * 100) : 0}% engagement rate
+                  </div>
                 </div>
               </Card>
-            </motion.div>
-
-            {/* Enhanced Stats Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <Card className="mb-6">
-                <div className="text-center mb-6">
-                  <Title level={3} className="mb-2">
-                    Your Impact Dashboard
+              
+              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ padding: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
+                    <div style={{ backgroundColor: "#f0fdf4", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
+                      <DollarOutlined style={{ color: "#16a34a", fontSize: "20px" }} />
+                    </div>
+                    <div>
+                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Total Raised</Text>
+                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
+                        ${profile.stats.totalRaised.toLocaleString()}
+                      </Text>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                    Average ${profile.stats.causesCreated > 0 ? Math.round(profile.stats.totalRaised / profile.stats.causesCreated).toLocaleString() : 0} per cause
+                  </div>
+                </div>
+              </Card>
+              
+              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ padding: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
+                    <div style={{ backgroundColor: "#fef3c7", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
+                      <ClockCircleOutlined style={{ color: "#d97706", fontSize: "20px" }} />
+                    </div>
+                    <div>
+                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Volunteer Hours</Text>
+                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
+                        {profile.stats.volunteersHours}
+                      </Text>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                    Community impact rating: {profile.stats.volunteersHours > 50 ? "High" : profile.stats.volunteersHours > 20 ? "Medium" : "Growing"}
+                  </div>
+                </div>
+              </Card>
+            </div>
+            
+            {/* Interactive Activity Feed */}
+            <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)", marginBottom: "16px" }}>
+              <div style={{ padding: "20px 24px 16px 24px", borderBottom: "1px solid #f1f5f9" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Title level={4} style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "#111827" }}>
+                    Recent Activity
                   </Title>
-                  <Text type="secondary">
-                    Your contributions to the community
-                  </Text>
+                  <Button type="link" size="small" style={{ color: "#2563eb" }}>
+                    View All
+                  </Button>
                 </div>
-                <Row gutter={[24, 24]}>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
-                      <div className="text-2xl text-blue-600 mb-2">
-                        <HeartOutlined />
+              </div>
+              <div style={{ padding: "16px 24px" }}>
+                {activities.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {activities.slice(0, 3).map((activity) => (
+                      <div key={activity.id} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "12px",
+                        backgroundColor: "#f8fafc",
+                        borderRadius: "6px",
+                        border: "1px solid #e2e8f0"
+                      }}>
+                        <div style={{ marginRight: "12px" }}>
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <Text style={{ fontSize: "14px", color: "#374151", fontWeight: "500" }}>
+                            {activity.description}
+                          </Text>
+                          <br />
+                          <Text style={{ fontSize: "12px", color: "#6b7280" }}>
+                            {activity.cause_title} • {formatDate(activity.created_at)}
+                          </Text>
+                        </div>
+                        <Button size="small" type="text" icon={<EyeOutlined />} />
                       </div>
-                      <Statistic
-                        title="Causes Created"
-                        value={profile.stats.causesCreated}
-                        valueStyle={{
-                          color: "#1890ff",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
-                      <div className="text-2xl text-green-600 mb-2">
-                        <DollarOutlined />
-                      </div>
-                      <Statistic
-                        title="Total Raised"
-                        value={profile.stats.totalRaised}
-                        precision={0}
-                        prefix="$"
-                        valueStyle={{
-                          color: "#52c41a",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors">
-                      <div className="text-2xl text-orange-600 mb-2">
-                        <ClockCircleOutlined />
-                      </div>
-                      <Statistic
-                        title="Volunteer Hours"
-                        value={profile.stats.volunteersHours}
-                        valueStyle={{
-                          color: "#fa8c16",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors">
-                      <div className="text-2xl text-purple-600 mb-2">
-                        <TeamOutlined />
-                      </div>
-                      <Statistic
-                        title="Causes Supported"
-                        value={profile.stats.causesSupported}
-                        valueStyle={{
-                          color: "#722ed1",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-pink-50 hover:bg-pink-100 transition-colors">
-                      <div className="text-2xl text-pink-600 mb-2">
-                        <EyeOutlined />
-                      </div>
-                      <Statistic
-                        title="Total Views"
-                        value={profile.stats.totalViews}
-                        valueStyle={{
-                          color: "#eb2f96",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
-                      <div className="text-2xl text-red-600 mb-2">
-                        <HeartOutlined />
-                      </div>
-                      <Statistic
-                        title="Total Likes"
-                        value={profile.stats.totalLikes}
-                        valueStyle={{
-                          color: "#f5222d",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors">
-                      <div className="text-2xl text-cyan-600 mb-2">
-                        <CheckCircleOutlined />
-                      </div>
-                      <Statistic
-                        title="Completed Causes"
-                        value={profile.stats.completedCauses}
-                        valueStyle={{
-                          color: "#13c2c2",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                  <Col xs={12} sm={8} lg={6}>
-                    <div className="text-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="text-2xl text-gray-600 mb-2">
-                        <RiseOutlined />
-                      </div>
-                      <Statistic
-                        title="Success Rate"
-                        value={
-                          profile.stats.causesCreated > 0
-                            ? Math.round(
-                                (profile.stats.completedCauses /
-                                  profile.stats.causesCreated) *
-                                  100,
-                              )
-                            : 0
-                        }
-                        suffix="%"
-                        valueStyle={{
-                          color: "#595959",
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-              </Card>
-            </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "24px", color: "#6b7280" }}>
+                    <Text>No recent activity. Start engaging with causes to see updates here.</Text>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </motion.div>
 
-            {/* Enhanced Main Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+          {/* Tabbed Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Card 
+              style={{ 
+                borderRadius: "8px", 
+                boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+                border: "1px solid #e2e8f0",
+                minHeight: "400px"
+              }}
             >
-              <Card className="min-h-96">
-                <Tabs
-                  activeKey={activeTab}
-                  onChange={setActiveTab}
-                  size="large"
-                  items={[
-                    {
-                      key: "overview",
-                      label: "Overview",
-                      children: (
-                        <div className="py-4">
-                          <Row gutter={[24, 24]}>
-                            <Col xs={24} lg={16}>
-                              <div className="mb-6">
-                                <Title level={4} className="mb-4">
-                                  <TrophyOutlined className="mr-2" />
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                size="default"
+                type="line"
+                style={{ 
+                  ".ant-tabs-nav": { 
+                    borderBottom: "1px solid #f0f0f0",
+                    marginBottom: "0"
+                  }
+                }}
+                items={[
+                  {
+                    key: "overview",
+                    label: "Overview",
+                    children: (
+                      <div style={{ padding: "16px 0" }}>
+                        <Row gutter={[32, 32]}>
+                          <Col xs={24} lg={16}>
+                            <div style={{ marginBottom: "32px" }}>
+                              <div style={{ 
+                                display: "flex", 
+                                alignItems: "center", 
+                                marginBottom: "20px" 
+                              }}>
+                                <TrophyOutlined style={{ 
+                                  fontSize: "20px", 
+                                  color: "#f59e0b", 
+                                  marginRight: "8px" 
+                                }} />
+                                <Title 
+                                  level={4} 
+                                  style={{ 
+                                    margin: 0, 
+                                    color: "#1f2937",
+                                    fontSize: "18px"
+                                  }}
+                                >
                                   Recent Achievements
                                 </Title>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  {profile.stats.causesCreated > 0 && (
-                                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-                                      <div className="flex items-center mb-2">
-                                        <HeartOutlined className="text-blue-600 text-lg mr-2" />
-                                        <span className="font-semibold text-blue-800">
-                                          First Cause Created
-                                        </span>
-                                      </div>
-                                      <Text type="secondary">
-                                        You've started making a difference!
-                                      </Text>
-                                    </div>
-                                  )}
-                                  {profile.stats.completedCauses > 0 && (
-                                    <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-                                      <div className="flex items-center mb-2">
-                                        <CheckCircleOutlined className="text-green-600 text-lg mr-2" />
-                                        <span className="font-semibold text-green-800">
-                                          Mission Accomplished
-                                        </span>
-                                      </div>
-                                      <Text type="secondary">
-                                        Successfully completed{" "}
-                                        {profile.stats.completedCauses} cause
-                                        {profile.stats.completedCauses > 1
-                                          ? "s"
-                                          : ""}
-                                        !
-                                      </Text>
-                                    </div>
-                                  )}
-                                  {profile.stats.totalViews > 100 && (
-                                    <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-                                      <div className="flex items-center mb-2">
-                                        <EyeOutlined className="text-purple-600 text-lg mr-2" />
-                                        <span className="font-semibold text-purple-800">
-                                          Community Attention
-                                        </span>
-                                      </div>
-                                      <Text type="secondary">
-                                        Your causes have gained{" "}
-                                        {profile.stats.totalViews} views!
-                                      </Text>
-                                    </div>
-                                  )}
-                                  {profile.stats.totalLikes > 50 && (
-                                    <div className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-lg border border-pink-200">
-                                      <div className="flex items-center mb-2">
-                                        <HeartOutlined className="text-pink-600 text-lg mr-2" />
-                                        <span className="font-semibold text-pink-800">
-                                          Loved by Community
-                                        </span>
-                                      </div>
-                                      <Text type="secondary">
-                                        Received {profile.stats.totalLikes}{" "}
-                                        likes from supporters!
-                                      </Text>
-                                    </div>
-                                  )}
-                                </div>
                               </div>
-                            </Col>
-                            <Col xs={24} lg={8}>
-                              <div className="bg-gray-50 p-4 rounded-lg">
-                                <Title level={5} className="mb-3">
-                                  Quick Actions
-                                </Title>
-                                <div className="space-y-3">
-                                  <Link href="/causes/create">
-                                    <Button
-                                      type="primary"
-                                      icon={<PlusOutlined />}
-                                      block
-                                    >
-                                      Create New Cause
-                                    </Button>
-                                  </Link>
-                                  <Button icon={<SettingOutlined />} block>
-                                    Account Settings
-                                  </Button>
-                                  <Button icon={<BellOutlined />} block>
-                                    Notification Preferences
-                                  </Button>
-                                </div>
+                              
+                              <div style={{ 
+                                display: "grid", 
+                                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
+                                gap: "16px" 
+                              }}>
+                                {profile.stats.causesCreated > 0 && (
+                                  <div style={{
+                                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                                    padding: "20px",
+                                    borderRadius: "12px",
+                                    border: "1px solid #93c5fd"
+                                  }}>
+                                    <div style={{ 
+                                      display: "flex", 
+                                      alignItems: "center", 
+                                      marginBottom: "8px" 
+                                    }}>
+                                      <HeartOutlined style={{ 
+                                        color: "#2563eb", 
+                                        fontSize: "18px", 
+                                        marginRight: "8px" 
+                                      }} />
+                                      <span style={{ 
+                                        fontWeight: "600", 
+                                        color: "#1e40af",
+                                        fontSize: "15px"
+                                      }}>
+                                        First Cause Created
+                                      </span>
+                                    </div>
+                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                      You've started making a difference!
+                                    </Text>
+                                  </div>
+                                )}
+                                
+                                {profile.stats.completedCauses > 0 && (
+                                  <div style={{
+                                    background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                                    padding: "20px",
+                                    borderRadius: "12px",
+                                    border: "1px solid #86efac"
+                                  }}>
+                                    <div style={{ 
+                                      display: "flex", 
+                                      alignItems: "center", 
+                                      marginBottom: "8px" 
+                                    }}>
+                                      <CheckCircleOutlined style={{ 
+                                        color: "#16a34a", 
+                                        fontSize: "18px", 
+                                        marginRight: "8px" 
+                                      }} />
+                                      <span style={{ 
+                                        fontWeight: "600", 
+                                        color: "#15803d",
+                                        fontSize: "15px"
+                                      }}>
+                                        Mission Accomplished
+                                      </span>
+                                    </div>
+                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                      Successfully completed {profile.stats.completedCauses} cause
+                                      {profile.stats.completedCauses > 1 ? "s" : ""}!
+                                    </Text>
+                                  </div>
+                                )}
+                                
+                                {profile.stats.totalViews > 100 && (
+                                  <div style={{
+                                    background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)",
+                                    padding: "20px",
+                                    borderRadius: "12px",
+                                    border: "1px solid #c4b5fd"
+                                  }}>
+                                    <div style={{ 
+                                      display: "flex", 
+                                      alignItems: "center", 
+                                      marginBottom: "8px" 
+                                    }}>
+                                      <EyeOutlined style={{ 
+                                        color: "#7c3aed", 
+                                        fontSize: "18px", 
+                                        marginRight: "8px" 
+                                      }} />
+                                      <span style={{ 
+                                        fontWeight: "600", 
+                                        color: "#6d28d9",
+                                        fontSize: "15px"
+                                      }}>
+                                        Community Attention
+                                      </span>
+                                    </div>
+                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                      Your causes have gained {profile.stats.totalViews} views!
+                                    </Text>
+                                  </div>
+                                )}
                               </div>
-                            </Col>
-                          </Row>
-                        </div>
-                      ),
-                    },
+                            </div>
+                          </Col>
+                          
+                          <Col xs={24} lg={8}>
+                            <div style={{
+                              background: "#f8fafc",
+                              padding: "24px",
+                              borderRadius: "12px",
+                              border: "1px solid #e2e8f0"
+                            }}>
+                              <Title 
+                                level={5} 
+                                style={{ 
+                                  margin: "0 0 16px 0", 
+                                  color: "#1f2937",
+                                  fontSize: "16px"
+                                }}
+                              >
+                                Quick Actions
+                              </Title>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                <Link href="/causes/create">
+                                  <Button
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    size="large"
+                                    block
+                                    style={{
+                                      height: "48px",
+                                      borderRadius: "8px",
+                                      fontSize: "15px",
+                                      fontWeight: "500"
+                                    }}
+                                  >
+                                    Create New Cause
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  icon={<SettingOutlined />} 
+                                  size="large" 
+                                  block
+                                  style={{
+                                    height: "48px",
+                                    borderRadius: "8px",
+                                    fontSize: "15px"
+                                  }}
+                                >
+                                  Account Settings
+                                </Button>
+                                <Button 
+                                  icon={<BellOutlined />} 
+                                  size="large" 
+                                  block
+                                  style={{
+                                    height: "48px",
+                                    borderRadius: "8px",
+                                    fontSize: "15px"
+                                  }}
+                                >
+                                  Notification Preferences
+                                </Button>
+                              </div>
+                            </div>
+                          </Col>
+                        </Row>
+                      </div>
+                    ),
+                  },
                     {
                       key: "causes",
                       label: `My Causes (${profile.causes.length})`,
@@ -929,9 +1097,9 @@ export default function ProfilePage() {
                       key: "supported",
                       label: `Supported Causes (${supportedCauses.length})`,
                       children: (
-                        <div className="py-4">
+                        <div style={{ padding: "16px 0" }}>
                           {loadingSupportedCauses ? (
-                            <div className="text-center py-12">
+                            <div style={{ textAlign: "center", padding: "48px 0" }}>
                               <Skeleton active paragraph={{ rows: 4 }} />
                             </div>
                           ) : supportedCauses.length > 0 ? (
@@ -1039,9 +1207,9 @@ export default function ProfilePage() {
                       key: "activities",
                       label: `Activities (${activities.length})`,
                       children: (
-                        <div className="py-4">
+                        <div style={{ padding: "16px 0" }}>
                           {loadingActivities ? (
-                            <div className="text-center py-12">
+                            <div style={{ textAlign: "center", padding: "48px 0" }}>
                               <Skeleton active paragraph={{ rows: 4 }} />
                             </div>
                           ) : activities.length > 0 ? (
@@ -1051,29 +1219,29 @@ export default function ProfilePage() {
                                   key={activity.id}
                                   dot={getActivityIcon(activity.type)}
                                 >
-                                  <div className="ml-4">
-                                    <div className="flex items-start justify-between">
-                                      <div className="flex-1">
-                                        <Title level={5} className="mb-1">
+                                  <div style={{ marginLeft: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                                      <div style={{ flex: 1 }}>
+                                        <Title level={5} style={{ marginBottom: "4px" }}>
                                           {activity.description}
                                         </Title>
-                                        <div className="flex items-center mb-2">
+                                        <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
                                           <Link
                                             href={`/causes/${activity.cause_id}`}
-                                            className="text-blue-600 hover:text-blue-800"
+                                            style={{ color: "#2563eb" }}
                                           >
                                             {activity.cause_title}
                                           </Link>
                                           <Tag
                                             color={activity.category_color}
-                                            className="ml-2"
+                                            style={{ marginLeft: "8px" }}
                                           >
                                             {activity.category_name}
                                           </Tag>
                                         </div>
                                         <Text
                                           type="secondary"
-                                          className="text-sm"
+                                          style={{ fontSize: "14px" }}
                                         >
                                           {formatDate(activity.created_at)}
                                         </Text>
@@ -1082,7 +1250,13 @@ export default function ProfilePage() {
                                         <img
                                           src={activity.cause_image}
                                           alt={activity.cause_title}
-                                          className="w-16 h-16 object-cover rounded ml-4"
+                                          style={{ 
+                                            width: "64px", 
+                                            height: "64px", 
+                                            objectFit: "cover", 
+                                            borderRadius: "4px", 
+                                            marginLeft: "16px" 
+                                          }}
                                         />
                                       )}
                                     </div>
@@ -1108,14 +1282,14 @@ export default function ProfilePage() {
                 />
               </Card>
             </motion.div>
-          </div>
         </div>
+      </div>
 
-        {/* Enhanced Edit Profile Modal */}
+      {/* Enhanced Edit Profile Modal */}
         <Modal
           title={
             <span>
-              <EditOutlined className="mr-2" />
+              <EditOutlined style={{ marginRight: "8px" }} />
               Edit Profile
             </span>
           }
@@ -1130,7 +1304,7 @@ export default function ProfilePage() {
             layout="vertical"
             onFinish={handleEditProfile}
             initialValues={profile}
-            className="mt-4"
+            style={{ marginTop: "16px" }}
           >
             <Row gutter={16}>
               <Col span={24}>
@@ -1206,7 +1380,7 @@ export default function ProfilePage() {
 
             <Divider />
 
-            <div className="flex justify-end space-x-3 pt-2">
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", paddingTop: "8px" }}>
               <Button
                 size="large"
                 onClick={() => setEditModalVisible(false)}
@@ -1226,7 +1400,6 @@ export default function ProfilePage() {
             </div>
           </Form>
         </Modal>
-      </div>
     </MainLayout>
   );
 }
