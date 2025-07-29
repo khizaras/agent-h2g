@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Form,
   Input,
@@ -21,19 +21,19 @@ import {
   Divider,
   Tag,
   Spin,
-  Alert
-} from 'antd';
+  Alert,
+} from "antd";
 import {
   SaveOutlined,
   ArrowLeftOutlined,
   CloudUploadOutlined,
   DeleteOutlined,
   PlusOutlined,
-  EditOutlined
-} from '@ant-design/icons';
-import { motion } from 'framer-motion';
-import { MainLayout } from '@/components/layout/MainLayout';
-import dayjs from 'dayjs';
+  EditOutlined,
+} from "@ant-design/icons";
+import { motion } from "framer-motion";
+import { MainLayout } from "@/components/layout/MainLayout";
+import dayjs from "dayjs";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -47,7 +47,6 @@ interface Cause {
   detailedDescription?: string;
   category: string;
   category_name: string;
-  goalAmount: number;
   urgencyLevel: string;
   location: string;
   deadline?: string;
@@ -65,14 +64,14 @@ interface CategoryDetails {
   dietary_restrictions?: string[];
   preparation_time?: number;
   cooking_instructions?: string;
-  
+
   // Clothes details
   clothing_type?: string;
   sizes_available?: string[];
   gender?: string;
   season?: string;
   condition?: string;
-  
+
   // Education details
   education_type?: string;
   skill_level?: string;
@@ -87,16 +86,16 @@ interface CategoryDetails {
 }
 
 const categories = [
-  { value: 'food', label: 'Food Assistance' },
-  { value: 'clothes', label: 'Clothing Drive' },
-  { value: 'education', label: 'Education & Training' },
+  { value: "food", label: "Food Assistance" },
+  { value: "clothes", label: "Clothing Drive" },
+  { value: "education", label: "Education & Training" },
 ];
 
 const urgencyLevels = [
-  { value: 'low', label: 'Low Priority' },
-  { value: 'medium', label: 'Medium Priority' },
-  { value: 'high', label: 'High Priority' },
-  { value: 'critical', label: 'Critical' },
+  { value: "low", label: "Low Priority" },
+  { value: "medium", label: "Medium Priority" },
+  { value: "high", label: "High Priority" },
+  { value: "critical", label: "Critical" },
 ];
 
 export default function EditCausePage() {
@@ -109,17 +108,45 @@ export default function EditCausePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
+  // Enhanced education state
+  const [courseModules, setCourseModules] = useState<
+    Array<{
+      title: string;
+      description: string;
+      duration: string;
+      resources: string[];
+      assessment: string;
+    }>
+  >([]);
+  const [instructors, setInstructors] = useState<
+    Array<{
+      name: string;
+      email: string;
+      phone?: string;
+      bio?: string;
+      qualifications?: string[];
+      avatar?: string;
+    }>
+  >([]);
+  const [enhancedPrerequisites, setEnhancedPrerequisites] = useState<
+    Array<{
+      title: string;
+      description: string;
+      resources: string[];
+    }>
+  >([]);
+
   useEffect(() => {
-    if (status === 'loading') return;
-    
+    if (status === "loading") return;
+
     if (!session?.user) {
-      router.push('/auth/signin');
+      router.push("/auth/signin");
       return;
     }
-    
+
     fetchCauseDetails();
   }, [params.id, session, status]);
 
@@ -127,43 +154,65 @@ export default function EditCausePage() {
     try {
       const response = await fetch(`/api/causes/${params.id}`);
       const result = await response.json();
-      
+
       if (result.success) {
         const causeData = result.data.cause;
-        
-        // Check if user is the owner
-        if (causeData.creator_id !== session?.user?.id) {
-          message.error('You can only edit your own causes');
+
+        // Check if user is the owner - handle both string and number comparison
+        const sessionUserId = session?.user?.id;
+        const causeCreatorId = causeData.creator_id || causeData.user_id;
+
+        if (
+          sessionUserId &&
+          causeCreatorId &&
+          sessionUserId.toString() !== causeCreatorId.toString()
+        ) {
+          message.error("You can only edit your own causes");
           router.push(`/causes/${params.id}`);
           return;
         }
-        
+
         setCause(causeData);
         setCategoryDetails(result.data.categoryDetails || {});
-        setSelectedCategory(causeData.category_name || '');
+        setSelectedCategory(causeData.category_name || "");
         setImageUrls(causeData.gallery || []);
-        
+
+        // Set enhanced education fields if they exist
+        if (
+          result.data.categoryDetails &&
+          causeData.category_name === "education"
+        ) {
+          const details = result.data.categoryDetails;
+          if (details.course_modules) {
+            setCourseModules(details.course_modules);
+          }
+          if (details.instructors) {
+            setInstructors(details.instructors);
+          }
+          if (details.enhanced_prerequisites) {
+            setEnhancedPrerequisites(details.enhanced_prerequisites);
+          }
+        }
+
         // Populate form with existing data
         form.setFieldsValue({
           title: causeData.title,
           description: causeData.description,
           detailedDescription: causeData.detailedDescription,
           category: causeData.category_name,
-          goalAmount: causeData.goalAmount,
           urgencyLevel: causeData.urgencyLevel,
           location: causeData.location,
           deadline: causeData.deadline ? dayjs(causeData.deadline) : undefined,
-          ...result.data.categoryDetails
+          ...result.data.categoryDetails,
         });
-        
       } else {
-        message.error('Failed to load cause details');
-        router.push('/causes');
+        message.error("Failed to load cause details");
+        router.push("/causes");
       }
     } catch (error) {
-      console.error('Error fetching cause:', error);
-      message.error('Failed to load cause details');
-      router.push('/causes');
+      console.error("Error fetching cause:", error);
+      message.error("Failed to load cause details");
+      router.push("/causes");
     } finally {
       setLoading(false);
     }
@@ -172,33 +221,33 @@ export default function EditCausePage() {
   const handleSubmit = async (values: any) => {
     try {
       setSaving(true);
-      
+
       const updateData = {
         ...values,
-        deadline: values.deadline ? values.deadline.format('YYYY-MM-DD') : null,
+        deadline: values.deadline ? values.deadline.format("YYYY-MM-DD") : null,
         gallery: imageUrls,
-        categoryDetails: getCategorySpecificData(values)
+        categoryDetails: getCategorySpecificData(values),
       };
-      
+
       const response = await fetch(`/api/causes/${params.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updateData),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
-        message.success('Cause updated successfully!');
+        message.success("Cause updated successfully!");
         router.push(`/causes/${params.id}`);
       } else {
-        message.error(result.error || 'Failed to update cause');
+        message.error(result.error || "Failed to update cause");
       }
     } catch (error) {
-      console.error('Error updating cause:', error);
-      message.error('Failed to update cause');
+      console.error("Error updating cause:", error);
+      message.error("Failed to update cause");
     } finally {
       setSaving(false);
     }
@@ -206,34 +255,39 @@ export default function EditCausePage() {
 
   const getCategorySpecificData = (values: any) => {
     switch (selectedCategory) {
-      case 'food':
+      case "food":
         return {
-          food_type: values.food_type,
-          servings_count: values.servings_count,
-          dietary_restrictions: values.dietary_restrictions || [],
-          preparation_time: values.preparation_time,
-          cooking_instructions: values.cooking_instructions,
+          food_type: values.food_type ?? "meals",
+          servings_count: values.servings_count ?? 1,
+          dietary_restrictions: values.dietary_restrictions ?? [],
+          preparation_time: values.preparation_time ?? 0,
+          cooking_instructions: values.cooking_instructions ?? "",
         };
-      case 'clothes':
+      case "clothes":
         return {
-          clothing_type: values.clothing_type,
-          sizes_available: values.sizes_available || [],
-          gender: values.gender,
-          season: values.season,
-          condition: values.condition,
+          clothing_type: values.clothing_type ?? "shirts",
+          sizes_available: values.sizes_available ?? [],
+          gender: values.gender ?? "unisex",
+          season: values.season ?? "all-season",
+          condition: values.condition ?? "good",
         };
-      case 'education':
+      case "education":
         return {
-          education_type: values.education_type,
-          skill_level: values.skill_level,
-          topics: values.topics || [],
-          max_trainees: values.max_trainees,
-          duration_hours: values.duration_hours,
-          prerequisites: values.prerequisites,
-          learning_objectives: values.learning_objectives || [],
-          instructor_name: values.instructor_name,
-          instructor_email: values.instructor_email,
-          certification: values.certification || false,
+          education_type: values.education_type ?? "course",
+          skill_level: values.skill_level ?? "beginner",
+          topics: values.topics ?? [],
+          max_trainees: values.max_trainees ?? 20,
+          duration_hours: values.duration_hours ?? 1,
+          prerequisites: values.prerequisites ?? "",
+          learning_objectives: values.learning_objectives ?? [],
+          instructor_name: values.instructor_name ?? "",
+          instructor_email: values.instructor_email ?? "",
+          certification: values.certification ?? false,
+          // Enhanced education fields
+          course_modules: courseModules.length > 0 ? courseModules : null,
+          instructors: instructors.length > 0 ? instructors : null,
+          enhanced_prerequisites:
+            enhancedPrerequisites.length > 0 ? enhancedPrerequisites : null,
         };
       default:
         return {};
@@ -242,7 +296,7 @@ export default function EditCausePage() {
 
   const renderCategorySpecificFields = () => {
     switch (selectedCategory) {
-      case 'food':
+      case "food":
         return (
           <>
             <Col xs={24} md={12}>
@@ -257,12 +311,18 @@ export default function EditCausePage() {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item name="servings_count" label="Number of Servings">
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <InputNumber min={1} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={24}>
-              <Form.Item name="dietary_restrictions" label="Dietary Restrictions">
-                <Select mode="multiple" placeholder="Select dietary restrictions">
+              <Form.Item
+                name="dietary_restrictions"
+                label="Dietary Restrictions"
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select dietary restrictions"
+                >
                   <Option value="vegetarian">Vegetarian</Option>
                   <Option value="vegan">Vegan</Option>
                   <Option value="halal">Halal</Option>
@@ -273,19 +333,28 @@ export default function EditCausePage() {
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-              <Form.Item name="preparation_time" label="Preparation Time (minutes)">
-                <InputNumber min={0} style={{ width: '100%' }} />
+              <Form.Item
+                name="preparation_time"
+                label="Preparation Time (minutes)"
+              >
+                <InputNumber min={0} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={24}>
-              <Form.Item name="cooking_instructions" label="Cooking Instructions">
-                <TextArea rows={3} placeholder="Provide cooking or serving instructions" />
+              <Form.Item
+                name="cooking_instructions"
+                label="Cooking Instructions"
+              >
+                <TextArea
+                  rows={3}
+                  placeholder="Provide cooking or serving instructions"
+                />
               </Form.Item>
             </Col>
           </>
         );
 
-      case 'clothes':
+      case "clothes":
         return (
           <>
             <Col xs={24} md={12}>
@@ -346,7 +415,7 @@ export default function EditCausePage() {
           </>
         );
 
-      case 'education':
+      case "education":
         return (
           <>
             <Col xs={24} md={12}>
@@ -382,12 +451,12 @@ export default function EditCausePage() {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item name="max_trainees" label="Maximum Trainees">
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <InputNumber min={1} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item name="duration_hours" label="Duration (hours)">
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <InputNumber min={1} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={24}>
@@ -411,12 +480,340 @@ export default function EditCausePage() {
               </Form.Item>
             </Col>
             <Col xs={24}>
-              <Form.Item name="certification" label="Certification Provided" valuePropName="checked">
+              <Form.Item
+                name="certification"
+                label="Certification Provided"
+                valuePropName="checked"
+              >
                 <Select placeholder="Certification available?">
                   <Option value={true}>Yes</Option>
                   <Option value={false}>No</Option>
                 </Select>
               </Form.Item>
+            </Col>
+
+            {/* Enhanced Education Fields */}
+            <Col xs={24}>
+              <Divider>Course Curriculum</Divider>
+            </Col>
+
+            {/* Course Modules */}
+            <Col xs={24}>
+              <Card
+                title="Course Modules"
+                size="small"
+                style={{ marginBottom: 16 }}
+              >
+                {courseModules.map((module, index) => (
+                  <Card
+                    key={index}
+                    size="small"
+                    style={{ marginBottom: 8 }}
+                    extra={
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          const newModules = courseModules.filter(
+                            (_, i) => i !== index,
+                          );
+                          setCourseModules(newModules);
+                        }}
+                      />
+                    }
+                  >
+                    <Row gutter={[8, 8]}>
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Module Title"
+                          value={module.title}
+                          onChange={(e) => {
+                            const newModules = [...courseModules];
+                            newModules[index].title = e.target.value;
+                            setCourseModules(newModules);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Duration (e.g., 2 weeks)"
+                          value={module.duration}
+                          onChange={(e) => {
+                            const newModules = [...courseModules];
+                            newModules[index].duration = e.target.value;
+                            setCourseModules(newModules);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24}>
+                        <TextArea
+                          placeholder="Module Description"
+                          rows={2}
+                          value={module.description}
+                          onChange={(e) => {
+                            const newModules = [...courseModules];
+                            newModules[index].description = e.target.value;
+                            setCourseModules(newModules);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Select
+                          mode="tags"
+                          placeholder="Resources (videos, PDFs, etc.)"
+                          value={module.resources}
+                          onChange={(values) => {
+                            const newModules = [...courseModules];
+                            newModules[index].resources = values;
+                            setCourseModules(newModules);
+                          }}
+                          style={{ width: "100%" }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Assessment Method"
+                          value={module.assessment}
+                          onChange={(e) => {
+                            const newModules = [...courseModules];
+                            newModules[index].assessment = e.target.value;
+                            setCourseModules(newModules);
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  </Card>
+                ))}
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() =>
+                    setCourseModules([
+                      ...courseModules,
+                      {
+                        title: "",
+                        description: "",
+                        duration: "",
+                        resources: [],
+                        assessment: "",
+                      },
+                    ])
+                  }
+                  block
+                >
+                  Add Course Module
+                </Button>
+              </Card>
+            </Col>
+
+            {/* Multiple Instructors */}
+            <Col xs={24}>
+              <Card
+                title="Instructors"
+                size="small"
+                style={{ marginBottom: 16 }}
+              >
+                {instructors.map((instructor, index) => (
+                  <Card
+                    key={index}
+                    size="small"
+                    style={{ marginBottom: 8 }}
+                    extra={
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          const newInstructors = instructors.filter(
+                            (_, i) => i !== index,
+                          );
+                          setInstructors(newInstructors);
+                        }}
+                      />
+                    }
+                  >
+                    <Row gutter={[8, 8]}>
+                      <Col xs={24} md={8}>
+                        <Input
+                          placeholder="Instructor Name"
+                          value={instructor.name}
+                          onChange={(e) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].name = e.target.value;
+                            setInstructors(newInstructors);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          value={instructor.email}
+                          onChange={(e) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].email = e.target.value;
+                            setInstructors(newInstructors);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Input
+                          placeholder="Phone (optional)"
+                          value={instructor.phone || ""}
+                          onChange={(e) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].phone = e.target.value;
+                            setInstructors(newInstructors);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24}>
+                        <TextArea
+                          placeholder="Bio (optional)"
+                          rows={2}
+                          value={instructor.bio || ""}
+                          onChange={(e) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].bio = e.target.value;
+                            setInstructors(newInstructors);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Select
+                          mode="tags"
+                          placeholder="Qualifications (optional)"
+                          value={instructor.qualifications || []}
+                          onChange={(values) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].qualifications = values;
+                            setInstructors(newInstructors);
+                          }}
+                          style={{ width: "100%" }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Avatar URL (optional)"
+                          value={instructor.avatar || ""}
+                          onChange={(e) => {
+                            const newInstructors = [...instructors];
+                            newInstructors[index].avatar = e.target.value;
+                            setInstructors(newInstructors);
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  </Card>
+                ))}
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() =>
+                    setInstructors([
+                      ...instructors,
+                      {
+                        name: "",
+                        email: "",
+                        phone: "",
+                        bio: "",
+                        qualifications: [],
+                        avatar: "",
+                      },
+                    ])
+                  }
+                  block
+                >
+                  Add Instructor
+                </Button>
+              </Card>
+            </Col>
+
+            {/* Enhanced Prerequisites */}
+            <Col xs={24}>
+              <Card
+                title="Detailed Prerequisites"
+                size="small"
+                style={{ marginBottom: 16 }}
+              >
+                {enhancedPrerequisites.map((prereq, index) => (
+                  <Card
+                    key={index}
+                    size="small"
+                    style={{ marginBottom: 8 }}
+                    extra={
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          const newPrereqs = enhancedPrerequisites.filter(
+                            (_, i) => i !== index,
+                          );
+                          setEnhancedPrerequisites(newPrereqs);
+                        }}
+                      />
+                    }
+                  >
+                    <Row gutter={[8, 8]}>
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Prerequisite Title"
+                          value={prereq.title}
+                          onChange={(e) => {
+                            const newPrereqs = [...enhancedPrerequisites];
+                            newPrereqs[index].title = e.target.value;
+                            setEnhancedPrerequisites(newPrereqs);
+                          }}
+                        />
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Select
+                          mode="tags"
+                          placeholder="Resources"
+                          value={prereq.resources}
+                          onChange={(values) => {
+                            const newPrereqs = [...enhancedPrerequisites];
+                            newPrereqs[index].resources = values;
+                            setEnhancedPrerequisites(newPrereqs);
+                          }}
+                          style={{ width: "100%" }}
+                        />
+                      </Col>
+                      <Col xs={24}>
+                        <TextArea
+                          placeholder="Description"
+                          rows={2}
+                          value={prereq.description}
+                          onChange={(e) => {
+                            const newPrereqs = [...enhancedPrerequisites];
+                            newPrereqs[index].description = e.target.value;
+                            setEnhancedPrerequisites(newPrereqs);
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  </Card>
+                ))}
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() =>
+                    setEnhancedPrerequisites([
+                      ...enhancedPrerequisites,
+                      {
+                        title: "",
+                        description: "",
+                        resources: [],
+                      },
+                    ])
+                  }
+                  block
+                >
+                  Add Prerequisite
+                </Button>
+              </Card>
             </Col>
           </>
         );
@@ -426,12 +823,12 @@ export default function EditCausePage() {
     }
   };
 
-  if (loading || status === 'loading') {
+  if (loading || status === "loading") {
     return (
       <MainLayout>
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+        <div style={{ textAlign: "center", padding: "100px 20px" }}>
           <Spin size="large" />
-          <div style={{ marginTop: '16px' }}>Loading cause details...</div>
+          <div style={{ marginTop: "16px" }}>Loading cause details...</div>
         </div>
       </MainLayout>
     );
@@ -440,17 +837,17 @@ export default function EditCausePage() {
   if (!cause) {
     return (
       <MainLayout>
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <Alert 
-            message="Cause not found" 
+        <div style={{ textAlign: "center", padding: "100px 20px" }}>
+          <Alert
+            message="Cause not found"
             description="The cause you're trying to edit doesn't exist or you don't have permission to edit it."
             type="error"
             showIcon
           />
-          <Button 
-            type="primary" 
-            onClick={() => router.push('/causes')}
-            style={{ marginTop: '16px' }}
+          <Button
+            type="primary"
+            onClick={() => router.push("/causes")}
+            style={{ marginTop: "16px" }}
           >
             Back to Causes
           </Button>
@@ -461,14 +858,14 @@ export default function EditCausePage() {
 
   const steps = [
     {
-      title: 'Basic Information',
+      title: "Basic Information",
       content: (
         <Row gutter={[16, 16]}>
           <Col xs={24}>
             <Form.Item
               name="title"
               label="Cause Title"
-              rules={[{ required: true, message: 'Please enter a title' }]}
+              rules={[{ required: true, message: "Please enter a title" }]}
             >
               <Input placeholder="Enter a descriptive title" size="large" />
             </Form.Item>
@@ -477,28 +874,36 @@ export default function EditCausePage() {
             <Form.Item
               name="description"
               label="Short Description"
-              rules={[{ required: true, message: 'Please enter a description' }]}
+              rules={[
+                { required: true, message: "Please enter a description" },
+              ]}
             >
-              <TextArea rows={3} placeholder="Brief description of your cause" />
+              <TextArea
+                rows={3}
+                placeholder="Brief description of your cause"
+              />
             </Form.Item>
           </Col>
           <Col xs={24}>
             <Form.Item name="detailedDescription" label="Detailed Description">
-              <TextArea rows={6} placeholder="Provide detailed information about your cause" />
+              <TextArea
+                rows={6}
+                placeholder="Provide detailed information about your cause"
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
             <Form.Item
               name="category"
               label="Category"
-              rules={[{ required: true, message: 'Please select a category' }]}
+              rules={[{ required: true, message: "Please select a category" }]}
             >
-              <Select 
-                placeholder="Select category" 
+              <Select
+                placeholder="Select category"
                 size="large"
                 onChange={(value) => setSelectedCategory(value)}
               >
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <Option key={cat.value} value={cat.value}>
                     {cat.label}
                   </Option>
@@ -510,10 +915,12 @@ export default function EditCausePage() {
             <Form.Item
               name="urgencyLevel"
               label="Priority Level"
-              rules={[{ required: true, message: 'Please select priority level' }]}
+              rules={[
+                { required: true, message: "Please select priority level" },
+              ]}
             >
               <Select placeholder="Select priority" size="large">
-                {urgencyLevels.map(level => (
+                {urgencyLevels.map((level) => (
                   <Option key={level.value} value={level.value}>
                     {level.label}
                   </Option>
@@ -525,34 +932,19 @@ export default function EditCausePage() {
       ),
     },
     {
-      title: 'Details & Goals',
+      title: "Details & Location",
       content: (
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
-            <Form.Item
-              name="goalAmount"
-              label="Goal Amount ($)"
-              rules={[{ required: true, message: 'Please enter goal amount' }]}
-            >
-              <InputNumber
-                min={1}
-                style={{ width: '100%' }}
-                size="large"
-                formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
             <Form.Item name="deadline" label="Deadline (Optional)">
-              <DatePicker style={{ width: '100%' }} size="large" />
+              <DatePicker style={{ width: "100%" }} size="large" />
             </Form.Item>
           </Col>
           <Col xs={24}>
             <Form.Item
               name="location"
               label="Location"
-              rules={[{ required: true, message: 'Please enter location' }]}
+              rules={[{ required: true, message: "Please enter location" }]}
             >
               <Input placeholder="City, State/Province, Country" size="large" />
             </Form.Item>
@@ -565,30 +957,32 @@ export default function EditCausePage() {
 
   return (
     <MainLayout>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           {/* Header */}
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: "32px" }}>
             <Button
               icon={<ArrowLeftOutlined />}
               onClick={() => router.back()}
-              style={{ marginBottom: '16px' }}
+              style={{ marginBottom: "16px" }}
             >
               Back
             </Button>
             <Title level={2} style={{ margin: 0 }}>
-              <EditOutlined style={{ marginRight: '8px' }} />
+              <EditOutlined style={{ marginRight: "8px" }} />
               Edit Cause
             </Title>
-            <Text type="secondary">Update your cause information and details</Text>
+            <Text type="secondary">
+              Update your cause information and details
+            </Text>
           </div>
 
           {/* Progress Steps */}
-          <Card style={{ marginBottom: '24px' }}>
+          <Card style={{ marginBottom: "24px" }}>
             <Steps current={currentStep} onChange={setCurrentStep}>
               {steps.map((step, index) => (
                 <Step key={index} title={step.title} />
@@ -604,14 +998,20 @@ export default function EditCausePage() {
             size="middle"
           >
             <Card>
-              <div style={{ minHeight: '400px' }}>
+              <div style={{ minHeight: "400px" }}>
                 {steps[currentStep].content}
               </div>
 
               <Divider />
 
               {/* Navigation Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
                   {currentStep > 0 && (
                     <Button onClick={() => setCurrentStep(currentStep - 1)}>
@@ -621,8 +1021,8 @@ export default function EditCausePage() {
                 </div>
                 <div>
                   {currentStep < steps.length - 1 ? (
-                    <Button 
-                      type="primary" 
+                    <Button
+                      type="primary"
                       onClick={() => setCurrentStep(currentStep + 1)}
                     >
                       Next

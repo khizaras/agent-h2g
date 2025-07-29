@@ -137,6 +137,30 @@ interface CauseFormData {
   subtitlesAvailable?: string[];
   difficultyRating?: number;
 
+  // Enhanced education fields
+  enhancedEducationFields?: {
+    courseModules: Array<{
+      title: string;
+      description: string;
+      duration: string;
+      resources: string[];
+      assessment: string;
+    }>;
+    instructors: Array<{
+      name: string;
+      email: string;
+      phone?: string;
+      bio?: string;
+      qualifications?: string[];
+      avatar?: string;
+    }>;
+    enhancedPrerequisites: Array<{
+      title: string;
+      description: string;
+      resources: string[];
+    }>;
+  };
+
   // Common
   images?: any[];
   availabilityHours?: string;
@@ -152,21 +176,21 @@ const categories = [
     value: "food",
     label: "Food Assistance",
     description: "Share meals and food supplies with those in need",
-    icon: <HeartOutlined style={{ fontSize: '48px' }} />,
+    icon: <HeartOutlined style={{ fontSize: "48px" }} />,
     color: "#FF6B35",
   },
   {
     value: "clothes",
     label: "Clothing Donation",
     description: "Donate and request clothing items for all ages",
-    icon: <TeamOutlined style={{ fontSize: '48px' }} />,
+    icon: <TeamOutlined style={{ fontSize: "48px" }} />,
     color: "#4ECDC4",
   },
   {
     value: "education",
     label: "Education & Training",
     description: "Share knowledge through courses, workshops, and mentoring",
-    icon: <BookOutlined style={{ fontSize: '48px' }} />,
+    icon: <BookOutlined style={{ fontSize: "48px" }} />,
     color: "#45B7D1",
   },
 ];
@@ -180,7 +204,19 @@ export default function CreateCausePage() {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const { uploading, uploadedImages, allImages, uploadImage, removeImage } = useImageUpload();
+  const { uploading, uploadedImages, allImages, uploadImage, removeImage } =
+    useImageUpload();
+
+  // Enhanced education fields state
+  const [enhancedEducationFields, setEnhancedEducationFields] = useState({
+    courseModules: [],
+    instructors: [],
+    enhancedPrerequisites: [],
+  });
+
+  const handleEnhancedFieldsChange = (fields: any) => {
+    setEnhancedEducationFields(fields);
+  };
 
   useEffect(() => {
     if (status === "loading") return;
@@ -326,31 +362,36 @@ export default function CreateCausePage() {
   const handleSubmit = async (values: CauseFormData) => {
     setLoading(true);
     try {
-      const submitData = { 
-        ...formData, 
-        ...values, 
+      const submitData = {
+        ...formData,
+        ...values,
         category: selectedCategory,
-        images: uploadedImages
+        images: uploadedImages,
       };
-      
-      const response = await fetch('/api/causes', {
-        method: 'POST',
+
+      // Add enhanced education fields if this is an education cause
+      if (selectedCategory === "education") {
+        submitData.enhancedEducationFields = enhancedEducationFields;
+      }
+
+      const response = await fetch("/api/causes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(submitData),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         message.success("Your cause has been created successfully!");
         router.push(`/causes/${result.data.id}`);
       } else {
-        throw new Error(result.error || 'Failed to create cause');
+        throw new Error(result.error || "Failed to create cause");
       }
     } catch (error) {
-      console.error('Error creating cause:', error);
+      console.error("Error creating cause:", error);
       message.error("Failed to create cause. Please try again.");
     } finally {
       setLoading(false);
@@ -361,18 +402,21 @@ export default function CreateCausePage() {
     name: "file",
     multiple: true,
     beforeUpload: (file: any) => {
-      const isValidType = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
+      const isValidType =
+        file.type === "image/jpeg" ||
+        file.type === "image/png" ||
+        file.type === "image/webp";
       if (!isValidType) {
-        message.error('You can only upload JPG/PNG/WebP files!');
+        message.error("You can only upload JPG/PNG/WebP files!");
         return false;
       }
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!isLt5M) {
-        message.error('Image must be smaller than 5MB!');
+        message.error("Image must be smaller than 5MB!");
         return false;
       }
       if (allImages.length >= 5) {
-        message.error('You can only upload up to 5 images!');
+        message.error("You can only upload up to 5 images!");
         return false;
       }
       // Upload immediately
@@ -387,14 +431,21 @@ export default function CreateCausePage() {
     // Category Selection Step
     if (currentStep === 0 && !showCategoryForm) {
       return (
-        <div style={{ padding: '0 20px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <BookOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-            <Title level={2} style={{ marginBottom: '8px' }}>
+        <div style={{ padding: "0 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <BookOutlined
+              style={{
+                fontSize: "48px",
+                color: "#52c41a",
+                marginBottom: "16px",
+              }}
+            />
+            <Title level={2} style={{ marginBottom: "8px" }}>
               What type of cause would you like to create?
             </Title>
-            <Paragraph style={{ color: '#666', fontSize: '16px' }}>
-              Choose the category that best fits your cause to get a customized form
+            <Paragraph style={{ color: "#666", fontSize: "16px" }}>
+              Choose the category that best fits your cause to get a customized
+              form
             </Paragraph>
           </div>
 
@@ -537,7 +588,12 @@ export default function CreateCausePage() {
         } else if (selectedCategory === "clothes") {
           return <ClothesDetailsForm form={form} />;
         } else if (selectedCategory === "education") {
-          return <EducationDetailsForm form={form} />;
+          return (
+            <EducationDetailsForm
+              form={form}
+              onEnhancedFieldsChange={handleEnhancedFieldsChange}
+            />
+          );
         }
         return null;
 
@@ -545,7 +601,10 @@ export default function CreateCausePage() {
       case 4:
         if (selectedCategory === "education" && currentStep === 4) {
           // Contact & Media for education (step 4)
-        } else if ((selectedCategory === "food" || selectedCategory === "clothes") && currentStep === 3) {
+        } else if (
+          (selectedCategory === "food" || selectedCategory === "clothes") &&
+          currentStep === 3
+        ) {
           // Contact & Media for food and clothes (step 3)
         } else {
           return null;
@@ -553,78 +612,123 @@ export default function CreateCausePage() {
         return (
           <div className="modern-form-step">
             <div className="step-header">
-              <CameraOutlined style={{ fontSize: '32px', color: '#52c41a', marginBottom: '16px', display: 'block' }} />
+              <CameraOutlined
+                style={{
+                  fontSize: "32px",
+                  color: "#52c41a",
+                  marginBottom: "16px",
+                  display: "block",
+                }}
+              />
               <Title level={3}>Contact & Media</Title>
-              <Text type="secondary">Add contact information and images to showcase your cause</Text>
+              <Text type="secondary">
+                Add contact information and images to showcase your cause
+              </Text>
             </div>
 
             <div className="form-section">
               <Title level={4}>Images</Title>
-              <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
-                Upload images that showcase your cause. The first image will be used as the main photo.
+              <Text
+                type="secondary"
+                style={{ display: "block", marginBottom: "16px" }}
+              >
+                Upload images that showcase your cause. The first image will be
+                used as the main photo.
               </Text>
-              
+
               <Dragger {...uploadProps} className="modern-upload">
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">
-                  {uploading ? 'Uploading...' : 'Click or drag images to upload'}
+                  {uploading
+                    ? "Uploading..."
+                    : "Click or drag images to upload"}
                 </p>
                 <p className="ant-upload-hint">
-                  Support JPG, PNG, WebP. Max file size 5MB each. Up to 5 images.
+                  Support JPG, PNG, WebP. Max file size 5MB each. Up to 5
+                  images.
                 </p>
               </Dragger>
 
               {allImages.length > 0 && (
-                <div style={{ marginTop: '16px' }}>
+                <div style={{ marginTop: "16px" }}>
                   <Text strong>Images ({allImages.length}/5):</Text>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "12px",
+                      marginTop: "8px",
+                    }}
+                  >
                     {allImages.map((image, index) => {
-                      const isUploading = !uploadedImages.find(img => img.fileId === image.fileId);
+                      const isUploading = !uploadedImages.find(
+                        (img) => img.fileId === image.fileId,
+                      );
                       return (
-                        <div key={image.fileId} style={{ position: 'relative' }}>
-                          <div style={{ position: 'relative' }}>
-                            <img 
-                              src={image.thumbnailUrl || image.url} 
+                        <div
+                          key={image.fileId}
+                          style={{ position: "relative" }}
+                        >
+                          <div style={{ position: "relative" }}>
+                            <img
+                              src={image.thumbnailUrl || image.url}
                               alt={image.name}
-                              style={{ 
-                                width: '80px', 
-                                height: '80px', 
-                                objectFit: 'cover', 
-                                borderRadius: '8px',
-                                border: index === 0 ? '2px solid #52c41a' : '1px solid #d9d9d9',
-                                opacity: isUploading ? 0.6 : 1
+                              style={{
+                                width: "80px",
+                                height: "80px",
+                                objectFit: "cover",
+                                borderRadius: "8px",
+                                border:
+                                  index === 0
+                                    ? "2px solid #52c41a"
+                                    : "1px solid #d9d9d9",
+                                opacity: isUploading ? 0.6 : 1,
                               }}
                             />
                             {isUploading && (
-                              <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: 'rgba(0,0,0,0.3)',
-                                borderRadius: '8px',
-                                color: 'white',
-                                fontSize: '12px'
-                              }}>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  backgroundColor: "rgba(0,0,0,0.3)",
+                                  borderRadius: "8px",
+                                  color: "white",
+                                  fontSize: "12px",
+                                }}
+                              >
                                 Uploading...
                               </div>
                             )}
                           </div>
                           {index === 0 && (
-                            <Tag color="green" style={{ position: 'absolute', top: '-8px', left: '-8px', fontSize: '12px' }}>
+                            <Tag
+                              color="green"
+                              style={{
+                                position: "absolute",
+                                top: "-8px",
+                                left: "-8px",
+                                fontSize: "12px",
+                              }}
+                            >
                               Main
                             </Tag>
                           )}
-                          <Button 
-                            size="small" 
-                            danger 
-                            style={{ position: 'absolute', top: '-8px', right: '-8px' }}
+                          <Button
+                            size="small"
+                            danger
+                            style={{
+                              position: "absolute",
+                              top: "-8px",
+                              right: "-8px",
+                            }}
                             onClick={() => removeImage(image.fileId)}
                             disabled={isUploading}
                           >
@@ -656,7 +760,11 @@ export default function CreateCausePage() {
                 </Col>
                 <Col xs={24} md={12}>
                   <Form.Item name="contactPhone" label="Contact Phone">
-                    <Input size="large" prefix={<PhoneOutlined />} placeholder="+1 (555) 123-4567" />
+                    <Input
+                      size="large"
+                      prefix={<PhoneOutlined />}
+                      placeholder="+1 (555) 123-4567"
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -675,7 +783,10 @@ export default function CreateCausePage() {
                 />
               </Form.Item>
 
-              <Form.Item name="specialInstructions" label="Special Instructions">
+              <Form.Item
+                name="specialInstructions"
+                label="Special Instructions"
+              >
                 <TextArea
                   rows={3}
                   placeholder="Any special instructions for coordination, pickup, delivery, etc."
@@ -685,7 +796,11 @@ export default function CreateCausePage() {
 
             <div className="form-section">
               <Title level={4}>Tags & Keywords</Title>
-              <Form.Item name="tags" label="Tags" help="Add relevant tags to help people find your cause">
+              <Form.Item
+                name="tags"
+                label="Tags"
+                help="Add relevant tags to help people find your cause"
+              >
                 <Select
                   mode="tags"
                   size="large"
@@ -702,7 +817,8 @@ export default function CreateCausePage() {
         // Review step - adjust case number based on category
         const isReviewStep =
           (selectedCategory === "education" && currentStep === 5) ||
-          ((selectedCategory === "food" || selectedCategory === "clothes") && currentStep === 4);
+          ((selectedCategory === "food" || selectedCategory === "clothes") &&
+            currentStep === 4);
 
         if (!isReviewStep) return null;
 
@@ -920,12 +1036,19 @@ export default function CreateCausePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            style={{ textAlign: 'center', marginBottom: '40px' }}
+            style={{ textAlign: "center", marginBottom: "40px" }}
           >
-            <Title level={1} style={{ marginBottom: '16px' }}>
+            <Title level={1} style={{ marginBottom: "16px" }}>
               Create a New Cause
             </Title>
-            <Paragraph style={{ fontSize: '16px', color: '#666', maxWidth: '600px', margin: '0 auto' }}>
+            <Paragraph
+              style={{
+                fontSize: "16px",
+                color: "#666",
+                maxWidth: "600px",
+                margin: "0 auto",
+              }}
+            >
               Share your passion and create positive change in your community.
               Every great movement starts with a single step.
             </Paragraph>
@@ -937,22 +1060,43 @@ export default function CreateCausePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {/* Simplified Progress Header */}
-            <Card style={{ marginBottom: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', padding: '16px 24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <Card
+              style={{
+                marginBottom: "24px",
+                borderRadius: "12px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                padding: "16px 24px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "16px",
+                }}
+              >
                 <div>
-                  <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
+                  <Title level={4} style={{ margin: 0, color: "#52c41a" }}>
                     {steps[currentStep]?.title}
                   </Title>
-                  <Text type="secondary" style={{ fontSize: '14px' }}>
+                  <Text type="secondary" style={{ fontSize: "14px" }}>
                     {steps[currentStep]?.description}
                   </Text>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <Text strong style={{ fontSize: '16px', color: '#52c41a' }}>
+                <div style={{ textAlign: "right" }}>
+                  <Text strong style={{ fontSize: "16px", color: "#52c41a" }}>
                     {currentStep + 1} / {steps.length}
                   </Text>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                    {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {Math.round(((currentStep + 1) / steps.length) * 100)}%
+                    Complete
                   </div>
                 </div>
               </div>
@@ -960,20 +1104,27 @@ export default function CreateCausePage() {
                 percent={((currentStep + 1) / steps.length) * 100}
                 showInfo={false}
                 strokeColor={{
-                  '0%': '#52c41a',
-                  '100%': '#389e0d',
+                  "0%": "#52c41a",
+                  "100%": "#389e0d",
                 }}
                 trailColor="#f0f0f0"
                 strokeWidth={8}
-                style={{ marginBottom: '8px' }}
+                style={{ marginBottom: "8px" }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#999' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "12px",
+                  color: "#999",
+                }}
+              >
                 {steps.map((step, index) => (
-                  <span 
+                  <span
                     key={index}
-                    style={{ 
-                      color: index <= currentStep ? '#52c41a' : '#d9d9d9',
-                      fontWeight: index === currentStep ? 'bold' : 'normal'
+                    style={{
+                      color: index <= currentStep ? "#52c41a" : "#d9d9d9",
+                      fontWeight: index === currentStep ? "bold" : "normal",
                     }}
                   >
                     {step.title}
@@ -983,7 +1134,12 @@ export default function CreateCausePage() {
             </Card>
 
             {/* Form Content */}
-            <Card style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <Card
+              style={{
+                borderRadius: "12px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}
+            >
               <Form
                 form={form}
                 layout="vertical"

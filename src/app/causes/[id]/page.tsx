@@ -7,7 +7,6 @@ import {
   Card,
   Button,
   Typography,
-  Progress,
   Space,
   Tag,
   Row,
@@ -44,6 +43,7 @@ import { unsplashImages } from "@/services/unsplashService";
 import FoodDetailsSection from "@/components/details/FoodDetailsSection";
 import ClothesDetailsSection from "@/components/details/ClothesDetailsSection";
 import EducationDetailsSection from "@/components/details/EducationDetailsSection";
+import CommentsSection from "@/components/comments/CommentsSection";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -57,7 +57,6 @@ interface Cause {
   imageUrl?: string;
   images?: string[];
   gallery?: string[];
-  goalAmount: number;
   raisedAmount: number;
   location: string;
   category: string;
@@ -135,7 +134,6 @@ const mockCause: Cause = {
     unsplashImages.causes[2]?.url ||
       "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b",
   ],
-  goalAmount: 25000,
   raisedAmount: 18500,
   location: "Miami, FL",
   category: "Emergency Relief",
@@ -272,11 +270,11 @@ export default function CauseDetailsPage() {
         const result = await response.json();
 
         if (result.success) {
-          console.log('Cause API Response:', result.data.cause);
-          console.log('Gallery:', result.data.cause?.gallery);
-          console.log('Images:', result.data.cause?.images);
-          console.log('Image:', result.data.cause?.image);
-          
+          console.log("Cause API Response:", result.data.cause);
+          console.log("Gallery:", result.data.cause?.gallery);
+          console.log("Images:", result.data.cause?.images);
+          console.log("Image:", result.data.cause?.image);
+
           setCause(result.data.cause);
           setCategoryDetails(result.data.categoryDetails);
           setUpdates(result.data.activities || []);
@@ -362,9 +360,6 @@ export default function CauseDetailsPage() {
     );
   }
 
-  const progressPercentage = Math.round(
-    ((cause.raisedAmount || 0) / (cause.goalAmount || 1)) * 100,
-  );
   const daysLeft = cause.deadline
     ? Math.max(
         0,
@@ -438,66 +433,14 @@ export default function CauseDetailsPage() {
     },
     {
       key: "3",
-      label: `Comments (${comments?.length || 0})`,
+      label: `Comments`,
       children: (
-        <div className="comments-content">
-          {comments && comments.length > 0 ? (
-            comments.map((comment) => (
-              <div key={comment.id} className="modern-comment-item">
-                <div className="comment-header">
-                  <Avatar
-                    src={comment.avatar}
-                    icon={<UserOutlined />}
-                    size={40}
-                  />
-                  <div className="comment-author-info">
-                    <div className="comment-author">{comment.author}</div>
-                    <div className="comment-date">
-                      {formatDate(comment.date)}
-                    </div>
-                  </div>
-                </div>
-                <Paragraph className="comment-content">
-                  {comment.content}
-                </Paragraph>
-                <div className="comment-actions">
-                  <Button
-                    size="small"
-                    icon={<LikeOutlined />}
-                    className="like-btn"
-                  >
-                    {comment.likes}
-                  </Button>
-                  <Button size="small" className="reply-btn">
-                    Reply
-                  </Button>
-                </div>
-                {comment.replies?.map((reply: any) => (
-                  <div key={reply.id} className="modern-reply-item">
-                    <div className="comment-header">
-                      <Avatar icon={<UserOutlined />} size={32} />
-                      <div className="comment-author-info">
-                        <div className="comment-author">{reply.author}</div>
-                        <div className="comment-date">
-                          {formatDate(reply.date)}
-                        </div>
-                      </div>
-                    </div>
-                    <Paragraph className="comment-content">
-                      {reply.content}
-                    </Paragraph>
-                  </div>
-                ))}
-              </div>
-            ))
-          ) : (
-            <div className="no-comments">
-              <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                <p>No comments yet</p>
-              </div>
-            </div>
-          )}
-        </div>
+        <CommentsSection
+          causeId={parseInt(params.id as string)}
+          allowComments={true}
+          allowRatings={true}
+          className="cause-comments-section"
+        />
       ),
     },
   ];
@@ -515,61 +458,70 @@ export default function CauseDetailsPage() {
                 ...(cause.gallery || []),
                 ...(cause.images || []),
                 cause.image,
-                cause.imageUrl
-              ].filter(Boolean).filter((img, index, arr) => arr.indexOf(img) === index); // Remove duplicates
+                cause.imageUrl,
+              ]
+                .filter(Boolean)
+                .filter((img, index, arr) => arr.indexOf(img) === index); // Remove duplicates
 
               return allImages.length > 1 ? (
-                <Carousel 
-                  autoplay 
+                <Carousel
+                  autoplay
                   autoplaySpeed={4000}
                   fade
-                  dots={{ className: 'hero-carousel-dots' }}
-                  style={{ height: '400px', width: '100%' }}
+                  dots={{ className: "hero-carousel-dots" }}
+                  style={{ height: "400px", width: "100%" }}
                   effect="fade"
                 >
                   {allImages.map((image, index) => (
                     <div key={index}>
-                      <div 
-                        style={{ 
-                          height: '400px', 
-                          backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${image || '/placeholder-cause.svg'})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          backgroundRepeat: 'no-repeat',
-                          position: 'relative',
-                          transition: 'all 0.6s ease-in-out'
+                      <div
+                        style={{
+                          height: "400px",
+                          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image || "/placeholder-cause.svg"})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                          position: "relative",
+                          transition: "all 0.6s ease-in-out",
                         }}
                       />
                     </div>
                   ))}
                 </Carousel>
               ) : (
-                <div 
-                  style={{ 
-                    height: '400px', 
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${allImages[0] || '/placeholder-cause.svg'})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    position: 'relative'
+                <div
+                  style={{
+                    height: "400px",
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${allImages[0] || "/placeholder-cause.svg"})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    position: "relative",
                   }}
                 />
               );
             })()}
-            
+
             {/* Enhanced overlay for better text visibility */}
-            <div className="hero-overlay" style={{ 
-              background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 1
-            }} />
+            <div
+              className="hero-overlay"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 100%)",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1,
+              }}
+            />
           </div>
 
-          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <div
+            className="container"
+            style={{ position: "relative", zIndex: 2 }}
+          >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -640,18 +592,18 @@ export default function CauseDetailsPage() {
                     onClick={() => router.push(`/causes/${cause.id}/edit`)}
                     className="hero-btn-edit"
                     style={{
-                      background: 'rgba(255,255,255,0.15)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      color: 'white',
-                      backdropFilter: 'blur(10px)',
-                      marginRight: '12px'
+                      background: "rgba(255,255,255,0.15)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      color: "white",
+                      backdropFilter: "blur(10px)",
+                      marginRight: "12px",
                     }}
                   >
                     Edit Cause
                   </Button>
                 )}
-                
-                {cause.category_name === 'education' ? (
+
+                {cause.category_name === "education" ? (
                   <>
                     <Button
                       type="primary"
@@ -705,39 +657,107 @@ export default function CauseDetailsPage() {
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
                   <Title level={2} className="description-title">
-                    About This {cause.category_name === 'education' ? 'Course' : 'Cause'}
+                    About This{" "}
+                    {cause.category_name === "education" ? "Course" : "Cause"}
                   </Title>
                   <Paragraph className="description-text">
                     {cause.description}
                   </Paragraph>
-                  
-                  {/* Additional stats */}
-                  <div className="cause-stats">
-                    <div className="stat-item">
-                      <EyeOutlined className="stat-icon" />
-                      <div className="stat-content">
-                        <div className="stat-number">{cause.view_count || 0}</div>
-                        <div className="stat-label">Views</div>
+
+                  {/* Enhanced Interactive Stats */}
+                  <motion.div
+                    className="cause-stats-enhanced"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                  >
+                    <motion.div
+                      className="stat-item-enhanced"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="stat-icon-container">
+                        <EyeOutlined className="stat-icon-enhanced" />
                       </div>
-                    </div>
-                    <div className="stat-item">
-                      <TeamOutlined className="stat-icon" />
-                      <div className="stat-content">
-                        <div className="stat-number">{cause.contributors?.length || 0}</div>
-                        <div className="stat-label">Supporters</div>
+                      <div className="stat-content-enhanced">
+                        <motion.div
+                          className="stat-number-enhanced"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.6, delay: 0.6 }}
+                        >
+                          {(cause.view_count || 0).toLocaleString()}
+                        </motion.div>
+                        <div className="stat-label-enhanced">Views</div>
                       </div>
-                    </div>
-                    <div className="stat-item">
-                      <ShareAltOutlined className="stat-icon" />
-                      <div className="stat-content">
-                        <div className="stat-number">{cause.share_count || 0}</div>
-                        <div className="stat-label">Shares</div>
+                    </motion.div>
+
+                    <motion.div
+                      className="stat-item-enhanced"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="stat-icon-container">
+                        <TeamOutlined className="stat-icon-enhanced" />
                       </div>
-                    </div>
-                  </div>
+                      <div className="stat-content-enhanced">
+                        <motion.div
+                          className="stat-number-enhanced"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.6, delay: 0.7 }}
+                        >
+                          {(cause.contributors?.length || 0).toLocaleString()}
+                        </motion.div>
+                        <div className="stat-label-enhanced">Supporters</div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      className="stat-item-enhanced"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="stat-icon-container">
+                        <ShareAltOutlined className="stat-icon-enhanced" />
+                      </div>
+                      <div className="stat-content-enhanced">
+                        <motion.div
+                          className="stat-number-enhanced"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.6, delay: 0.8 }}
+                        >
+                          {(cause.share_count || 0).toLocaleString()}
+                        </motion.div>
+                        <div className="stat-label-enhanced">Shares</div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      className="stat-item-enhanced"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="stat-icon-container">
+                        <CalendarOutlined className="stat-icon-enhanced" />
+                      </div>
+                      <div className="stat-content-enhanced">
+                        <motion.div
+                          className="stat-number-enhanced"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.6, delay: 0.9 }}
+                        >
+                          {daysLeft || 0}
+                        </motion.div>
+                        <div className="stat-label-enhanced">Days Left</div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
                 </motion.div>
               </Col>
-              
+
               <Col xs={24} lg={8}>
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -747,22 +767,26 @@ export default function CauseDetailsPage() {
                   <Card className="quick-action-card">
                     <div className="quick-action-content">
                       <Title level={4}>Quick Actions</Title>
-                      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                        {cause.category_name === 'education' ? (
-                          <Button 
-                            type="primary" 
-                            size="large" 
-                            icon={<BookOutlined />} 
+                      <Space
+                        direction="vertical"
+                        size="middle"
+                        style={{ width: "100%" }}
+                      >
+                        {cause.category_name === "education" ? (
+                          <Button
+                            type="primary"
+                            size="large"
+                            icon={<BookOutlined />}
                             block
                             className="action-button"
                           >
                             Enroll Now
                           </Button>
                         ) : (
-                          <Button 
-                            type="primary" 
-                            size="large" 
-                            icon={<HeartOutlined />} 
+                          <Button
+                            type="primary"
+                            size="large"
+                            icon={<HeartOutlined />}
                             onClick={() => setDonateModalVisible(true)}
                             block
                             className="action-button"
@@ -770,9 +794,9 @@ export default function CauseDetailsPage() {
                             Donate Now
                           </Button>
                         )}
-                        <Button 
-                          size="large" 
-                          icon={<ShareAltOutlined />} 
+                        <Button
+                          size="large"
+                          icon={<ShareAltOutlined />}
                           block
                           className="action-button-secondary"
                         >
@@ -807,7 +831,19 @@ export default function CauseDetailsPage() {
                         <ClothesDetailsSection details={categoryDetails} />
                       )}
                       {cause.category_name === "education" && (
-                        <EducationDetailsSection details={categoryDetails} causeId={cause.id} />
+                        <EducationDetailsSection
+                          details={categoryDetails}
+                          theme={{
+                            primary: "#1a365d",
+                            text: "#1a202c",
+                            textSecondary: "#4a5568",
+                            background: "#ffffff",
+                            backgroundSecondary: "#fafafa",
+                            border: "#e2e8f0",
+                            shadow:
+                              "0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                          }}
+                        />
                       )}
                     </div>
                   )}
@@ -824,37 +860,23 @@ export default function CauseDetailsPage() {
 
               <Col xs={24} lg={8}>
                 <div className="sidebar">
-                  {/* Progress Card */}
+                  {/* Support Card */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
                   >
                     <Card className="modern-progress-card">
-                      <div className="progress-header">
-                        <div className="raised-amount">
+                      <div className="support-header">
+                        <div className="support-amount">
                           ${(cause.raisedAmount || 0).toLocaleString()}
                         </div>
-                        <div className="goal-amount">
-                          raised of ${(cause.goalAmount || 0).toLocaleString()}{" "}
-                          goal
+                        <div className="support-label">
+                          total contributions received
                         </div>
                       </div>
 
-                      <Progress
-                        percent={progressPercentage}
-                        showInfo={false}
-                        strokeColor="#52c41a"
-                        className="modern-progress-bar"
-                      />
-
                       <div className="progress-stats">
-                        <div className="stat-item">
-                          <div className="stat-value">
-                            {progressPercentage}%
-                          </div>
-                          <div className="stat-label">Funded</div>
-                        </div>
                         <div className="stat-item">
                           <div className="stat-value">
                             {cause.contributors?.length || 0}
@@ -867,7 +889,7 @@ export default function CauseDetailsPage() {
                         </div>
                       </div>
 
-                      {cause.category_name === 'education' ? (
+                      {cause.category_name === "education" ? (
                         <Button
                           type="primary"
                           size="large"
@@ -886,7 +908,7 @@ export default function CauseDetailsPage() {
                           className="modern-btn-primary"
                           block
                         >
-                          Donate Now
+                          Support This Cause
                         </Button>
                       )}
 

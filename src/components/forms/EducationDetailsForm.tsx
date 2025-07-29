@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from "react";
 import {
   Form,
   Input,
@@ -12,7 +12,10 @@ import {
   Card,
   TimePicker,
   Radio,
-} from 'antd';
+  Button,
+  Divider,
+} from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -21,9 +24,62 @@ const { RangePicker } = DatePicker;
 
 interface EducationDetailsFormProps {
   form: any;
+  onEnhancedFieldsChange?: (fields: {
+    courseModules: any[];
+    instructors: any[];
+    enhancedPrerequisites: any[];
+  }) => void;
 }
 
-const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => {
+const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
+  form,
+  onEnhancedFieldsChange,
+}) => {
+  // Enhanced education state
+  const [courseModules, setCourseModules] = useState<
+    Array<{
+      title: string;
+      description: string;
+      duration: string;
+      resources: string[];
+      assessment: string;
+    }>
+  >([]);
+
+  const [instructors, setInstructors] = useState<
+    Array<{
+      name: string;
+      email: string;
+      phone?: string;
+      bio?: string;
+      qualifications?: string[];
+      avatar?: string;
+    }>
+  >([]);
+
+  const [enhancedPrerequisites, setEnhancedPrerequisites] = useState<
+    Array<{
+      title: string;
+      description: string;
+      resources: string[];
+    }>
+  >([]);
+
+  // Notify parent component of enhanced fields changes
+  React.useEffect(() => {
+    if (onEnhancedFieldsChange) {
+      onEnhancedFieldsChange({
+        courseModules,
+        instructors,
+        enhancedPrerequisites,
+      });
+    }
+  }, [
+    courseModules,
+    instructors,
+    enhancedPrerequisites,
+    onEnhancedFieldsChange,
+  ]);
   return (
     <div className="modern-form-step">
       <div className="step-header">
@@ -41,7 +97,9 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Form.Item
               name="educationType"
               label="Education Type"
-              rules={[{ required: true, message: "Please select education type" }]}
+              rules={[
+                { required: true, message: "Please select education type" },
+              ]}
             >
               <Select size="large" placeholder="Select type">
                 <Option value="course">Online Course</Option>
@@ -96,7 +154,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Option value="cybersecurity">Cybersecurity</Option>
             <Option value="cloud-computing">Cloud Computing</Option>
             <Option value="database">Database Management</Option>
-            
+
             {/* Design & Creative */}
             <Option value="graphic-design">Graphic Design</Option>
             <Option value="ui-ux">UI/UX Design</Option>
@@ -106,7 +164,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Option value="arts-crafts">Arts & Crafts</Option>
             <Option value="music">Music</Option>
             <Option value="writing">Writing</Option>
-            
+
             {/* Business & Professional */}
             <Option value="business">Business Management</Option>
             <Option value="marketing">Digital Marketing</Option>
@@ -116,7 +174,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Option value="project-management">Project Management</Option>
             <Option value="leadership">Leadership</Option>
             <Option value="communication">Communication Skills</Option>
-            
+
             {/* Academic */}
             <Option value="mathematics">Mathematics</Option>
             <Option value="science">Science</Option>
@@ -124,7 +182,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Option value="history">History</Option>
             <Option value="literature">Literature</Option>
             <Option value="philosophy">Philosophy</Option>
-            
+
             {/* Life Skills */}
             <Option value="cooking">Cooking</Option>
             <Option value="fitness">Fitness & Health</Option>
@@ -132,7 +190,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Option value="personal-development">Personal Development</Option>
             <Option value="parenting">Parenting</Option>
             <Option value="relationships">Relationships</Option>
-            
+
             {/* Professional Skills */}
             <Option value="job-search">Job Search Skills</Option>
             <Option value="interview-prep">Interview Preparation</Option>
@@ -159,7 +217,9 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Form.Item
               name="maxTrainees"
               label="Max Participants"
-              rules={[{ required: true, message: "Please enter max participants" }]}
+              rules={[
+                { required: true, message: "Please enter max participants" },
+              ]}
             >
               <InputNumber
                 size="large"
@@ -188,7 +248,9 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
             <Form.Item
               name="numberOfDays"
               label="Number of Days"
-              rules={[{ required: true, message: "Please enter number of days" }]}
+              rules={[
+                { required: true, message: "Please enter number of days" },
+              ]}
             >
               <InputNumber
                 size="large"
@@ -208,9 +270,16 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
               initialValue={1}
             >
               <Select size="large">
-                {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <Option key={num} value={num}>
-                    {num} - {num <= 3 ? 'Easy' : num <= 6 ? 'Moderate' : num <= 8 ? 'Hard' : 'Expert'}
+                    {num} -{" "}
+                    {num <= 3
+                      ? "Easy"
+                      : num <= 6
+                        ? "Moderate"
+                        : num <= 8
+                          ? "Hard"
+                          : "Expert"}
                   </Option>
                 ))}
               </Select>
@@ -261,7 +330,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
           </Select>
         </Form.Item>
 
-        <Form.Item name="prerequisites" label="Prerequisites">
+        <Form.Item name="prerequisites" label="Basic Prerequisites (Legacy)">
           <TextArea
             rows={3}
             placeholder="Any prerequisites, prior knowledge, or requirements for participants"
@@ -269,28 +338,355 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
         </Form.Item>
       </div>
 
+      {/* Enhanced Education Fields */}
       <div className="form-section">
-        <Title level={4}>Instructor Information</Title>
+        <Divider>Enhanced Course Features</Divider>
+      </div>
+
+      {/* Course Modules */}
+      <div className="form-section">
+        <Card
+          title="Course Curriculum"
+          size="small"
+          style={{ marginBottom: 16 }}
+        >
+          {courseModules.map((module, index) => (
+            <Card
+              key={index}
+              size="small"
+              style={{ marginBottom: 8 }}
+              extra={
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => {
+                    const newModules = courseModules.filter(
+                      (_, i) => i !== index,
+                    );
+                    setCourseModules(newModules);
+                  }}
+                />
+              }
+            >
+              <Row gutter={[8, 8]}>
+                <Col xs={24} md={12}>
+                  <Input
+                    placeholder="Module Title"
+                    value={module.title}
+                    onChange={(e) => {
+                      const newModules = [...courseModules];
+                      newModules[index].title = e.target.value;
+                      setCourseModules(newModules);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Input
+                    placeholder="Duration (e.g., 2 weeks)"
+                    value={module.duration}
+                    onChange={(e) => {
+                      const newModules = [...courseModules];
+                      newModules[index].duration = e.target.value;
+                      setCourseModules(newModules);
+                    }}
+                  />
+                </Col>
+                <Col xs={24}>
+                  <TextArea
+                    placeholder="Module Description"
+                    rows={2}
+                    value={module.description}
+                    onChange={(e) => {
+                      const newModules = [...courseModules];
+                      newModules[index].description = e.target.value;
+                      setCourseModules(newModules);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Select
+                    mode="tags"
+                    placeholder="Resources (videos, PDFs, etc.)"
+                    value={module.resources}
+                    onChange={(values) => {
+                      const newModules = [...courseModules];
+                      newModules[index].resources = values;
+                      setCourseModules(newModules);
+                    }}
+                    style={{ width: "100%" }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Input
+                    placeholder="Assessment Method"
+                    value={module.assessment}
+                    onChange={(e) => {
+                      const newModules = [...courseModules];
+                      newModules[index].assessment = e.target.value;
+                      setCourseModules(newModules);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          ))}
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={() =>
+              setCourseModules([
+                ...courseModules,
+                {
+                  title: "",
+                  description: "",
+                  duration: "",
+                  resources: [],
+                  assessment: "",
+                },
+              ])
+            }
+            block
+          >
+            Add Course Module
+          </Button>
+        </Card>
+      </div>
+
+      {/* Multiple Instructors */}
+      <div className="form-section">
+        <Card title="Instructors" size="small" style={{ marginBottom: 16 }}>
+          {instructors.map((instructor, index) => (
+            <Card
+              key={index}
+              size="small"
+              style={{ marginBottom: 8 }}
+              extra={
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => {
+                    const newInstructors = instructors.filter(
+                      (_, i) => i !== index,
+                    );
+                    setInstructors(newInstructors);
+                  }}
+                />
+              }
+            >
+              <Row gutter={[8, 8]}>
+                <Col xs={24} md={8}>
+                  <Input
+                    placeholder="Instructor Name"
+                    value={instructor.name}
+                    onChange={(e) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].name = e.target.value;
+                      setInstructors(newInstructors);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={8}>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={instructor.email}
+                    onChange={(e) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].email = e.target.value;
+                      setInstructors(newInstructors);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={8}>
+                  <Input
+                    placeholder="Phone (optional)"
+                    value={instructor.phone || ""}
+                    onChange={(e) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].phone = e.target.value;
+                      setInstructors(newInstructors);
+                    }}
+                  />
+                </Col>
+                <Col xs={24}>
+                  <TextArea
+                    placeholder="Bio (optional)"
+                    rows={2}
+                    value={instructor.bio || ""}
+                    onChange={(e) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].bio = e.target.value;
+                      setInstructors(newInstructors);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Select
+                    mode="tags"
+                    placeholder="Qualifications (optional)"
+                    value={instructor.qualifications || []}
+                    onChange={(values) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].qualifications = values;
+                      setInstructors(newInstructors);
+                    }}
+                    style={{ width: "100%" }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Input
+                    placeholder="Avatar URL (optional)"
+                    value={instructor.avatar || ""}
+                    onChange={(e) => {
+                      const newInstructors = [...instructors];
+                      newInstructors[index].avatar = e.target.value;
+                      setInstructors(newInstructors);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          ))}
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={() =>
+              setInstructors([
+                ...instructors,
+                {
+                  name: "",
+                  email: "",
+                  phone: "",
+                  bio: "",
+                  qualifications: [],
+                  avatar: "",
+                },
+              ])
+            }
+            block
+          >
+            Add Instructor
+          </Button>
+        </Card>
+      </div>
+
+      {/* Enhanced Prerequisites */}
+      <div className="form-section">
+        <Card
+          title="Detailed Prerequisites"
+          size="small"
+          style={{ marginBottom: 16 }}
+        >
+          {enhancedPrerequisites.map((prereq, index) => (
+            <Card
+              key={index}
+              size="small"
+              style={{ marginBottom: 8 }}
+              extra={
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => {
+                    const newPrereqs = enhancedPrerequisites.filter(
+                      (_, i) => i !== index,
+                    );
+                    setEnhancedPrerequisites(newPrereqs);
+                  }}
+                />
+              }
+            >
+              <Row gutter={[8, 8]}>
+                <Col xs={24} md={12}>
+                  <Input
+                    placeholder="Prerequisite Title"
+                    value={prereq.title}
+                    onChange={(e) => {
+                      const newPrereqs = [...enhancedPrerequisites];
+                      newPrereqs[index].title = e.target.value;
+                      setEnhancedPrerequisites(newPrereqs);
+                    }}
+                  />
+                </Col>
+                <Col xs={24} md={12}>
+                  <Select
+                    mode="tags"
+                    placeholder="Resources"
+                    value={prereq.resources}
+                    onChange={(values) => {
+                      const newPrereqs = [...enhancedPrerequisites];
+                      newPrereqs[index].resources = values;
+                      setEnhancedPrerequisites(newPrereqs);
+                    }}
+                    style={{ width: "100%" }}
+                  />
+                </Col>
+                <Col xs={24}>
+                  <TextArea
+                    placeholder="Description"
+                    rows={2}
+                    value={prereq.description}
+                    onChange={(e) => {
+                      const newPrereqs = [...enhancedPrerequisites];
+                      newPrereqs[index].description = e.target.value;
+                      setEnhancedPrerequisites(newPrereqs);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          ))}
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={() =>
+              setEnhancedPrerequisites([
+                ...enhancedPrerequisites,
+                {
+                  title: "",
+                  description: "",
+                  resources: [],
+                },
+              ])
+            }
+            block
+          >
+            Add Prerequisite
+          </Button>
+        </Card>
+      </div>
+
+      <div className="form-section">
+        <Title level={4}>Legacy Instructor Information</Title>
         <Form.Item
           name="instructorName"
-          label="Instructor Name"
+          label="Instructor Name (Legacy)"
           rules={[{ required: true, message: "Please enter instructor name" }]}
         >
           <Input size="large" placeholder="Name of the instructor" />
         </Form.Item>
 
-        <Form.Item name="instructorEmail" label="Instructor Email">
-          <Input size="large" type="email" placeholder="Instructor's contact email" />
+        <Form.Item name="instructorEmail" label="Instructor Email (Legacy)">
+          <Input
+            size="large"
+            type="email"
+            placeholder="Instructor's contact email"
+          />
         </Form.Item>
 
-        <Form.Item name="instructorBio" label="Instructor Bio">
+        <Form.Item name="instructorBio" label="Instructor Bio (Legacy)">
           <TextArea
             rows={3}
             placeholder="Brief bio about the instructor's background, experience, and qualifications"
           />
         </Form.Item>
 
-        <Form.Item name="instructorQualifications" label="Instructor Qualifications">
+        <Form.Item
+          name="instructorQualifications"
+          label="Instructor Qualifications (Legacy)"
+        >
           <TextArea
             rows={2}
             placeholder="Degrees, certifications, years of experience, notable achievements"
@@ -430,8 +826,14 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
         <Title level={4}>Pricing & Certification</Title>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
-            <Form.Item name="isFree" valuePropName="checked" initialValue={true}>
-              <Checkbox style={{ fontSize: '16px' }}>This is a free course</Checkbox>
+            <Form.Item
+              name="isFree"
+              valuePropName="checked"
+              initialValue={true}
+            >
+              <Checkbox style={{ fontSize: "16px" }}>
+                This is a free course
+              </Checkbox>
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
@@ -449,7 +851,9 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({ form }) => 
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <Form.Item name="certification" valuePropName="checked">
-              <Checkbox style={{ fontSize: '16px' }}>Certificate provided upon completion</Checkbox>
+              <Checkbox style={{ fontSize: "16px" }}>
+                Certificate provided upon completion
+              </Checkbox>
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>

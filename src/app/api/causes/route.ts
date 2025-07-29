@@ -415,8 +415,9 @@ export async function POST(request: NextRequest) {
             instructor_email, instructor_bio, instructor_qualifications,
             certification, certification_body, materials_provided,
             equipment_required, software_required, price, is_free,
-            course_language, subtitles_available, difficulty_rating
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            course_language, subtitles_available, difficulty_rating,
+            course_modules, instructors, enhanced_prerequisites
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         // Calculate default dates
@@ -459,6 +460,23 @@ export async function POST(request: NextRequest) {
           categorySpecificData.courseLanguage || "English",
           JSON.stringify(categorySpecificData.subtitlesAvailable || []),
           categorySpecificData.difficultyRating || 1,
+          // Enhanced education fields
+          categorySpecificData.enhancedEducationFields?.courseModules
+            ? JSON.stringify(
+                categorySpecificData.enhancedEducationFields.courseModules,
+              )
+            : null,
+          categorySpecificData.enhancedEducationFields?.instructors
+            ? JSON.stringify(
+                categorySpecificData.enhancedEducationFields.instructors,
+              )
+            : null,
+          categorySpecificData.enhancedEducationFields?.enhancedPrerequisites
+            ? JSON.stringify(
+                categorySpecificData.enhancedEducationFields
+                  .enhancedPrerequisites,
+              )
+            : null,
         ];
 
         // Debug: Check for undefined values

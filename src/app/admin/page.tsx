@@ -171,140 +171,45 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      // Mock data - replace with real API calls
-      setStats({
-        totalUsers: 1567,
-        totalCauses: 234,
-        activeCauses: 189,
-        completedCauses: 45,
-        totalDonations: 125600,
-        monthlyGrowth: 15.2,
-        totalComments: 892,
-        pendingApprovals: 12,
-      });
+      // Fetch real data from API endpoints
+      const [statsResponse, usersResponse, causesResponse, commentsResponse] = await Promise.all([
+        fetch("/api/admin/stats"),
+        fetch("/api/admin/users?limit=50"),
+        fetch("/api/admin/causes?limit=50"),
+        fetch("/api/admin/comments?limit=50"),
+      ]);
 
-      // Mock users data
-      const mockUsers: AdminUser[] = [
-        {
-          id: 1,
-          name: "John Doe",
-          email: "john@example.com",
-          avatar:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-          is_admin: false,
-          is_verified: true,
-          created_at: "2024-01-15",
-          last_login: "2024-01-25",
-          causesCreated: 3,
-          totalRaised: 5600,
-          status: "active",
-          phone: "+1234567890",
-        },
-        {
-          id: 2,
-          name: "Sarah Johnson",
-          email: "sarah@example.com",
-          avatar:
-            "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&h=40&fit=crop&crop=face",
-          is_admin: false,
-          is_verified: true,
-          created_at: "2024-01-10",
-          last_login: "2024-01-24",
-          causesCreated: 5,
-          totalRaised: 12400,
-          status: "active",
-        },
-        {
-          id: 3,
-          name: "Mike Chen",
-          email: "mike@example.com",
-          is_admin: true,
-          is_verified: true,
-          created_at: "2024-01-05",
-          last_login: "2024-01-26",
-          causesCreated: 8,
-          totalRaised: 25000,
-          status: "active",
-        },
-      ];
-      setUsers(mockUsers);
+      // Handle stats
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        if (statsData.success) {
+          setStats(statsData.data);
+        }
+      }
 
-      // Mock causes data
-      const mockCauses: AdminCause[] = [
-        {
-          id: 1,
-          title: "Emergency Food Relief",
-          category_name: "food",
-          status: "active",
-          priority: "high",
-          creator_name: "John Doe",
-          created_at: "2024-01-20",
-          view_count: 245,
-          like_count: 34,
-          is_featured: true,
-          goal_amount: 10000,
-          raised_amount: 7500,
-          location: "New York, NY",
-        },
-        {
-          id: 2,
-          title: "Winter Clothing Drive",
-          category_name: "clothes",
-          status: "active",
-          priority: "medium",
-          creator_name: "Sarah Johnson",
-          created_at: "2024-01-18",
-          view_count: 189,
-          like_count: 28,
-          is_featured: false,
-          goal_amount: 5000,
-          raised_amount: 3200,
-          location: "Boston, MA",
-        },
-        {
-          id: 3,
-          title: "Computer Skills Training",
-          category_name: "education",
-          status: "completed",
-          priority: "low",
-          creator_name: "Mike Chen",
-          created_at: "2024-01-10",
-          view_count: 156,
-          like_count: 45,
-          is_featured: false,
-          location: "Online",
-        },
-      ];
-      setCauses(mockCauses);
+      // Handle users
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        if (usersData.success) {
+          setUsers(usersData.data.users || []);
+        }
+      }
 
-      // Mock comments data
-      const mockComments: AdminComment[] = [
-        {
-          id: 1,
-          content: "This is a great initiative! Happy to support.",
-          user_name: "Alice Smith",
-          user_avatar:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face",
-          cause_title: "Emergency Food Relief",
-          cause_id: 1,
-          created_at: "2024-01-22",
-          status: "approved",
-          is_flagged: false,
-          reports_count: 0,
-        },
-        {
-          id: 2,
-          content: "Inappropriate content that needs review...",
-          user_name: "Bob Wilson",
-          cause_title: "Winter Clothing Drive",
-          cause_id: 2,
-          created_at: "2024-01-21",
-          status: "pending",
-          is_flagged: true,
-          reports_count: 3,
-        },
-      ];
-      setComments(mockComments);
+      // Handle causes
+      if (causesResponse.ok) {
+        const causesData = await causesResponse.json();
+        if (causesData.success) {
+          setCauses(causesData.data.causes || []);
+        }
+      }
+
+      // Handle comments
+      if (commentsResponse.ok) {
+        const commentsData = await commentsResponse.json();
+        if (commentsData.success) {
+          setComments(commentsData.data.comments || []);
+        }
+      }
     } catch (error) {
       console.error("Error fetching admin data:", error);
       message.error("Failed to load admin data");
@@ -325,33 +230,70 @@ export default function AdminDashboard() {
     setUserModalVisible(true);
   };
 
-  const handleDeleteUser = (userId: number) => {
-    setUsers(users.filter((user) => user.id !== userId));
-    message.success("User deleted successfully");
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setUsers(users.filter((user) => user.id !== userId));
+        message.success("User deleted successfully");
+      } else {
+        message.error(data.error || "Failed to delete user");
+      }
+    } catch (error) {
+      message.error("Failed to delete user");
+    }
   };
 
   const handleUserSubmit = async (values: any) => {
     try {
       if (selectedUser) {
         // Update user
-        setUsers(
-          users.map((user) =>
-            user.id === selectedUser.id ? { ...user, ...values } : user,
-          ),
-        );
-        message.success("User updated successfully");
+        const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setUsers(
+            users.map((user) =>
+              user.id === selectedUser.id ? { ...user, ...values } : user,
+            ),
+          );
+          message.success("User updated successfully");
+        } else {
+          message.error(data.error || "Failed to update user");
+          return;
+        }
       } else {
         // Create user
-        const newUser: AdminUser = {
-          ...values,
-          id: Math.max(...users.map((u) => u.id)) + 1,
-          created_at: new Date().toISOString().split("T")[0],
-          causesCreated: 0,
-          totalRaised: 0,
-          status: "active",
-        };
-        setUsers([...users, newUser]);
-        message.success("User created successfully");
+        const response = await fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          const newUser: AdminUser = {
+            ...values,
+            id: data.data.id,
+            created_at: new Date().toISOString().split("T")[0],
+            causesCreated: 0,
+            totalRaised: 0,
+            status: "active",
+          };
+          setUsers([...users, newUser]);
+          message.success("User created successfully");
+        } else {
+          message.error(data.error || "Failed to create user");
+          return;
+        }
       }
       setUserModalVisible(false);
       userForm.resetFields();
@@ -372,9 +314,22 @@ export default function AdminDashboard() {
     setCauseModalVisible(true);
   };
 
-  const handleDeleteCause = (causeId: number) => {
-    setCauses(causes.filter((cause) => cause.id !== causeId));
-    message.success("Cause deleted successfully");
+  const handleDeleteCause = async (causeId: number) => {
+    try {
+      const response = await fetch(`/api/admin/causes/${causeId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCauses(causes.filter((cause) => cause.id !== causeId));
+        message.success("Cause deleted successfully");
+      } else {
+        message.error(data.error || "Failed to delete cause");
+      }
+    } catch (error) {
+      message.error("Failed to delete cause");
+    }
   };
 
   const handleCauseSubmit = async (values: any) => {
@@ -408,41 +363,99 @@ export default function AdminDashboard() {
   };
 
   const handleFeatureCause = async (causeId: number, featured: boolean) => {
-    setCauses(
-      causes.map((cause) =>
-        cause.id === causeId ? { ...cause, is_featured: featured } : cause,
-      ),
-    );
-    message.success(
-      `Cause ${featured ? "featured" : "unfeatured"} successfully`,
-    );
+    try {
+      const response = await fetch(`/api/admin/causes/${causeId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_featured: featured }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCauses(
+          causes.map((cause) =>
+            cause.id === causeId ? { ...cause, is_featured: featured } : cause,
+          ),
+        );
+        message.success(
+          `Cause ${featured ? "featured" : "unfeatured"} successfully`,
+        );
+      } else {
+        message.error(data.error || "Failed to update cause");
+      }
+    } catch (error) {
+      message.error("Failed to update cause");
+    }
   };
 
-  const handleDeleteComment = (commentId: number) => {
-    setComments(comments.filter((comment) => comment.id !== commentId));
-    message.success("Comment deleted successfully");
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const response = await fetch(`/api/admin/comments/${commentId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setComments(comments.filter((comment) => comment.id !== commentId));
+        message.success("Comment deleted successfully");
+      } else {
+        message.error(data.error || "Failed to delete comment");
+      }
+    } catch (error) {
+      message.error("Failed to delete comment");
+    }
   };
 
-  const handleApproveComment = (commentId: number) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId
-          ? { ...comment, status: "approved" as const }
-          : comment,
-      ),
-    );
-    message.success("Comment approved successfully");
+  const handleApproveComment = async (commentId: number) => {
+    try {
+      const response = await fetch(`/api/admin/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setComments(
+          comments.map((comment) =>
+            comment.id === commentId
+              ? { ...comment, status: "approved" as const }
+              : comment,
+          ),
+        );
+        message.success("Comment approved successfully");
+      } else {
+        message.error(data.error || "Failed to approve comment");
+      }
+    } catch (error) {
+      message.error("Failed to approve comment");
+    }
   };
 
-  const handleRejectComment = (commentId: number) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId
-          ? { ...comment, status: "rejected" as const }
-          : comment,
-      ),
-    );
-    message.success("Comment rejected successfully");
+  const handleRejectComment = async (commentId: number) => {
+    try {
+      const response = await fetch(`/api/admin/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject" }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setComments(
+          comments.map((comment) =>
+            comment.id === commentId
+              ? { ...comment, status: "rejected" as const }
+              : comment,
+          ),
+        );
+        message.success("Comment rejected successfully");
+      } else {
+        message.error(data.error || "Failed to reject comment");
+      }
+    } catch (error) {
+      message.error("Failed to reject comment");
+    }
   };
 
   const getStatusColor = (status: string) => {
