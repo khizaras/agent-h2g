@@ -91,8 +91,8 @@ interface AdminUser {
   name: string;
   email: string;
   avatar?: string;
-  is_admin: boolean;
-  is_verified: boolean;
+  role: string;
+  email_verified: boolean;
   created_at: string;
   last_login?: string;
   causesCreated: number;

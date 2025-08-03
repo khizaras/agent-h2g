@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
 
     if (status && status !== "all") {
       if (status === "banned") {
-        whereClause += " AND is_verified = FALSE AND last_login < DATE_SUB(NOW(), INTERVAL 90 DAY)";
+        whereClause += " AND is_active = FALSE";
       } else if (status === "active") {
-        whereClause += " AND is_verified = TRUE AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        whereClause += " AND email_verified = TRUE AND is_active = TRUE";
       } else if (status === "inactive") {
-        whereClause += " AND (is_verified = FALSE OR last_login < DATE_SUB(NOW(), INTERVAL 30 DAY))";
+        whereClause += " AND (email_verified = FALSE OR is_active = FALSE)";
       }
     }
 
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
         COUNT(DISTINCT c.id) as causesCreated,
         COALESCE(SUM(c.like_count), 0) as totalRaised,
         CASE 
-          WHEN is_verified = FALSE AND last_login < DATE_SUB(NOW(), INTERVAL 90 DAY) THEN 'banned'
-          WHEN is_verified = TRUE AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 'active'
+          WHEN is_active = FALSE THEN 'banned'
+          WHEN email_verified = TRUE AND is_active = TRUE THEN 'active'
           ELSE 'inactive'
         END as status
       FROM users u
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, phone, is_admin, is_verified } = await request.json();
+    const { name, email, password, phone, is_admin, email_verified } = await request.json();
 
     // Validate required fields
     if (!name || !email) {
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     // Insert new user
     const insertQuery = `
-      INSERT INTO users (name, email, password, phone, is_admin, is_verified, created_at, updated_at)
+      INSERT INTO users (name, email, password, phone, role, email_verified, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
 
@@ -149,8 +149,8 @@ export async function POST(request: NextRequest) {
       email,
       hashedPassword,
       phone || null,
-      is_admin || false,
-      is_verified || false,
+      is_admin ? 'admin' : 'user',
+      email_verified || false,
     ]);
 
     return NextResponse.json({

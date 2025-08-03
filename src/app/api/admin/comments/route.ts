@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         c.*,
         u.name as user_name,
         u.avatar as user_avatar,
-        u.is_verified,
+        u.email_verified,
         cause.title as cause_title,
         cause.id as cause_id,
         CASE 

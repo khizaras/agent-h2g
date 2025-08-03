@@ -25,8 +25,8 @@ export async function GET(
         COUNT(DISTINCT c.id) as causesCreated,
         COALESCE(SUM(c.like_count), 0) as totalRaised,
         CASE 
-          WHEN is_verified = FALSE AND last_login < DATE_SUB(NOW(), INTERVAL 90 DAY) THEN 'banned'
-          WHEN is_verified = TRUE AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 'active'
+          WHEN is_active = FALSE THEN 'banned'
+          WHEN email_verified = TRUE AND is_active = TRUE THEN 'active'
           ELSE 'inactive'
         END as status
       FROM users u
@@ -72,7 +72,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { name, email, password, phone, is_admin, is_verified } = await request.json();
+    const { name, email, password, phone, is_admin, email_verified } = await request.json();
 
     // Check if user exists
     const existingUser = await Database.query(
@@ -126,13 +126,13 @@ export async function PUT(
     }
 
     if (is_admin !== undefined) {
-      updates.push("is_admin = ?");
-      params.push(is_admin);
+      updates.push("role = ?");
+      params.push(is_admin ? 'admin' : 'user');
     }
 
-    if (is_verified !== undefined) {
-      updates.push("is_verified = ?");
-      params.push(is_verified);
+    if (email_verified !== undefined) {
+      updates.push("email_verified = ?");
+      params.push(email_verified);
     }
 
     if (updates.length === 0) {
@@ -192,15 +192,15 @@ export async function DELETE(
 
     // Don't allow deleting the last admin
     const adminCount = await Database.query(
-      "SELECT COUNT(*) as count FROM users WHERE is_admin = TRUE"
+      "SELECT COUNT(*) as count FROM users WHERE role = 'admin'"
     );
 
     const userToDelete = await Database.query(
-      "SELECT is_admin FROM users WHERE id = ?",
+      "SELECT role FROM users WHERE id = ?",
       [id]
     );
 
-    if (userToDelete[0]?.is_admin && adminCount[0]?.count <= 1) {
+    if (userToDelete[0]?.role === 'admin' && adminCount[0]?.count <= 1) {
       return NextResponse.json(
         { success: false, error: "Cannot delete the last admin user" },
         { status: 400 }
