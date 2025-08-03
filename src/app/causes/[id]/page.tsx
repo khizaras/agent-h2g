@@ -57,6 +57,9 @@ import Link from 'next/link';
 import { MainLayout } from '@/components/layout/MainLayout';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 import { animations } from '@/config/theme';
+import EnrollmentButton from '@/components/enrollment/EnrollmentButton';
+import EnrollmentStatus from '@/components/enrollment/EnrollmentStatus';
+import CommentsSection from '@/components/comments/CommentsSection';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -118,6 +121,7 @@ export default function CauseDetailsPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [commentForm] = Form.useForm();
+  const [enrollmentRefresh, setEnrollmentRefresh] = useState(0);
 
   useEffect(() => {
     if (params?.id) {
@@ -1032,6 +1036,22 @@ export default function CauseDetailsPage() {
                   {/* Category-Specific Details */}
                   {renderCategorySpecificDetails()}
 
+                  {/* Enrollment Status - Only for Training */}
+                  {cause.category_name === 'training' && (
+                    <EnrollmentStatus 
+                      causeId={cause.id} 
+                      refreshTrigger={enrollmentRefresh}
+                    />
+                  )}
+
+                  {/* Comments Section */}
+                  <div style={{ marginTop: 32 }}>
+                    <CommentsSection 
+                      causeId={cause.id}
+                      allowComments={true}
+                    />
+                  </div>
+
                   {/* Tags */}
                   {cause.tags && cause.tags.length > 0 && (
                     <div style={{ marginBottom: 32 }}>
@@ -1096,27 +1116,17 @@ export default function CauseDetailsPage() {
                     <Space size="large" wrap>
                       {/* Dynamic primary action button based on category */}
                       {cause.category_name === 'training' ? (
-                        <Button
-                          type="primary"
-                          size="large"
-                          icon={<FiBookOpen />}
-                          onClick={() => {
-                            // TODO: Implement enrollment functionality
-                            message.info('Enrollment functionality will be implemented');
+                        <EnrollmentButton
+                          causeId={cause.id}
+                          courseName={cause.title}
+                          maxParticipants={cause.categoryDetails?.max_participants || 0}
+                          currentParticipants={cause.categoryDetails?.current_participants || 0}
+                          enrollmentStatus="available"
+                          onEnrollmentSuccess={() => {
+                            setEnrollmentRefresh(prev => prev + 1);
+                            fetchCauseDetails(params.id as string);
                           }}
-                          style={{
-                            borderRadius: 4,
-                            height: 40,
-                            padding: '0 24px',
-                            backgroundColor: '#0078d4',
-                            borderColor: '#0078d4',
-                            fontWeight: 600,
-                            fontSize: 14,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif"
-                          }}
-                        >
-                          Enroll Now
-                        </Button>
+                        />
                       ) : (cause.category_name === 'food' || cause.category_name === 'clothes') ? (
                         <Button
                           type="primary"

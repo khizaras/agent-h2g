@@ -26,17 +26,17 @@ export async function GET(
       );
     }
 
-    // Check if cause exists and is an education course
+    // Check if cause exists and is a training course
     const causes = (await Database.query(
       `SELECT c.id, c.title, c.category_id, c.user_id 
        FROM causes c 
-       WHERE c.id = ? AND c.category_id = (SELECT id FROM categories WHERE name = 'education')`,
+       WHERE c.id = ? AND c.category_id = (SELECT id FROM categories WHERE name = 'training')`,
       [causeId],
     )) as any[];
 
     if (!causes || causes.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Education cause not found" },
+        { success: false, message: "Training cause not found" },
         { status: 404 },
       );
     }
@@ -48,9 +48,8 @@ export async function GET(
       // For other users, just return the count
       const enrollmentCount = (await Database.query(
         `SELECT COUNT(*) as count 
-         FROM registrations r
-         INNER JOIN education_details ed ON r.education_id = ed.id
-         WHERE ed.cause_id = ? AND r.status IN ('pending', 'approved')`,
+         FROM enrollments e
+         WHERE e.cause_id = ? AND e.enrollment_status IN ('pending', 'accepted')`,
         [causeId],
       )) as any[];
 
@@ -68,45 +67,47 @@ export async function GET(
     // Get all enrolled users with their details
     const enrollments = (await Database.query(
       `SELECT 
-         r.id as enrollment_id,
-         r.status,
-         r.notes,
-         r.created_at as enrollment_date,
+         e.id as enrollment_id,
+         e.enrollment_status,
+         e.message,
+         e.notes,
+         e.created_at as enrollment_date,
          u.id as user_id,
          u.name,
          u.email,
          u.bio,
          u.avatar,
          u.created_at as user_since
-       FROM registrations r
-       INNER JOIN education_details ed ON r.education_id = ed.id
-       INNER JOIN users u ON r.user_id = u.id
-       WHERE ed.cause_id = ? AND r.status IN ('pending', 'approved')
-       ORDER BY r.created_at DESC`,
+       FROM enrollments e
+       INNER JOIN users u ON e.user_id = u.id
+       WHERE e.cause_id = ? 
+       ORDER BY e.created_at DESC`,
       [causeId],
     )) as any[];
 
     // Get course statistics
     const stats = (await Database.query(
       `SELECT 
-         ed.max_trainees,
-         ed.current_trainees,
-         COUNT(r.id) as total_registrations,
-         SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) as approved_count,
-         SUM(CASE WHEN r.status = 'pending' THEN 1 ELSE 0 END) as pending_count
-       FROM education_details ed
-       LEFT JOIN registrations r ON ed.id = r.education_id
-       WHERE ed.cause_id = ?
-       GROUP BY ed.id`,
+         td.max_participants,
+         td.current_participants,
+         COUNT(e.id) as total_enrollments,
+         SUM(CASE WHEN e.enrollment_status = 'accepted' THEN 1 ELSE 0 END) as accepted_count,
+         SUM(CASE WHEN e.enrollment_status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+         SUM(CASE WHEN e.enrollment_status = 'rejected' THEN 1 ELSE 0 END) as rejected_count
+       FROM training_details td
+       LEFT JOIN enrollments e ON td.cause_id = e.cause_id
+       WHERE td.cause_id = ?
+       GROUP BY td.cause_id`,
       [causeId],
     )) as any[];
 
     const courseStats = stats[0] || {
-      max_trainees: 0,
-      current_trainees: 0,
-      total_registrations: 0,
-      approved_count: 0,
+      max_participants: 0,
+      current_participants: 0,
+      total_enrollments: 0,
+      accepted_count: 0,
       pending_count: 0,
+      rejected_count: 0,
     };
 
     return NextResponse.json({
@@ -115,16 +116,18 @@ export async function GET(
         canViewDetails: true,
         totalEnrollments: enrollments.length,
         stats: {
-          maxTrainees: courseStats.max_trainees,
-          currentTrainees: courseStats.current_trainees,
-          totalRegistrations: courseStats.total_registrations,
-          approvedCount: courseStats.approved_count,
+          maxParticipants: courseStats.max_participants,
+          currentParticipants: courseStats.current_participants,
+          totalEnrollments: courseStats.total_enrollments,
+          acceptedCount: courseStats.accepted_count,
           pendingCount: courseStats.pending_count,
-          availableSpots: courseStats.max_trainees - courseStats.current_trainees,
+          rejectedCount: courseStats.rejected_count,
+          availableSpots: courseStats.max_participants - courseStats.current_participants,
         },
         enrollments: enrollments.map((enrollment) => ({
           id: enrollment.enrollment_id,
-          status: enrollment.status,
+          status: enrollment.enrollment_status,
+          message: enrollment.message,
           notes: enrollment.notes,
           enrollmentDate: enrollment.enrollment_date,
           user: {
@@ -142,6 +145,86 @@ export async function GET(
     console.error("Enrollments fetch error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+// Update enrollment status (for course owners)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const causeId = parseInt(id);
+    const { enrollmentId, status, notes } = await request.json();
+
+    if (!enrollmentId || !status) {
+      return NextResponse.json(
+        { error: "Enrollment ID and status are required" },
+        { status: 400 },
+      );
+    }
+
+    // Check if user owns the cause (only cause owner can update enrollment status)
+    const causeOwnerCheck = await Database.query(
+      "SELECT user_id FROM causes WHERE id = ?",
+      [causeId],
+    ) as any[];
+
+    if (causeOwnerCheck.length === 0 || causeOwnerCheck[0].user_id !== parseInt(session.user.id)) {
+      return NextResponse.json(
+        { error: "Only the cause owner can update enrollment status" },
+        { status: 403 },
+      );
+    }
+
+    // Update enrollment status
+    await Database.query(
+      `UPDATE enrollments 
+       SET enrollment_status = ?, notes = ?, updated_at = NOW()
+       WHERE id = ? AND cause_id = ?`,
+      [status, notes || null, enrollmentId, causeId],
+    );
+
+    // If rejected or cancelled, decrease current participants
+    if (status === "rejected" || status === "cancelled") {
+      await Database.query(
+        "UPDATE training_details SET current_participants = GREATEST(0, current_participants - 1) WHERE cause_id = ?",
+        [causeId],
+      );
+    }
+
+    // Get updated enrollment
+    const updatedEnrollment = await Database.query(
+      `SELECT e.*, u.name as user_name, u.email as user_email 
+       FROM enrollments e 
+       LEFT JOIN users u ON e.user_id = u.id 
+       WHERE e.id = ?`,
+      [enrollmentId],
+    ) as any[];
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        enrollment: updatedEnrollment[0],
+        message: "Enrollment status updated successfully",
+      },
+    });
+  } catch (error) {
+    console.error("Error updating enrollment:", error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "Failed to update enrollment",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined
+      },
       { status: 500 },
     );
   }

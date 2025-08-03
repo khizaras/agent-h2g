@@ -3,37 +3,26 @@
 import React, { useState, useEffect } from "react";
 import {
   Card,
+  Form,
+  Input,
   Button,
   Avatar,
   Typography,
-  Space,
-  Input,
-  Form,
-  message,
   Divider,
-  Rate,
-  Tooltip,
-  Modal,
   Spin,
   Empty,
+  message,
 } from "antd";
 import {
-  UserOutlined,
-  LikeOutlined,
-  LikeFilled,
   MessageOutlined,
   SendOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  StarOutlined,
-  StarFilled,
-  SafetyCertificateOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
+const { Text, Paragraph } = Typography;
 
 interface Comment {
   id: number;
@@ -41,30 +30,21 @@ interface Comment {
   user_name: string;
   user_avatar?: string;
   user_id: number;
-  is_verified?: boolean;
-  rating?: number;
-  like_count: number;
   reply_count: number;
   created_at: string;
-  updated_at: string;
-  is_anonymous: boolean;
-  is_pinned: boolean;
   parent_id?: number;
   replies?: Comment[];
-  liked?: boolean;
 }
 
 interface CommentsSectionProps {
   causeId: number;
   allowComments?: boolean;
-  allowRatings?: boolean;
   className?: string;
 }
 
 export default function CommentsSection({
   causeId,
   allowComments = true,
-  allowRatings = true,
   className = "",
 }: CommentsSectionProps) {
   const { data: session } = useSession();
@@ -72,10 +52,6 @@ export default function CommentsSection({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
-  const [editingComment, setEditingComment] = useState<number | null>(null);
-  const [newComment, setNewComment] = useState("");
-  const [newRating, setNewRating] = useState<number>(0);
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -158,8 +134,6 @@ export default function CommentsSection({
       const payload = {
         cause_id: causeId,
         content: values.content,
-        rating: allowRatings ? values.rating : null,
-        is_anonymous: values.is_anonymous || false,
         parent_id: replyingTo || null,
       };
 
@@ -194,8 +168,6 @@ export default function CommentsSection({
         }
 
         form.resetFields();
-        setNewComment("");
-        setNewRating(0);
         message.success("Comment added successfully!");
       } else {
         message.error(data.error || "Failed to add comment");
@@ -208,77 +180,6 @@ export default function CommentsSection({
     }
   };
 
-  const handleLikeComment = async (commentId: number) => {
-    if (!session?.user) {
-      message.error("Please sign in to like comments");
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "like" }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const updateComment = (comment: Comment): Comment => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              liked: data.data.liked,
-              like_count: data.data.liked
-                ? comment.like_count + 1
-                : Math.max(0, comment.like_count - 1),
-            };
-          }
-          return {
-            ...comment,
-            replies: comment.replies?.map(updateComment) || [],
-          };
-        };
-
-        setComments(prev => prev.map(updateComment));
-      } else {
-        message.error(data.error || "Failed to like comment");
-      }
-    } catch (error) {
-      console.error("Error liking comment:", error);
-      message.error("Failed to like comment");
-    }
-  };
-
-  const handleDeleteComment = async (commentId: number) => {
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Remove comment from UI
-        const removeComment = (comments: Comment[]): Comment[] => {
-          return comments
-            .filter(comment => comment.id !== commentId)
-            .map(comment => ({
-              ...comment,
-              replies: comment.replies ? removeComment(comment.replies) : [],
-            }));
-        };
-
-        setComments(prev => removeComment(prev));
-        message.success("Comment deleted successfully");
-      } else {
-        message.error(data.error || "Failed to delete comment");
-      }
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-      message.error("Failed to delete comment");
-    }
-  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -296,9 +197,6 @@ export default function CommentsSection({
   };
 
   const CommentItem = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => {
-    const canEdit = session?.user?.id === comment.user_id.toString();
-    const canDelete = canEdit || (session?.user as any)?.is_admin;
-
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -311,58 +209,35 @@ export default function CommentsSection({
           padding: "16px",
           background: isReply ? "#fafafa" : "#fff",
           borderRadius: "8px",
-          border: comment.is_pinned ? "2px solid #1890ff" : "1px solid #f0f0f0",
+          border: "1px solid #f0f0f0",
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
           <Avatar
-            src={comment.is_anonymous ? undefined : comment.user_avatar}
+            src={comment.user_avatar}
             icon={<UserOutlined />}
             size={isReply ? 32 : 40}
           />
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <Text strong>
-                {comment.is_anonymous ? "Anonymous" : comment.user_name}
+                {comment.user_name}
               </Text>
-              {comment.is_verified && (
-                <SafetyCertificateOutlined style={{ color: "#52c41a" }} />
-              )}
-              {comment.is_pinned && (
-                <Tooltip title="Pinned comment">
-                  <StarFilled style={{ color: "#faad14" }} />
-                </Tooltip>
-              )}
               <Text type="secondary" style={{ fontSize: "12px" }}>
                 {formatDate(comment.created_at)}
               </Text>
-              {comment.updated_at !== comment.created_at && (
-                <Text type="secondary" style={{ fontSize: "12px" }}>
-                  (edited)
-                </Text>
-              )}
             </div>
-
-            {comment.rating && (
-              <div style={{ marginBottom: "8px" }}>
-                <Rate disabled value={comment.rating} size="small" />
-              </div>
-            )}
 
             <Paragraph style={{ marginBottom: "12px" }}>
               {comment.content}
             </Paragraph>
 
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <Button
-                type="text"
-                size="small"
-                icon={comment.liked ? <LikeFilled /> : <LikeOutlined />}
-                onClick={() => handleLikeComment(comment.id)}
-                style={{ color: comment.liked ? "#1890ff" : undefined }}
-              >
-                {comment.like_count}
-              </Button>
+              {!isReply && comment.reply_count > 0 && (
+                <Text type="secondary" style={{ fontSize: "12px" }}>
+                  {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
+                </Text>
+              )}
 
               {!isReply && (
                 <Button
@@ -372,35 +247,6 @@ export default function CommentsSection({
                   onClick={() => setReplyingTo(comment.id)}
                 >
                   Reply
-                </Button>
-              )}
-
-              {canEdit && (
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => setEditingComment(comment.id)}
-                >
-                  Edit
-                </Button>
-              )}
-
-              {canDelete && (
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => {
-                    Modal.confirm({
-                      title: "Delete Comment",
-                      content: "Are you sure you want to delete this comment?",
-                      onOk: () => handleDeleteComment(comment.id),
-                    });
-                  }}
-                >
-                  Delete
                 </Button>
               )}
             </div>
@@ -427,11 +273,6 @@ export default function CommentsSection({
                 />
               </Form.Item>
 
-              <Form.Item name="is_anonymous" valuePropName="checked">
-                <Button type="text" size="small">
-                  Reply anonymously
-                </Button>
-              </Form.Item>
 
               <div style={{ display: "flex", gap: "8px" }}>
                 <Button
@@ -454,11 +295,9 @@ export default function CommentsSection({
         {/* Replies */}
         {comment.replies && comment.replies.length > 0 && (
           <div style={{ marginTop: "16px" }}>
-            <AnimatePresence>
-              {comment.replies.map((reply) => (
-                <CommentItem key={reply.id} comment={reply} isReply />
-              ))}
-            </AnimatePresence>
+            {comment.replies.map((reply) => (
+              <CommentItem key={reply.id} comment={reply} isReply />
+            ))}
           </div>
         )}
       </motion.div>
@@ -494,17 +333,7 @@ export default function CommentsSection({
               />
             </Form.Item>
 
-            {allowRatings && (
-              <Form.Item name="rating" label="Rating (optional)">
-                <Rate />
-              </Form.Item>
-            )}
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Form.Item name="is_anonymous" valuePropName="checked" style={{ margin: 0 }}>
-                <Button type="text">Comment anonymously</Button>
-              </Form.Item>
-
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -527,11 +356,9 @@ export default function CommentsSection({
         />
       ) : (
         <div>
-          <AnimatePresence>
-            {comments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} />
-            ))}
-          </AnimatePresence>
+          {comments.map((comment) => (
+            <CommentItem key={comment.id} comment={comment} />
+          ))}
 
           {/* Load More Button */}
           {hasMore && (

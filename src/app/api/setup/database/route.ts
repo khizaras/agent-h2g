@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     results.push('[DELETE] Dropping existing tables...');
     
     const dropTables = [
+      'enrollments',
       'training_details',
       'clothes_details', 
       'food_details',
@@ -326,6 +327,29 @@ export async function POST(request: NextRequest) {
     `);
     results.push('[SUCCESS] Created comments table');
 
+    await Database.query(`
+      CREATE TABLE \`enrollments\` (
+        \`id\` int NOT NULL AUTO_INCREMENT,
+        \`cause_id\` int NOT NULL,
+        \`user_id\` int NOT NULL,
+        \`enrollment_status\` enum('pending','accepted','rejected','completed','cancelled') DEFAULT 'pending',
+        \`enrollment_date\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        \`message\` text,
+        \`notes\` text,
+        \`completion_date\` timestamp NULL DEFAULT NULL,
+        \`created_at\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        UNIQUE KEY \`unique_enrollment\` (\`cause_id\`,\`user_id\`),
+        KEY \`idx_cause_id\` (\`cause_id\`),
+        KEY \`idx_user_id\` (\`user_id\`),
+        KEY \`idx_status\` (\`enrollment_status\`),
+        CONSTRAINT \`enrollments_ibfk_1\` FOREIGN KEY (\`cause_id\`) REFERENCES \`causes\` (\`id\`) ON DELETE CASCADE,
+        CONSTRAINT \`enrollments_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push('[SUCCESS] Created enrollments table');
+
     // Step 3: Insert seed data
     results.push('[SEED] Seeding initial data...');
 
@@ -486,7 +510,9 @@ export async function POST(request: NextRequest) {
         (SELECT COUNT(*) FROM causes) as causes,
         (SELECT COUNT(*) FROM food_details) as food_details,
         (SELECT COUNT(*) FROM clothes_details) as clothes_details,
-        (SELECT COUNT(*) FROM training_details) as training_details
+        (SELECT COUNT(*) FROM training_details) as training_details,
+        (SELECT COUNT(*) FROM comments) as comments,
+        (SELECT COUNT(*) FROM enrollments) as enrollments
     `);
     
     results.push('');
@@ -499,6 +525,8 @@ export async function POST(request: NextRequest) {
     results.push(`[INFO] Food Details: ${stats[0].food_details}`);
     results.push(`[INFO] Clothes Details: ${stats[0].clothes_details}`);
     results.push(`[INFO] Training Details: ${stats[0].training_details}`);
+    results.push(`[INFO] Comments: ${stats[0].comments}`);
+    results.push(`[INFO] Enrollments: ${stats[0].enrollments}`);
     results.push('');
     results.push('[CREDENTIALS] Sample Login Credentials:');
     results.push('[ADMIN] admin@hands2gether.com / password123');

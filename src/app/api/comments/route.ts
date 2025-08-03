@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { Database } from "@/lib/database";
-import { EmailService } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereClause = "WHERE c.cause_id = ? AND c.is_approved = TRUE";
+    let whereClause = "WHERE c.cause_id = ? AND c.is_approved = 1";
     const params: any[] = [cause_id];
 
     if (parent_id) {
@@ -37,18 +36,17 @@ export async function GET(request: NextRequest) {
         c.*,
         u.name as user_name,
         u.avatar as user_avatar,
-        u.is_verified,
         COALESCE(reply_count.total, 0) as reply_count
       FROM comments c
       LEFT JOIN users u ON c.user_id = u.id
       LEFT JOIN (
         SELECT parent_id, COUNT(*) as total 
         FROM comments 
-        WHERE is_approved = TRUE
+        WHERE is_approved = 1
         GROUP BY parent_id
       ) reply_count ON c.id = reply_count.parent_id
       ${whereClause}
-      ORDER BY c.is_pinned DESC, c.created_at DESC
+      ORDER BY c.created_at DESC
       LIMIT ? OFFSET ?
     `;
 
@@ -105,9 +103,6 @@ export async function POST(request: NextRequest) {
       cause_id,
       parent_id,
       content,
-      comment_type = "feedback",
-      rating,
-      is_anonymous = false,
     } = await request.json();
 
     // Validate required fields
@@ -149,29 +144,23 @@ export async function POST(request: NextRequest) {
     // Insert new comment
     const insertQuery = `
       INSERT INTO comments (
-        cause_id, user_id, parent_id, comment_type, content, rating, 
-        is_anonymous, is_approved, created_at, updated_at
+        cause_id, user_id, parent_id, content, is_approved
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, NOW(), NOW())
+      VALUES (?, ?, ?, ?, 1)
     `;
 
     const result = (await Database.query(insertQuery, [
       cause_id,
       session.user.id,
       parent_id || null,
-      comment_type,
       content,
-      rating || null,
-      is_anonymous,
     ])) as any;
 
-    // Update reply count for parent comment if this is a reply
-    if (parent_id) {
-      await Database.query(
-        "UPDATE comments SET reply_count = reply_count + 1 WHERE id = ?",
-        [parent_id],
-      );
-    }
+    // Update comment count for the cause
+    await Database.query(
+      "UPDATE causes SET comment_count = comment_count + 1 WHERE id = ?",
+      [cause_id],
+    );
 
     // Get the created comment with user information
     const newComment = (await Database.query(
@@ -179,58 +168,13 @@ export async function POST(request: NextRequest) {
       SELECT 
         c.*,
         u.name as user_name,
-        u.avatar as user_avatar,
-        u.is_verified
+        u.avatar as user_avatar
       FROM comments c
       LEFT JOIN users u ON c.user_id = u.id
       WHERE c.id = ?
     `,
       [result.insertId],
     )) as any[];
-
-    // Send email notification to cause creator (don't block the response)
-    if (!is_anonymous && !parent_id) {
-      // Only for top-level comments, not replies
-      try {
-        const causeCreatorQuery = (await Database.query(
-          `
-          SELECT c.title as cause_title, u.name as creator_name, u.email as creator_email
-          FROM causes c
-          INNER JOIN users u ON c.user_id = u.id
-          WHERE c.id = ?
-        `,
-          [cause_id],
-        )) as any[];
-
-        const commenterQuery = (await Database.query(
-          "SELECT name FROM users WHERE id = ?",
-          [session.user.id],
-        )) as any[];
-
-        if (
-          causeCreatorQuery[0] &&
-          commenterQuery[0] &&
-          causeCreatorQuery[0].creator_email !== session.user.email
-        ) {
-          // Don't email self
-          EmailService.sendCommentNotification({
-            creatorName: causeCreatorQuery[0].creator_name,
-            creatorEmail: causeCreatorQuery[0].creator_email,
-            causeName: causeCreatorQuery[0].cause_title,
-            commenterName: commenterQuery[0].name,
-            comment: content,
-            causeId: cause_id,
-          }).catch((error) => {
-            console.error(
-              "Comment notification email failed (non-blocking):",
-              error,
-            );
-          });
-        }
-      } catch (emailError) {
-        console.error("Failed to send comment notification email:", emailError);
-      }
-    }
 
     return NextResponse.json({
       success: true,

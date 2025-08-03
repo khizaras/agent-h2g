@@ -67,21 +67,19 @@ export async function GET(
       categoryDetails = trainingDetails;
     }
 
-    // Get comments for this cause
-    const commentsQuery = `
-      SELECT 
-        c.*,
-        u.name as author_name,
-        u.avatar as author_avatar
-      FROM comments c
-      LEFT JOIN users u ON c.user_id = u.id
-      WHERE c.cause_id = ? AND c.is_approved = TRUE
-      ORDER BY c.created_at DESC
-    `;
-
     // Get comments for this cause (with error handling)
     let comments = [];
     try {
+      const commentsQuery = `
+        SELECT 
+          c.*,
+          u.name as author_name,
+          u.avatar as author_avatar
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.cause_id = ? AND c.is_approved = TRUE
+        ORDER BY c.created_at DESC
+      `;
       comments = await Database.query(commentsQuery, [causeId]);
     } catch (error) {
       console.log('Comments table not available:', error.message);
@@ -104,7 +102,7 @@ export async function GET(
       `;
       activities = await Database.query(activitiesQuery, [causeId]);
     } catch (error) {
-      // Analytics table might not exist, use empty array
+      // Analytics table doesn't exist in current schema, use empty array
       console.log('Analytics events table not available:', error.message);
       activities = [];
     }
@@ -524,11 +522,8 @@ export async function PUT(
                   location_details = ?,
                   meeting_platform = ?,
                   meeting_link = ?,
-                  meeting_id = ?,
-                  meeting_password = ?,
                   instructor_name = ?, 
                   instructor_email = ?, 
-                  instructor_phone = ?,
                   instructor_bio = ?,
                   instructor_qualifications = ?,
                   certification_provided = ?,
@@ -554,7 +549,7 @@ export async function PUT(
                 categoryDetails.durationHours ?? 1,
                 categoryDetails.numberOfSessions ?? 1,
                 categoryDetails.prerequisites ?? null,
-                JSON.stringify(categoryDetails.learningObjectives ?? []),
+                categoryDetails.learningObjectives ?? null,
                 categoryDetails.curriculum ?? null,
                 categoryDetails.startDate ?? null,
                 categoryDetails.endDate ?? null,
@@ -564,11 +559,8 @@ export async function PUT(
                 categoryDetails.locationDetails ?? null,
                 categoryDetails.meetingPlatform ?? null,
                 categoryDetails.meetingLink ?? null,
-                categoryDetails.meetingId ?? null,
-                categoryDetails.meetingPassword ?? null,
                 primaryInstructor.name ?? "",
                 primaryInstructor.email ?? null,
-                primaryInstructor.phone ?? null,
                 primaryInstructor.bio ?? null,
                 primaryInstructor.qualifications ?? null,
                 categoryDetails.certificationProvided ?? false,
@@ -597,12 +589,12 @@ export async function PUT(
               (cause_id, training_type, skill_level, topics, max_participants, current_participants,
                duration_hours, number_of_sessions, prerequisites, learning_objectives, curriculum,
                start_date, end_date, registration_deadline, schedule, delivery_method,
-               location_details, meeting_platform, meeting_link, meeting_id, meeting_password,
-               instructor_name, instructor_email, instructor_phone, instructor_bio, instructor_qualifications,
+               location_details, meeting_platform, meeting_link,
+               instructor_name, instructor_email, instructor_bio, instructor_qualifications,
                certification_provided, certification_body, materials_provided, materials_required,
                software_required, price, is_free, course_language, subtitles_available,
                difficulty_rating, course_materials_url, enrollment_status)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `,
               [
                 causeId,
@@ -614,7 +606,7 @@ export async function PUT(
                 categoryDetails.durationHours ?? 1,
                 categoryDetails.numberOfSessions ?? 1,
                 categoryDetails.prerequisites ?? null,
-                JSON.stringify(categoryDetails.learningObjectives ?? []),
+                categoryDetails.learningObjectives ?? null,
                 categoryDetails.curriculum ?? null,
                 categoryDetails.startDate ?? null,
                 categoryDetails.endDate ?? null,
@@ -624,11 +616,8 @@ export async function PUT(
                 categoryDetails.locationDetails ?? null,
                 categoryDetails.meetingPlatform ?? null,
                 categoryDetails.meetingLink ?? null,
-                categoryDetails.meetingId ?? null,
-                categoryDetails.meetingPassword ?? null,
                 primaryInstructor.name ?? "",
                 primaryInstructor.email ?? null,
-                primaryInstructor.phone ?? null,
                 primaryInstructor.bio ?? null,
                 primaryInstructor.qualifications ?? null,
                 categoryDetails.certificationProvided ?? false,

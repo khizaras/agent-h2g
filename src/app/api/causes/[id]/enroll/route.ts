@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { Database } from "@/lib/database";
-import { EmailService } from "@/lib/email";
 
 const enrollmentSchema = z.object({
-  notes: z.string().optional(),
+  message: z.string().optional(),
 });
 
 export async function POST(
@@ -33,19 +32,21 @@ export async function POST(
       );
     }
 
-    // Check if cause exists and is an education course
+    // Check if cause exists and is a training course
     const causes = (await Database.query(
-      `SELECT c.id, c.title, c.user_id, ed.id as education_id, ed.max_trainees, ed.current_trainees, 
-              ed.registration_deadline, ed.start_date, ed.end_date, ed.instructor_name, ed.instructor_email
+      `SELECT c.id, c.title, c.user_id, td.max_participants, td.current_participants, 
+              td.registration_deadline, td.start_date, td.end_date, td.instructor_name, td.instructor_email,
+              cat.name as category_name
        FROM causes c 
-       INNER JOIN education_details ed ON c.id = ed.cause_id 
-       WHERE c.id = ? AND c.category_id = (SELECT id FROM categories WHERE name = 'education')`,
+       INNER JOIN training_details td ON c.id = td.cause_id 
+       LEFT JOIN categories cat ON c.category_id = cat.id
+       WHERE c.id = ? AND cat.name = 'training'`,
       [causeId],
     )) as any[];
 
     if (!causes || causes.length === 0) {
       return NextResponse.json(
-        { success: false, message: "Education cause not found" },
+        { success: false, message: "Training cause not found" },
         { status: 404 },
       );
     }
@@ -75,7 +76,7 @@ export async function POST(
     }
 
     // Check if course is full
-    if (course.current_trainees >= course.max_trainees) {
+    if (course.current_participants >= course.max_participants) {
       return NextResponse.json(
         { success: false, message: "Course is full" },
         { status: 400 },
@@ -84,8 +85,8 @@ export async function POST(
 
     // Check if user is already enrolled
     const existingEnrollments = (await Database.query(
-      "SELECT id FROM registrations WHERE education_id = ? AND user_id = ?",
-      [course.education_id, session.user.id],
+      "SELECT id FROM enrollments WHERE cause_id = ? AND user_id = ?",
+      [causeId, session.user.id],
     )) as any[];
 
     if (existingEnrollments.length > 0) {
@@ -97,59 +98,16 @@ export async function POST(
 
     // Create enrollment record
     const enrollmentResult = (await Database.query(
-      `INSERT INTO registrations (education_id, user_id, status, notes) 
+      `INSERT INTO enrollments (cause_id, user_id, enrollment_status, message) 
        VALUES (?, ?, 'pending', ?)`,
-      [course.education_id, session.user.id, validatedData.notes || null],
+      [causeId, session.user.id, validatedData.message || null],
     )) as any;
 
-    // Update current trainees count
+    // Update current participants count
     await Database.query(
-      "UPDATE education_details SET current_trainees = current_trainees + 1 WHERE id = ?",
-      [course.education_id],
+      "UPDATE training_details SET current_participants = current_participants + 1 WHERE cause_id = ?",
+      [causeId],
     );
-
-    // Get user details for email
-    const userDetails = (await Database.query(
-      "SELECT name, email FROM users WHERE id = ?",
-      [session.user.id],
-    )) as any[];
-
-    const user = userDetails[0];
-
-    // Send enrollment confirmation email (non-blocking)
-    if (user?.email) {
-      EmailService.sendEnrollmentConfirmation({
-        studentName: user.name,
-        studentEmail: user.email,
-        courseName: course.title,
-        instructorName: course.instructor_name,
-        startDate: course.start_date,
-        endDate: course.end_date,
-        courseId: causeId,
-      }).catch((error: any) => {
-        console.error(
-          "Enrollment confirmation email failed (non-blocking):",
-          error,
-        );
-      });
-    }
-
-    // Send notification to instructor (non-blocking)
-    if (course.instructor_email) {
-      EmailService.sendNewEnrollmentNotification({
-        instructorName: course.instructor_name,
-        instructorEmail: course.instructor_email,
-        studentName: user.name,
-        courseName: course.title,
-        enrollmentDate: new Date().toISOString(),
-        courseId: causeId,
-      }).catch((error: any) => {
-        console.error(
-          "Instructor notification email failed (non-blocking):",
-          error,
-        );
-      });
-    }
 
     return NextResponse.json({
       success: true,
@@ -213,11 +171,10 @@ export async function GET(
 
     // Check enrollment status
     const enrollments = (await Database.query(
-      `SELECT r.*, ed.max_trainees, ed.current_trainees, ed.registration_deadline, ed.start_date
-       FROM registrations r
-       INNER JOIN education_details ed ON r.education_id = ed.id
-       INNER JOIN causes c ON ed.cause_id = c.id
-       WHERE c.id = ? AND r.user_id = ?`,
+      `SELECT e.*, td.max_participants, td.current_participants, td.registration_deadline, td.start_date
+       FROM enrollments e
+       INNER JOIN training_details td ON e.cause_id = td.cause_id
+       WHERE e.cause_id = ? AND e.user_id = ?`,
       [causeId, session.user.id],
     )) as any[];
 
@@ -226,10 +183,9 @@ export async function GET(
 
     // Get course availability info
     const courseInfo = (await Database.query(
-      `SELECT ed.max_trainees, ed.current_trainees, ed.registration_deadline, ed.start_date, ed.end_date
-       FROM education_details ed
-       INNER JOIN causes c ON ed.cause_id = c.id
-       WHERE c.id = ?`,
+      `SELECT td.max_participants, td.current_participants, td.registration_deadline, td.start_date, td.end_date
+       FROM training_details td
+       WHERE td.cause_id = ?`,
       [causeId],
     )) as any[];
 
@@ -251,7 +207,7 @@ export async function GET(
       enrollmentStatus = "expired";
     } else if (new Date(course.start_date) < today) {
       enrollmentStatus = "started";
-    } else if (course.current_trainees >= course.max_trainees) {
+    } else if (course.current_participants >= course.max_participants) {
       enrollmentStatus = "full";
     }
 
@@ -261,9 +217,9 @@ export async function GET(
         isEnrolled,
         enrollment,
         courseInfo: {
-          maxTrainees: course.max_trainees,
-          currentTrainees: course.current_trainees,
-          availableSpots: course.max_trainees - course.current_trainees,
+          maxParticipants: course.max_participants,
+          currentParticipants: course.current_participants,
+          availableSpots: course.max_participants - course.current_participants,
           registrationDeadline: course.registration_deadline,
           startDate: course.start_date,
           endDate: course.end_date,
