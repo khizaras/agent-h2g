@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,83 +13,44 @@ import {
   Space,
   message,
   Checkbox,
-  Steps,
 } from "antd";
-import { FiUser, FiLock, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import {
   UserOutlined,
   MailOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
   LockOutlined,
-  GoogleOutlined,
 } from "@ant-design/icons";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { animations } from "@/config/theme";
 
 const { Title, Text } = Typography;
-const { Step } = Steps;
 
 interface SignUpFormData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  location: string;
   password: string;
   confirmPassword: string;
   agreeToTerms: boolean;
-  newsletter: boolean;
 }
 
 export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Partial<SignUpFormData>>({});
   const router = useRouter();
   const [form] = Form.useForm();
 
-  // Keep form data in sync
-  useEffect(() => {
-    form.setFieldsValue(formData);
-  }, [form, formData]);
-
-  const steps = [
-    {
-      title: "Personal Info",
-      description: "Basic information",
-    },
-    {
-      title: "Contact Details",
-      description: "How to reach you",
-    },
-    {
-      title: "Account Security",
-      description: "Secure your account",
-    },
-  ];
-
-  const onFinish = async () => {
+  const onFinish = async (values: SignUpFormData) => {
     setLoading(true);
     try {
-      // Get all validated form values
-      const allFormData = await form.validateFields();
-
-      console.log("Signup form validated values:", allFormData); // Debug log
-
-      // Prepare data for the registration API
       const registrationData = {
-        name: `${allFormData.firstName} ${allFormData.lastName}`.trim(),
-        email: allFormData.email,
-        password: allFormData.password,
-        confirmPassword: allFormData.confirmPassword,
+        name: `${values.firstName} ${values.lastName}`.trim(),
+        email: values.email,
+        password: values.password,
+        confirmPassword: values.confirmPassword,
       };
 
-      console.log("Submitting registration data:", registrationData); // Debug log
-
-      // Use the correct registration endpoint
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -123,126 +84,163 @@ export default function SignUpPage() {
     }
   };
 
-  const nextStep = async () => {
-    try {
-      const values = await form.validateFields();
-      const updatedFormData = { ...formData, ...values };
-      console.log("Next step - accumulated data:", updatedFormData); // Debug log
-      setFormData(updatedFormData);
-      setCurrentStep(currentStep + 1);
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
-  };
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#f3f2f1',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      fontFamily: "'Segoe UI', system-ui, sans-serif"
+    }}>
+      <motion.div
+        {...animations.fadeIn}
+        style={{
+          width: '100%',
+          maxWidth: '400px',
+        }}
+      >
+        {/* Microsoft-style header */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: 32,
+        }}>
+          <motion.div
+            {...animations.scaleIn}
+            style={{
+              width: 48,
+              height: 48,
+              backgroundColor: '#0078d4',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              color: 'white',
+              fontSize: 20,
+              fontWeight: 600,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}
+          >
+            H2G
+          </motion.div>
+          <Title level={2} style={{
+            color: '#323130',
+            marginBottom: 8,
+            fontSize: 24,
+            fontWeight: 600,
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            Create your account
+          </Title>
+          <Text style={{
+            color: '#605e5c',
+            fontSize: 14,
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            Join your community and start making a difference
+          </Text>
+        </div>
 
-  const prevStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
+        <Card style={{
+          border: '1px solid #edebe9',
+          borderRadius: 8,
+          boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+          padding: '8px',
+        }}>
+          <Form
+            form={form}
+            name="signup"
+            layout="vertical"
+            size="middle"
+            onFinish={onFinish}
+            autoComplete="off"
+            style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}
+          >
+            <div style={{ display: 'flex', gap: 12 }}>
+              <Form.Item
+                name="firstName"
+                label="First name"
+                rules={[
+                  { required: true, message: "First name is required" },
+                ]}
+                style={{ flex: 1, marginBottom: 16 }}
+              >
+                <Input
+                  prefix={<UserOutlined style={{ color: '#605e5c' }} />}
+                  placeholder="First name"
+                  style={{
+                    borderRadius: 4,
+                    borderColor: '#8a8886',
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <>
-            <Form.Item
-              name="firstName"
-              label="First Name"
-              rules={[
-                { required: true, message: "Please enter your first name" },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined className="input-icon" />}
-                placeholder="Enter your first name"
-                className="auth-input"
-              />
-            </Form.Item>
+              <Form.Item
+                name="lastName"
+                label="Last name"
+                rules={[
+                  { required: true, message: "Last name is required" },
+                ]}
+                style={{ flex: 1, marginBottom: 16 }}
+              >
+                <Input
+                  prefix={<UserOutlined style={{ color: '#605e5c' }} />}
+                  placeholder="Last name"
+                  style={{
+                    borderRadius: 4,
+                    borderColor: '#8a8886',
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </div>
 
-            <Form.Item
-              name="lastName"
-              label="Last Name"
-              rules={[
-                { required: true, message: "Please enter your last name" },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined className="input-icon" />}
-                placeholder="Enter your last name"
-                className="auth-input"
-              />
-            </Form.Item>
-          </>
-        );
-
-      case 1:
-        return (
-          <>
             <Form.Item
               name="email"
-              label="Email Address"
+              label="Email"
               rules={[
-                { required: true, message: "Please enter your email" },
+                { required: true, message: "Email is required" },
                 { type: "email", message: "Please enter a valid email" },
               ]}
+              style={{ marginBottom: 16 }}
             >
               <Input
-                prefix={<MailOutlined className="input-icon" />}
+                prefix={<MailOutlined style={{ color: '#605e5c' }} />}
                 placeholder="Enter your email"
-                className="auth-input"
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#8a8886',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               />
             </Form.Item>
 
-            <Form.Item
-              name="phone"
-              label="Phone Number"
-              rules={[
-                { required: true, message: "Please enter your phone number" },
-              ]}
-            >
-              <Input
-                prefix={<PhoneOutlined className="input-icon" />}
-                placeholder="Enter your phone number"
-                className="auth-input"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="location"
-              label="Location"
-              rules={[
-                { required: true, message: "Please enter your location" },
-              ]}
-            >
-              <Input
-                prefix={<EnvironmentOutlined className="input-icon" />}
-                placeholder="City, State"
-                className="auth-input"
-              />
-            </Form.Item>
-          </>
-        );
-
-      case 2:
-        return (
-          <>
             <Form.Item
               name="password"
               label="Password"
               rules={[
-                { required: true, message: "Please enter your password" },
+                { required: true, message: "Password is required" },
                 { min: 8, message: "Password must be at least 8 characters" },
               ]}
+              style={{ marginBottom: 16 }}
             >
               <Input.Password
-                prefix={<LockOutlined className="input-icon" />}
+                prefix={<LockOutlined style={{ color: '#605e5c' }} />}
                 placeholder="Create a password"
-                className="auth-input"
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#8a8886',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               />
             </Form.Item>
 
             <Form.Item
               name="confirmPassword"
-              label="Confirm Password"
+              label="Confirm password"
               dependencies={["password"]}
               rules={[
                 { required: true, message: "Please confirm your password" },
@@ -251,15 +249,20 @@ export default function SignUpPage() {
                     if (!value || getFieldValue("password") === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error("Passwords do not match"));
+                    return Promise.reject(new Error("Passwords don't match"));
                   },
                 }),
               ]}
+              style={{ marginBottom: 16 }}
             >
               <Input.Password
-                prefix={<LockOutlined className="input-icon" />}
+                prefix={<LockOutlined style={{ color: '#605e5c' }} />}
                 placeholder="Confirm your password"
-                className="auth-input"
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#8a8886',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               />
             </Form.Item>
 
@@ -271,164 +274,145 @@ export default function SignUpPage() {
                   validator: (_, value) =>
                     value
                       ? Promise.resolve()
-                      : Promise.reject(
-                          new Error("You must agree to the terms"),
-                        ),
+                      : Promise.reject(new Error("You must agree to the terms")),
                 },
               ]}
+              style={{ marginBottom: 24 }}
             >
-              <Checkbox>
+              <Checkbox style={{
+                fontSize: 14,
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}>
                 I agree to the{" "}
-                <Link href="/terms" className="auth-link">
+                <Link 
+                  href="/terms" 
+                  style={{ 
+                    color: '#0078d4', 
+                    textDecoration: 'none',
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}
+                >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="auth-link">
+                <Link 
+                  href="/privacy" 
+                  style={{ 
+                    color: '#0078d4', 
+                    textDecoration: 'none',
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}
+                >
                   Privacy Policy
                 </Link>
               </Checkbox>
             </Form.Item>
 
-            <Form.Item name="newsletter" valuePropName="checked">
-              <Checkbox>
-                Subscribe to our newsletter for updates and impact stories
-              </Checkbox>
+            <Form.Item style={{ marginBottom: 16 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                size="large"
+                block
+                style={{
+                  backgroundColor: '#0078d4',
+                  borderColor: '#0078d4',
+                  borderRadius: 4,
+                  height: 40,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
+              >
+                Create account
+              </Button>
             </Form.Item>
-          </>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="auth-page">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="auth-container auth-container-wide"
-      >
-        {/* Logo and Brand */}
-        <div className="auth-header">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="auth-logo"
-          >
-            <span className="auth-logo-text">H2G</span>
-          </motion.div>
-          <Title level={2} className="auth-title">
-            Join Our Community
-          </Title>
-          <Text className="auth-subtitle">Start making a difference today</Text>
-        </div>
-
-        <Card className="auth-card">
-          {/* Progress Steps */}
-          <div className="auth-steps">
-            <Steps current={currentStep} size="small" className="signup-steps">
-              {steps.map((step, index) => (
-                <Step
-                  key={index}
-                  title={step.title}
-                  description={step.description}
-                />
-              ))}
-            </Steps>
-          </div>
-
-          <Form
-            form={form}
-            name="signup"
-            layout="vertical"
-            size="large"
-            autoComplete="off"
-            initialValues={formData}
-            preserve={false}
-          >
-            {renderStepContent()}
-
-            <div className="auth-form-navigation">
-              {currentStep > 0 && (
-                <Button
-                  size="large"
-                  onClick={prevStep}
-                  className="auth-btn-secondary"
-                >
-                  Previous
-                </Button>
-              )}
-
-              {currentStep < steps.length - 1 ? (
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={nextStep}
-                  className="auth-btn-primary auth-btn-next"
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  type="primary"
-                  onClick={onFinish}
-                  loading={loading}
-                  size="large"
-                  className="auth-btn-primary auth-btn-next"
-                >
-                  Create Account
-                </Button>
-              )}
-            </div>
           </Form>
 
-          {currentStep === 0 && (
-            <>
-              <Divider>
-                <Text type="secondary">Or continue with</Text>
-              </Divider>
+          <Divider style={{
+            margin: '16px 0',
+            borderColor: '#edebe9',
+            fontSize: 12,
+            color: '#8a8886',
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            Or
+          </Divider>
 
-              <Button
-                size="large"
-                icon={<FcGoogle />}
-                loading={googleLoading}
-                onClick={handleGoogleSignUp}
-                className="auth-btn-google"
-              >
-                Continue with Google
-              </Button>
-            </>
-          )}
+          <Button
+            size="large"
+            icon={<FcGoogle style={{ fontSize: 16 }} />}
+            loading={googleLoading}
+            onClick={handleGoogleSignUp}
+            block
+            style={{
+              borderRadius: 4,
+              height: 40,
+              borderColor: '#8a8886',
+              color: '#323130',
+              fontWeight: 600,
+              fontSize: 14,
+              marginBottom: 24,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}
+          >
+            Sign up with Google
+          </Button>
 
-          <div className="auth-footer">
-            <Text type="secondary">
+          <div style={{ textAlign: 'center' }}>
+            <Text style={{
+              color: '#605e5c',
+              fontSize: 14,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}>
               Already have an account?{" "}
-              <Link href="/auth/signin" className="auth-link">
+              <Link 
+                href="/auth/signin" 
+                style={{ 
+                  color: '#0078d4', 
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
+              >
                 Sign in
               </Link>
             </Text>
           </div>
         </Card>
 
-        {/* Benefits */}
+        {/* Microsoft-style features */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="auth-features"
+          style={{
+            marginTop: 24,
+            textAlign: 'center'
+          }}
         >
-          <Space direction="vertical" size="small">
-            <Text type="secondary" className="auth-feature-text">
-              🚀 Create and share causes
+          <Space direction="vertical" size={8}>
+            <Text style={{
+              color: '#605e5c',
+              fontSize: 12,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}>
+              ✓ Connect with local communities
             </Text>
-            <Text type="secondary" className="auth-feature-text">
-              💰 Secure donation processing
+            <Text style={{
+              color: '#605e5c',
+              fontSize: 12,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}>
+              ✓ Share resources and support
             </Text>
-            <Text type="secondary" className="auth-feature-text">
-              📊 Track your impact
+            <Text style={{
+              color: '#605e5c',
+              fontSize: 12,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}>
+              ✓ Track your community impact
             </Text>
           </Space>
         </motion.div>

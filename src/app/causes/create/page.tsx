@@ -8,385 +8,524 @@ import {
   Button,
   Select,
   Upload,
-  DatePicker,
-  InputNumber,
   Typography,
   Row,
   Col,
-  Steps,
   message,
+  Radio,
+  Image,
+  Breadcrumb,
+  Space,
+  Tag,
+  InputNumber,
+  DatePicker,
+  Switch,
   Divider,
   Checkbox,
-  Tag,
-  Space,
-  Progress,
-  Alert,
-  Radio,
   TimePicker,
+  Tooltip,
 } from "antd";
 import {
-  InboxOutlined,
-  InfoCircleOutlined,
-  CalendarOutlined,
-  EnvironmentOutlined,
-  HeartOutlined,
-  BookOutlined,
-  CameraOutlined,
-  FileTextOutlined,
-  RightOutlined,
-  LeftOutlined,
-  CheckCircleOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
+  FiPlus,
+  FiUpload,
+  FiMapPin,
+  FiArrowLeft,
+  FiInfo,
+  FiUser,
+  FiUsers,
+  FiCalendar,
+  FiClock,
+  FiBook,
+  FiTarget,
+  FiDollarSign,
+  FiGlobe,
+  FiAward,
+  FiShirt,
+  FiTrendingUp,
+  FiPackage,
+  FiHeart,
+  FiStar,
+} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import dayjs from "dayjs";
 import { MainLayout } from "@/components/layout/MainLayout";
-import FoodDetailsForm from "@/components/forms/FoodDetailsForm";
-import ClothesDetailsForm from "@/components/forms/ClothesDetailsForm";
-import EducationDetailsForm from "@/components/forms/EducationDetailsForm";
-import { useImageUpload } from "@/hooks/useImageUpload";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
-const { Dragger } = Upload;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 interface CauseFormData {
-  // Basic Info
   title: string;
   description: string;
-  shortDescription: string;
   category: string;
+  causeType: 'wanted' | 'offered';
   location: string;
+  priority: string;
   contactEmail: string;
   contactPhone?: string;
-  contactPerson?: string;
-
-  // Food specific
-  foodType?: string;
-  cuisineType?: string;
-  quantity?: number;
-  unit?: string;
-  servingSize?: number;
-  dietaryRestrictions?: string[];
-  allergens?: string[];
-  expirationDate?: string;
-  preparationDate?: string;
-  storageRequirements?: string;
-  temperatureRequirements?: string;
-  pickupInstructions?: string;
-  deliveryAvailable?: boolean;
-  deliveryRadius?: number;
-  isUrgent?: boolean;
-  nutritionalInfo?: string;
-  ingredients?: string;
-  packagingDetails?: string;
-  halal?: boolean;
-  kosher?: boolean;
-  organic?: boolean;
-
-  // Clothes specific
-  clothesType?: string;
-  clothesCategory?: string;
-  ageGroup?: string;
-  sizeRange?: string[];
-  condition?: string;
-  season?: string;
-  colors?: string[];
-  brands?: string[];
-  materialComposition?: string;
-  careInstructions?: string;
-  specialRequirements?: string;
-  isCleaned?: boolean;
-  donationReceipt?: boolean;
-
-  // Education specific
-  educationType?: string;
-  skillLevel?: string;
-  topics?: string[];
-  maxTrainees?: number;
-  durationHours?: number;
-  numberOfDays?: number;
-  prerequisites?: string;
-  learningObjectives?: string[];
-  startDate?: string;
-  endDate?: string;
-  registrationDeadline?: string;
-  schedule?: any;
-  deliveryMethod?: string;
-  locationDetails?: string;
-  meetingPlatform?: string;
-  meetingLink?: string;
-  instructorName?: string;
-  instructorEmail?: string;
-  instructorBio?: string;
-  instructorQualifications?: string;
-  certification?: boolean;
-  certificationBody?: string;
-  materialsProvided?: string[];
-  equipmentRequired?: string[];
-  softwareRequired?: string[];
-  price?: number;
-  isFree?: boolean;
-  courseLanguage?: string;
-  subtitlesAvailable?: string[];
-  difficultyRating?: number;
-
-  // Enhanced education fields
-  enhancedEducationFields?: {
-    courseModules: Array<{
-      title: string;
-      description: string;
-      duration: string;
-      resources: string[];
-      assessment: string;
-    }>;
-    instructors: Array<{
-      name: string;
-      email: string;
-      phone?: string;
-      bio?: string;
-      qualifications?: string[];
-      avatar?: string;
-    }>;
-    enhancedPrerequisites: Array<{
-      title: string;
-      description: string;
-      resources: string[];
-    }>;
-  };
-
-  // Common
-  images?: any[];
-  availabilityHours?: string;
-  specialInstructions?: string;
-  priority?: string;
+  images?: string[];
   tags?: string[];
-  terms: boolean;
-  updates: boolean;
+  
+  // Category-specific details
+  categoryDetails?: any;
 }
 
 const categories = [
   {
-    value: "food",
-    label: "Food Assistance",
-    description: "Share meals and food supplies with those in need",
-    icon: <HeartOutlined style={{ fontSize: "48px" }} />,
-    color: "#FF6B35",
+    value: 'food',
+    label: 'Food Support',
+    emoji: '🍽️',
+    description: 'Share meals and food supplies with those in need',
+    color: '#ff6b35',
+    hasType: true,
   },
   {
-    value: "clothes",
-    label: "Clothing Donation",
-    description: "Donate and request clothing items for all ages",
-    icon: <TeamOutlined style={{ fontSize: "48px" }} />,
-    color: "#4ECDC4",
+    value: 'clothes',
+    label: 'Clothing',
+    emoji: '👕',
+    description: 'Donate and request clothing items for all ages',
+    color: '#4ecdc4',
+    hasType: true,
   },
   {
-    value: "education",
-    label: "Education & Training",
-    description: "Share knowledge through courses, workshops, and mentoring",
-    icon: <BookOutlined style={{ fontSize: "48px" }} />,
-    color: "#45B7D1",
+    value: 'training',
+    label: 'Training & Education',
+    emoji: '📚',
+    description: 'Share knowledge through courses and workshops',
+    color: '#45b7d1',
+    hasType: false,
   },
 ];
+
+// Enhanced category-specific field configurations
+const categoryFieldConfigs = {
+  food: {
+    icon: <FiHeart />,
+    fields: [
+      { name: 'foodType', label: 'Food Type', type: 'select', required: true, 
+        options: ['meals', 'fresh-produce', 'packaged-goods', 'beverages', 'snacks', 'baby-food', 'other'] },
+      { name: 'cuisineType', label: 'Cuisine Type', type: 'select', 
+        options: ['indian', 'chinese', 'italian', 'mexican', 'american', 'continental', 'local', 'mixed'] },
+      { name: 'quantity', label: 'Quantity', type: 'number', required: true, min: 1 },
+      { name: 'unit', label: 'Unit', type: 'select', required: true,
+        options: ['servings', 'plates', 'kilograms', 'pounds', 'packages', 'boxes', 'bags'] },
+      { name: 'servingSize', label: 'Serving Size', type: 'number', min: 1 },
+      { name: 'temperatureRequirements', label: 'Temperature Requirements', type: 'select', required: true,
+        options: ['hot', 'room-temp', 'refrigerated', 'frozen'] },
+      { name: 'expirationDate', label: 'Expiration/Best Before Date', type: 'date' },
+      { name: 'preparationDate', label: 'Preparation Date', type: 'date' },
+      { name: 'dietaryRestrictions', label: 'Dietary Restrictions', type: 'multiselect',
+        options: ['vegetarian', 'vegan', 'halal', 'kosher', 'gluten-free', 'dairy-free', 'nut-free', 'sugar-free'] },
+      { name: 'allergens', label: 'Contains Allergens', type: 'multiselect',
+        options: ['nuts', 'dairy', 'eggs', 'gluten', 'soy', 'shellfish', 'fish', 'seeds'] },
+      { name: 'ingredients', label: 'Main Ingredients', type: 'markdown', placeholder: 'List the main ingredients used...' },
+      { name: 'storageRequirements', label: 'Storage Requirements', type: 'text' },
+      { name: 'pickupInstructions', label: 'Pickup Instructions', type: 'markdown' },
+      { name: 'deliveryAvailable', label: 'Delivery Available', type: 'switch' },
+      { name: 'deliveryRadius', label: 'Delivery Radius (km)', type: 'number', min: 1, max: 50 },
+      { name: 'isUrgent', label: 'Urgent Need', type: 'switch' },
+      { name: 'nutritionalInfo', label: 'Nutritional Information', type: 'markdown', placeholder: 'Provide nutritional details if available...' },
+    ]
+  },
+  clothes: {
+    icon: <FiShirt />,
+    fields: [
+      { name: 'clothesType', label: 'Clothing Type', type: 'select', required: true,
+        options: ['shirts', 'pants', 'dresses', 'jackets', 'shoes', 'underwear', 'accessories', 'uniforms', 'formal-wear', 'sportswear'] },
+      { name: 'gender', label: 'Gender', type: 'select', required: true,
+        options: ['men', 'women', 'unisex', 'boys', 'girls'] },
+      { name: 'ageGroup', label: 'Age Group', type: 'select', required: true,
+        options: ['infant', 'toddler', 'child', 'teen', 'adult', 'senior'] },
+      { name: 'sizeRange', label: 'Size Range', type: 'multiselect', required: true,
+        options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '28', '30', '32', '34', '36', '38', '40', '42', '44'] },
+      { name: 'condition', label: 'Condition', type: 'select', required: true,
+        options: ['new', 'like-new', 'good', 'fair', 'poor'] },
+      { name: 'season', label: 'Season', type: 'select', required: true,
+        options: ['spring', 'summer', 'fall', 'winter', 'all-season'] },
+      { name: 'quantity', label: 'Quantity', type: 'number', required: true, min: 1 },
+      { name: 'colors', label: 'Available Colors', type: 'multiselect',
+        options: ['black', 'white', 'gray', 'brown', 'blue', 'red', 'green', 'yellow', 'pink', 'purple', 'orange', 'multi-color'] },
+      { name: 'brands', label: 'Brands', type: 'tags' },
+      { name: 'materialComposition', label: 'Material Composition', type: 'text', placeholder: 'e.g., 100% Cotton, 80% Polyester 20% Cotton' },
+      { name: 'careInstructions', label: 'Care Instructions', type: 'markdown' },
+      { name: 'specialRequirements', label: 'Special Requirements', type: 'markdown' },
+      { name: 'pickupInstructions', label: 'Pickup Instructions', type: 'markdown' },
+      { name: 'deliveryAvailable', label: 'Delivery Available', type: 'switch' },
+      { name: 'deliveryRadius', label: 'Delivery Radius (km)', type: 'number', min: 1, max: 50 },
+      { name: 'isUrgent', label: 'Urgent Need', type: 'switch' },
+      { name: 'isCleaned', label: 'Items are Cleaned', type: 'switch' },
+      { name: 'donationReceiptAvailable', label: 'Donation Receipt Available', type: 'switch' },
+    ]
+  },
+  training: {
+    icon: <FiBook />,
+    fields: [
+      { name: 'trainingType', label: 'Training Type', type: 'select', required: true,
+        options: ['workshop', 'course', 'mentoring', 'seminar', 'bootcamp', 'certification', 'skills', 'academic'] },
+      { name: 'skillLevel', label: 'Skill Level', type: 'select', required: true,
+        options: ['beginner', 'intermediate', 'advanced', 'expert', 'all-levels'] },
+      { name: 'topics', label: 'Topics Covered', type: 'multiselect', required: true,
+        options: ['programming', 'web-development', 'data-science', 'design', 'marketing', 'business', 'languages', 'cooking', 'crafts', 'music', 'fitness', 'academic-subjects'] },
+      { name: 'maxParticipants', label: 'Maximum Participants', type: 'number', required: true, min: 1, max: 500 },
+      { name: 'currentParticipants', label: 'Current Participants', type: 'number', min: 0 },
+      { name: 'durationHours', label: 'Duration (Hours)', type: 'number', required: true, min: 0.5, max: 1000 },
+      { name: 'numberOfSessions', label: 'Number of Sessions', type: 'number', required: true, min: 1 },
+      { name: 'prerequisites', label: 'Prerequisites', type: 'markdown', placeholder: 'List any required knowledge or skills...' },
+      { name: 'learningObjectives', label: 'Learning Objectives', type: 'markdown', required: true, placeholder: 'What will participants learn? List the key objectives...' },
+      { name: 'curriculum', label: 'Curriculum/Syllabus', type: 'markdown', required: true, placeholder: 'Detailed curriculum or session breakdown...' },
+      { name: 'startDate', label: 'Start Date', type: 'date', required: true },
+      { name: 'endDate', label: 'End Date', type: 'date', required: true },
+      { name: 'registrationDeadline', label: 'Registration Deadline', type: 'date' },
+      { name: 'schedule', label: 'Schedule Details', type: 'markdown', placeholder: 'Class timings, days of the week, frequency...' },
+      { name: 'deliveryMethod', label: 'Delivery Method', type: 'select', required: true,
+        options: ['in-person', 'online', 'hybrid', 'self-paced'] },
+      { name: 'locationDetails', label: 'Location Details', type: 'text' },
+      { name: 'meetingPlatform', label: 'Meeting Platform', type: 'select',
+        options: ['zoom', 'google-meet', 'microsoft-teams', 'skype', 'discord', 'custom', 'other'] },
+      { name: 'meetingLink', label: 'Meeting Link', type: 'text' },
+      { name: 'instructors', label: 'Instructors', type: 'instructor-list', required: true },
+      { name: 'certificationProvided', label: 'Certification Provided', type: 'switch' },
+      { name: 'certificationBody', label: 'Certification Body', type: 'text' },
+      { name: 'materialsProvided', label: 'Materials Provided', type: 'multiselect',
+        options: ['textbooks', 'workbooks', 'software', 'tools', 'certificates', 'recordings', 'presentations', 'assignments'] },
+      { name: 'materialsRequired', label: 'Materials Required', type: 'multiselect',
+        options: ['laptop', 'desktop', 'tablet', 'smartphone', 'notebook', 'pen', 'calculator', 'textbooks', 'software'] },
+      { name: 'softwareRequired', label: 'Software Required', type: 'tags' },
+      { name: 'price', label: 'Price', type: 'number', min: 0 },
+      { name: 'isFree', label: 'Free Course', type: 'switch' },
+      { name: 'courseLanguage', label: 'Course Language', type: 'select', required: true,
+        options: ['english', 'hindi', 'spanish', 'french', 'german', 'chinese', 'japanese', 'arabic', 'other'] },
+      { name: 'subtitlesAvailable', label: 'Subtitles Available', type: 'multiselect',
+        options: ['english', 'hindi', 'spanish', 'french', 'german', 'chinese', 'japanese', 'arabic'] },
+      { name: 'difficultyRating', label: 'Difficulty Rating (1-5)', type: 'number', min: 1, max: 5 },
+      { name: 'courseMaterialsUrl', label: 'Course Materials URL', type: 'text' },
+      { name: 'enrollmentStatus', label: 'Enrollment Status', type: 'select', required: true,
+        options: ['open', 'closed', 'waitlist', 'full'] },
+    ]
+  }
+};
+
+// Instructor input component for training
+const InstructorInput = ({ value = [], onChange }) => {
+  const [instructors, setInstructors] = useState(value || [{ name: '', email: '', phone: '', bio: '', qualifications: '' }]);
+
+  const handleInstructorChange = (index, field, val) => {
+    const newInstructors = [...instructors];
+    newInstructors[index] = { ...newInstructors[index], [field]: val };
+    setInstructors(newInstructors);
+    onChange(newInstructors);
+  };
+
+  const addInstructor = () => {
+    const newInstructors = [...instructors, { name: '', email: '', phone: '', bio: '', qualifications: '' }];
+    setInstructors(newInstructors);
+    onChange(newInstructors);
+  };
+
+  const removeInstructor = (index) => {
+    if (instructors.length > 1) {
+      const newInstructors = instructors.filter((_, i) => i !== index);
+      setInstructors(newInstructors);
+      onChange(newInstructors);
+    }
+  };
+
+  return (
+    <div>
+      {instructors.map((instructor, index) => (
+        <Card key={index} style={{ marginBottom: 16 }} size="small">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text strong>Instructor {index + 1}</Text>
+            {instructors.length > 1 && (
+              <Button size="small" danger onClick={() => removeInstructor(index)}>
+                Remove
+              </Button>
+            )}
+          </div>
+          <Row gutter={[12, 12]}>
+            <Col xs={24} sm={12}>
+              <Input
+                placeholder="Full Name *"
+                value={instructor.name}
+                onChange={(e) => handleInstructorChange(index, 'name', e.target.value)}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <Input
+                placeholder="Email *"
+                type="email"
+                value={instructor.email}
+                onChange={(e) => handleInstructorChange(index, 'email', e.target.value)}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <Input
+                placeholder="Phone"
+                value={instructor.phone}
+                onChange={(e) => handleInstructorChange(index, 'phone', e.target.value)}
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <Input
+                placeholder="Qualifications"
+                value={instructor.qualifications}
+                onChange={(e) => handleInstructorChange(index, 'qualifications', e.target.value)}
+              />
+            </Col>
+            <Col xs={24}>
+              <Input.TextArea
+                placeholder="Bio/Experience"
+                rows={2}
+                value={instructor.bio}
+                onChange={(e) => handleInstructorChange(index, 'bio', e.target.value)}
+              />
+            </Col>
+          </Row>
+        </Card>
+      ))}
+      <Button type="dashed" onClick={addInstructor} icon={<FiPlus />} style={{ width: '100%' }}>
+        Add Another Instructor
+      </Button>
+    </div>
+  );
+};
 
 export default function CreateCausePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [form] = Form.useForm();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Partial<CauseFormData>>({});
   const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const { uploading, uploadedImages, allImages, uploadImage, removeImage } =
-    useImageUpload();
-
-  // Enhanced education fields state
-  const [enhancedEducationFields, setEnhancedEducationFields] = useState({
-    courseModules: [],
-    instructors: [],
-    enhancedPrerequisites: [],
-  });
-
-  const handleEnhancedFieldsChange = (fields: any) => {
-    setEnhancedEducationFields(fields);
-  };
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCauseType, setSelectedCauseType] = useState<'wanted' | 'offered' | ''>('');
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [categoryDetails, setCategoryDetails] = useState<any>({});
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (status === 'loading') return;
     if (!session) {
-      router.push("/auth/signin");
+      router.push('/auth/signin');
       return;
     }
   }, [session, status, router]);
 
-  const getStepsForCategory = () => {
-    if (!selectedCategory || !showCategoryForm) {
-      return [
-        {
-          title: "Category",
-          description: "Choose your cause type",
-          icon: <BookOutlined />,
-        },
-      ];
-    }
-
-    const baseSteps = [
-      {
-        title: "Category",
-        description: "Choose your cause type",
-        icon: <BookOutlined />,
-      },
-      {
-        title: "Basic Info",
-        description: "Tell us about your cause",
-        icon: <InfoCircleOutlined />,
-      },
-    ];
-
-    if (selectedCategory === "food") {
-      return [
-        ...baseSteps,
-        {
-          title: "Food Details",
-          description: "Food-specific information",
-          icon: <FileTextOutlined />,
-        },
-        {
-          title: "Contact & Media",
-          description: "Contact info and images",
-          icon: <CameraOutlined />,
-        },
-        {
-          title: "Review",
-          description: "Final review",
-          icon: <CheckCircleOutlined />,
-        },
-      ];
-    } else if (selectedCategory === "clothes") {
-      return [
-        ...baseSteps,
-        {
-          title: "Clothing Details",
-          description: "Clothing-specific information",
-          icon: <FileTextOutlined />,
-        },
-        {
-          title: "Contact & Media",
-          description: "Contact info and images",
-          icon: <CameraOutlined />,
-        },
-        {
-          title: "Review",
-          description: "Final review",
-          icon: <CheckCircleOutlined />,
-        },
-      ];
-    } else if (selectedCategory === "education") {
-      return [
-        ...baseSteps,
-        {
-          title: "Education Details",
-          description: "Course and training information",
-          icon: <FileTextOutlined />,
-        },
-        {
-          title: "Schedule & Delivery",
-          description: "Dates and delivery method",
-          icon: <CalendarOutlined />,
-        },
-        {
-          title: "Contact & Media",
-          description: "Contact info and images",
-          icon: <CameraOutlined />,
-        },
-        {
-          title: "Review",
-          description: "Final review",
-          icon: <CheckCircleOutlined />,
-        },
-      ];
-    }
-
-    return baseSteps;
-  };
-
-  const steps = getStepsForCategory();
-
-  const nextStep = async () => {
+  const handleImageUpload = async (file: any) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
     try {
-      if (currentStep === 0 && !showCategoryForm) {
-        // Category selection step
-        if (!selectedCategory) {
-          message.error("Please select a category first");
-          return;
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setUploadedImages(prev => [...prev, result.data.url]);
+          message.success('Image uploaded successfully');
+        } else {
+          message.error(result.error || 'Failed to upload image');
         }
-        setShowCategoryForm(true);
-        setCurrentStep(1);
-        return;
+      } else {
+        const errorResult = await response.json();
+        message.error(errorResult.error || 'Failed to upload image');
       }
-
-      const values = await form.validateFields();
-      setFormData({ ...formData, ...values });
-      setCurrentStep(currentStep + 1);
     } catch (error) {
-      console.error("Validation failed:", error);
+      message.error('Failed to upload image');
     }
+    
+    return false; // Prevent default upload
   };
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
-    // Auto-advance after category selection
-    setTimeout(() => {
-      setShowCategoryForm(true);
-      setCurrentStep(1);
-    }, 300);
+    setSelectedCauseType(''); // Reset cause type when category changes
+    setCategoryDetails({}); // Reset category details
+  };
+  
+  const handleCauseTypeSelect = (type: 'wanted' | 'offered') => {
+    setSelectedCauseType(type);
   };
 
-  const prevStep = () => {
-    if (currentStep === 1 && showCategoryForm) {
-      // Go back to category selection
-      setShowCategoryForm(false);
-      setCurrentStep(0);
-      return;
+  const renderCategorySpecificField = (field, index) => {
+    const value = categoryDetails[field.name];
+    const onChange = (val) => {
+      setCategoryDetails(prev => ({ ...prev, [field.name]: val }));
+    };
+
+    switch (field.type) {
+      case 'text':
+        return (
+          <Input
+            placeholder={field.placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            size="large"
+          />
+        );
+      
+      case 'number':
+        return (
+          <InputNumber
+            placeholder={field.placeholder}
+            value={value}
+            onChange={onChange}
+            min={field.min}
+            max={field.max}
+            style={{ width: '100%' }}
+            size="large"
+          />
+        );
+      
+      case 'select':
+        return (
+          <Select
+            placeholder={`Select ${field.label.toLowerCase()}`}
+            value={value}
+            onChange={onChange}
+            size="large"
+            style={{ width: '100%' }}
+          >
+            {field.options.map(option => (
+              <Option key={option} value={option}>
+                {option.charAt(0).toUpperCase() + option.slice(1).replace(/-/g, ' ')}
+              </Option>
+            ))}
+          </Select>
+        );
+      
+      case 'multiselect':
+        return (
+          <Select
+            mode="multiple"
+            placeholder={`Select ${field.label.toLowerCase()}`}
+            value={value || []}
+            onChange={onChange}
+            size="large"
+            style={{ width: '100%' }}
+          >
+            {field.options.map(option => (
+              <Option key={option} value={option}>
+                {option.charAt(0).toUpperCase() + option.slice(1).replace(/-/g, ' ')}
+              </Option>
+            ))}
+          </Select>
+        );
+      
+      case 'tags':
+        return (
+          <Select
+            mode="tags"
+            placeholder={`Enter ${field.label.toLowerCase()}`}
+            value={value || []}
+            onChange={onChange}
+            size="large"
+            style={{ width: '100%' }}
+          />
+        );
+      
+      case 'date':
+        return (
+          <DatePicker
+            value={value ? dayjs(value) : null}
+            onChange={(date) => onChange(date ? date.format('YYYY-MM-DD') : null)}
+            size="large"
+            style={{ width: '100%' }}
+          />
+        );
+      
+      case 'time':
+        return (
+          <TimePicker
+            value={value ? dayjs(value, 'HH:mm') : null}
+            onChange={(time) => onChange(time ? time.format('HH:mm') : null)}
+            size="large"
+            style={{ width: '100%' }}
+            format="HH:mm"
+          />
+        );
+      
+      case 'switch':
+        return (
+          <Switch
+            checked={value || false}
+            onChange={onChange}
+            checkedChildren="Yes"
+            unCheckedChildren="No"
+          />
+        );
+      
+      case 'markdown':
+        return (
+          <MarkdownEditor
+            value={value || ''}
+            onChange={onChange}
+            placeholder={field.placeholder}
+            height={150}
+          />
+        );
+      
+      case 'instructor-list':
+        return (
+          <InstructorInput
+            value={value}
+            onChange={onChange}
+          />
+        );
+      
+      default:
+        return (
+          <Input
+            placeholder={field.placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            size="large"
+          />
+        );
     }
-    setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async () => {
+    if (!selectedCategory) {
+      message.error('Please select a category');
+      return;
+    }
+    
+    if (selectedCategory !== 'training' && !selectedCauseType) {
+      message.error('Please select if you are offering or looking for support');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Get all validated form values
       const values = await form.validateFields();
-
-      console.log("Create form validated values:", values); // Debug log
-      console.log("Current formData state:", formData); // Debug log
-      console.log("Selected category:", selectedCategory); // Debug log
-
+      
+      // Validate required category-specific fields
+      const config = categoryFieldConfigs[selectedCategory];
+      if (config) {
+        for (const field of config.fields) {
+          if (field.required && !categoryDetails[field.name]) {
+            message.error(`${field.label} is required`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+      
       const submitData = {
-        ...formData,
         ...values,
         category: selectedCategory,
+        causeType: selectedCauseType || 'offered', // Default for training
         images: uploadedImages,
+        categoryDetails: categoryDetails,
       };
 
-      // Add enhanced education fields if this is an education cause
-      if (selectedCategory === "education") {
-        submitData.enhancedEducationFields = enhancedEducationFields;
-      }
-
-      console.log("Final create payload:", submitData); // Debug log
-
-      const response = await fetch("/api/causes", {
-        method: "POST",
+      const response = await fetch('/api/causes', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(submitData),
       });
@@ -394,644 +533,38 @@ export default function CreateCausePage() {
       const result = await response.json();
 
       if (result.success) {
-        message.success("Your cause has been created successfully!");
+        message.success('Your cause has been created successfully!');
         router.push(`/causes/${result.data.id}`);
       } else {
-        throw new Error(result.error || "Failed to create cause");
+        throw new Error(result.error || 'Failed to create cause');
       }
     } catch (error) {
-      console.error("Error creating cause:", error);
-      message.error("Failed to create cause. Please try again.");
+      console.error('Error creating cause:', error);
+      message.error('Failed to create cause. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const uploadProps = {
-    name: "file",
-    multiple: true,
-    beforeUpload: (file: any) => {
-      const isValidType =
-        file.type === "image/jpeg" ||
-        file.type === "image/png" ||
-        file.type === "image/webp";
-      if (!isValidType) {
-        message.error("You can only upload JPG/PNG/WebP files!");
-        return false;
-      }
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error("Image must be smaller than 5MB!");
-        return false;
-      }
-      if (allImages.length >= 5) {
-        message.error("You can only upload up to 5 images!");
-        return false;
-      }
-      // Upload immediately
-      uploadImage(file);
-      return false; // Prevent default upload
-    },
-    accept: "image/*",
-    showUploadList: false, // We'll handle our own list
+    name: 'file',
+    beforeUpload: handleImageUpload,
+    showUploadList: false,
+    accept: 'image/*',
   };
 
-  const renderStepContent = () => {
-    // Category Selection Step
-    if (currentStep === 0 && !showCategoryForm) {
-      return (
-        <div style={{ padding: "0 20px" }}>
-          <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <BookOutlined
-              style={{
-                fontSize: "48px",
-                color: "#52c41a",
-                marginBottom: "16px",
-              }}
-            />
-            <Title level={2} style={{ marginBottom: "8px" }}>
-              What type of cause would you like to create?
-            </Title>
-            <Paragraph style={{ color: "#666", fontSize: "16px" }}>
-              Choose the category that best fits your cause to get a customized
-              form
-            </Paragraph>
-          </div>
-
-          <Row gutter={[24, 24]} justify="center">
-            {categories.map((category) => (
-              <Col xs={24} sm={12} lg={8} key={category.value}>
-                <Card
-                  hoverable
-                  className={`category-selection-card ${
-                    selectedCategory === category.value ? "selected" : ""
-                  }`}
-                  onClick={() => handleCategorySelect(category.value)}
-                >
-                  <div className="category-card-content">
-                    <div
-                      className="category-card-icon"
-                      style={{ color: category.color }}
-                    >
-                      {category.icon}
-                    </div>
-                    <Title level={3} className="category-card-title">
-                      {category.label}
-                    </Title>
-                    <Paragraph className="category-card-description">
-                      {category.description}
-                    </Paragraph>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </div>
-      );
-    }
-
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="modern-form-step">
-            <div className="step-header">
-              <InfoCircleOutlined className="step-icon" />
-              <Title level={3}>Basic Information</Title>
-              <Paragraph>
-                Tell us about your{" "}
-                {categories
-                  .find((c) => c.value === selectedCategory)
-                  ?.label.toLowerCase()}
-              </Paragraph>
-            </div>
-
-            <Form.Item
-              name="title"
-              label="Title"
-              rules={[
-                { required: true, message: "Please enter a title" },
-                { min: 10, message: "Title should be at least 10 characters" },
-                { max: 255, message: "Title should not exceed 255 characters" },
-              ]}
-            >
-              <Input
-                size="large"
-                placeholder="e.g., Fresh Meals for Homeless Shelter"
-                showCount
-                maxLength={255}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="shortDescription"
-              label="Short Description"
-              rules={[
-                { required: true, message: "Please enter a short description" },
-                {
-                  max: 500,
-                  message: "Description should not exceed 500 characters",
-                },
-              ]}
-            >
-              <TextArea
-                rows={3}
-                placeholder="A brief summary that will appear in listings"
-                showCount
-                maxLength={500}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label="Detailed Description"
-              rules={[
-                {
-                  required: true,
-                  message: "Please provide a detailed description",
-                },
-                {
-                  min: 50,
-                  message: "Description should be at least 50 characters",
-                },
-              ]}
-            >
-              <TextArea
-                rows={6}
-                placeholder="Provide detailed information about your cause..."
-                showCount
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="location"
-              label="Location"
-              rules={[{ required: true, message: "Please enter the location" }]}
-            >
-              <Input
-                size="large"
-                prefix={<EnvironmentOutlined />}
-                placeholder="City, State or specific address"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="priority"
-              label="Priority Level"
-              rules={[
-                { required: true, message: "Please select priority level" },
-              ]}
-            >
-              <Radio.Group size="large">
-                <Radio.Button value="low">Low</Radio.Button>
-                <Radio.Button value="medium">Medium</Radio.Button>
-                <Radio.Button value="high">High</Radio.Button>
-                <Radio.Button value="critical">Critical</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </div>
-        );
-
-      case 2:
-        if (selectedCategory === "food") {
-          return <FoodDetailsForm form={form} />;
-        } else if (selectedCategory === "clothes") {
-          return <ClothesDetailsForm form={form} />;
-        } else if (selectedCategory === "education") {
-          return (
-            <EducationDetailsForm
-              form={form}
-              onEnhancedFieldsChange={handleEnhancedFieldsChange}
-            />
-          );
-        }
-        return null;
-
-      case 3:
-      case 4:
-        if (selectedCategory === "education" && currentStep === 4) {
-          // Contact & Media for education (step 4)
-        } else if (
-          (selectedCategory === "food" || selectedCategory === "clothes") &&
-          currentStep === 3
-        ) {
-          // Contact & Media for food and clothes (step 3)
-        } else {
-          return null;
-        }
-        return (
-          <div className="modern-form-step">
-            <div className="step-header">
-              <CameraOutlined
-                style={{
-                  fontSize: "32px",
-                  color: "#52c41a",
-                  marginBottom: "16px",
-                  display: "block",
-                }}
-              />
-              <Title level={3}>Contact & Media</Title>
-              <Text type="secondary">
-                Add contact information and images to showcase your cause
-              </Text>
-            </div>
-
-            <div className="form-section">
-              <Title level={4}>Images</Title>
-              <Text
-                type="secondary"
-                style={{ display: "block", marginBottom: "16px" }}
-              >
-                Upload images that showcase your cause. The first image will be
-                used as the main photo.
-              </Text>
-
-              <Dragger {...uploadProps} className="modern-upload">
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">
-                  {uploading
-                    ? "Uploading..."
-                    : "Click or drag images to upload"}
-                </p>
-                <p className="ant-upload-hint">
-                  Support JPG, PNG, WebP. Max file size 5MB each. Up to 5
-                  images.
-                </p>
-              </Dragger>
-
-              {allImages.length > 0 && (
-                <div style={{ marginTop: "16px" }}>
-                  <Text strong>Images ({allImages.length}/5):</Text>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "12px",
-                      marginTop: "8px",
-                    }}
-                  >
-                    {allImages.map((image, index) => {
-                      const isUploading = !uploadedImages.find(
-                        (img) => img.fileId === image.fileId,
-                      );
-                      return (
-                        <div
-                          key={image.fileId}
-                          style={{ position: "relative" }}
-                        >
-                          <div style={{ position: "relative" }}>
-                            <img
-                              src={image.thumbnailUrl || image.url}
-                              alt={image.name}
-                              style={{
-                                width: "80px",
-                                height: "80px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                                border:
-                                  index === 0
-                                    ? "2px solid #52c41a"
-                                    : "1px solid #d9d9d9",
-                                opacity: isUploading ? 0.6 : 1,
-                              }}
-                            />
-                            {isUploading && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  backgroundColor: "rgba(0,0,0,0.3)",
-                                  borderRadius: "8px",
-                                  color: "white",
-                                  fontSize: "12px",
-                                }}
-                              >
-                                Uploading...
-                              </div>
-                            )}
-                          </div>
-                          {index === 0 && (
-                            <Tag
-                              color="green"
-                              style={{
-                                position: "absolute",
-                                top: "-8px",
-                                left: "-8px",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Main
-                            </Tag>
-                          )}
-                          <Button
-                            size="small"
-                            danger
-                            style={{
-                              position: "absolute",
-                              top: "-8px",
-                              right: "-8px",
-                            }}
-                            onClick={() => removeImage(image.fileId)}
-                            disabled={isUploading}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="form-section">
-              <Title level={4}>Contact Information</Title>
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    name="contactEmail"
-                    label="Contact Email"
-                    rules={[
-                      { required: true, message: "Please enter contact email" },
-                      { type: "email", message: "Please enter a valid email" },
-                    ]}
-                    initialValue={session?.user?.email}
-                  >
-                    <Input size="large" prefix={<MailOutlined />} />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} md={12}>
-                  <Form.Item name="contactPhone" label="Contact Phone">
-                    <Input
-                      size="large"
-                      prefix={<PhoneOutlined />}
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item name="contactPerson" label="Contact Person">
-                <Input
-                  size="large"
-                  placeholder="Name of primary contact person"
-                />
-              </Form.Item>
-
-              <Form.Item name="availabilityHours" label="Availability Hours">
-                <Input
-                  size="large"
-                  placeholder="e.g., Mon-Fri 9AM-5PM, Weekends by appointment"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="specialInstructions"
-                label="Special Instructions"
-              >
-                <TextArea
-                  rows={3}
-                  placeholder="Any special instructions for coordination, pickup, delivery, etc."
-                />
-              </Form.Item>
-            </div>
-
-            <div className="form-section">
-              <Title level={4}>Tags & Keywords</Title>
-              <Form.Item
-                name="tags"
-                label="Tags"
-                help="Add relevant tags to help people find your cause"
-              >
-                <Select
-                  mode="tags"
-                  size="large"
-                  placeholder="Enter tags (press Enter to add)"
-                  style={{ width: "100%" }}
-                />
-              </Form.Item>
-            </div>
-          </div>
-        );
-
-      case 4:
-      case 5:
-        // Review step - adjust case number based on category
-        const isReviewStep =
-          (selectedCategory === "education" && currentStep === 5) ||
-          ((selectedCategory === "food" || selectedCategory === "clothes") &&
-            currentStep === 4);
-
-        if (!isReviewStep) return null;
-
-        return (
-          <div className="modern-form-step">
-            <div className="step-header">
-              <CheckCircleOutlined className="step-icon" />
-              <Title level={3}>Review Your Cause</Title>
-              <Paragraph>
-                Please review all information before publishing
-              </Paragraph>
-            </div>
-
-            <Card title="Basic Information" className="review-card">
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
-                  <Text strong>Category:</Text>
-                  <div>
-                    {
-                      categories.find((c) => c.value === selectedCategory)
-                        ?.label
-                    }
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Title:</Text>
-                  <div>{formData.title}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Location:</Text>
-                  <div>{formData.location}</div>
-                </Col>
-                <Col span={12}>
-                  <Text strong>Priority:</Text>
-                  <div className="capitalize">{formData.priority}</div>
-                </Col>
-                <Col span={24}>
-                  <Text strong>Description:</Text>
-                  <div>{formData.shortDescription}</div>
-                </Col>
-              </Row>
-            </Card>
-
-            {selectedCategory === "food" && (
-              <Card title="Food Details" className="review-card">
-                <Row gutter={[16, 16]}>
-                  <Col span={12}>
-                    <Text strong>Food Type:</Text>
-                    <div className="capitalize">{formData.foodType}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Quantity:</Text>
-                    <div>
-                      {formData.quantity} {formData.unit}
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Temperature:</Text>
-                    <div className="capitalize">
-                      {formData.temperatureRequirements}
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Dietary Restrictions:</Text>
-                    <div>
-                      {formData.dietaryRestrictions?.join(", ") || "None"}
-                    </div>
-                  </Col>
-                </Row>
-              </Card>
-            )}
-
-            {selectedCategory === "clothes" && (
-              <Card title="Clothing Details" className="review-card">
-                <Row gutter={[16, 16]}>
-                  <Col span={12}>
-                    <Text strong>Type:</Text>
-                    <div className="capitalize">{formData.clothesType}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Category:</Text>
-                    <div className="capitalize">{formData.clothesCategory}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Age Group:</Text>
-                    <div className="capitalize">{formData.ageGroup}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Sizes:</Text>
-                    <div>{formData.sizeRange?.join(", ")}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Condition:</Text>
-                    <div className="capitalize">{formData.condition}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Quantity:</Text>
-                    <div>{formData.quantity} items</div>
-                  </Col>
-                </Row>
-              </Card>
-            )}
-
-            {selectedCategory === "education" && (
-              <Card title="Education Details" className="review-card">
-                <Row gutter={[16, 16]}>
-                  <Col span={12}>
-                    <Text strong>Type:</Text>
-                    <div className="capitalize">{formData.educationType}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Skill Level:</Text>
-                    <div className="capitalize">{formData.skillLevel}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Duration:</Text>
-                    <div>
-                      {formData.durationHours} hours over{" "}
-                      {formData.numberOfDays} days
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Max Participants:</Text>
-                    <div>{formData.maxTrainees}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Instructor:</Text>
-                    <div>{formData.instructorName}</div>
-                  </Col>
-                  <Col span={12}>
-                    <Text strong>Price:</Text>
-                    <div>{formData.isFree ? "Free" : `$${formData.price}`}</div>
-                  </Col>
-                </Row>
-              </Card>
-            )}
-
-            <Card title="Legal & Preferences" className="review-card">
-              <div className="terms-section">
-                <Form.Item
-                  name="terms"
-                  valuePropName="checked"
-                  rules={[
-                    {
-                      validator: (_, value) =>
-                        value
-                          ? Promise.resolve()
-                          : Promise.reject(
-                              new Error("You must agree to the terms"),
-                            ),
-                    },
-                  ]}
-                >
-                  <Checkbox>
-                    I agree to the{" "}
-                    <a href="/terms" target="_blank" className="text-blue-600">
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a
-                      href="/privacy"
-                      target="_blank"
-                      className="text-blue-600"
-                    >
-                      Privacy Policy
-                    </a>
-                  </Checkbox>
-                </Form.Item>
-
-                <Form.Item
-                  name="updates"
-                  valuePropName="checked"
-                  initialValue={true}
-                >
-                  <Checkbox>
-                    Send me updates about my cause and tips for success
-                  </Checkbox>
-                </Form.Item>
-              </div>
-            </Card>
-
-            <Alert
-              message="Review Complete"
-              description="Once you publish your cause, it will be reviewed by our team and go live within 24 hours."
-              type="info"
-              showIcon
-              className="review-alert"
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <MainLayout>
-        <div className="modern-loading-page">
-          <div className="loading-content">
-            <div className="loading-spinner"></div>
-            <Text>Loading...</Text>
-          </div>
+        <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh' 
+        }}>
+          <Text>Loading...</Text>
+        </div>
         </div>
       </MainLayout>
     );
@@ -1039,186 +572,498 @@ export default function CreateCausePage() {
 
   return (
     <MainLayout>
-      <div className="modern-cause-create-page">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ textAlign: "center", marginBottom: "40px" }}
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+      
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px' }}>
+        {/* Breadcrumb */}
+        <Breadcrumb
+          style={{ marginBottom: 24 }}
+          items={[
+            { title: 'Causes' },
+            { title: 'Create new cause' },
+          ]}
+        />
+        
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{ marginBottom: 32 }}
+        >
+          <Title 
+            level={1} 
+            style={{ 
+              fontSize: '32px',
+              fontWeight: 700,
+              color: '#1a1a1a',
+              marginBottom: 8,
+            }}
           >
-            <Title level={1} style={{ marginBottom: "16px" }}>
-              Create a New Cause
-            </Title>
-            <Paragraph
-              style={{
-                fontSize: "16px",
-                color: "#666",
-                maxWidth: "600px",
-                margin: "0 auto",
-              }}
-            >
-              Share your passion and create positive change in your community.
-              Every great movement starts with a single step.
-            </Paragraph>
-          </motion.div>
+            Create a new cause
+          </Title>
+          <Text style={{ fontSize: 16, color: '#5f6368' }}>
+            Share resources and connect with your community using our enhanced form
+          </Text>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {/* Simplified Progress Header */}
-            <Card
-              style={{
-                marginBottom: "24px",
-                borderRadius: "12px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                padding: "16px 24px",
-              }}
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          {/* Category Selection */}
+          {!selectedCategory && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              style={{ marginBottom: 32 }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "16px",
-                }}
-              >
-                <div>
-                  <Title level={4} style={{ margin: 0, color: "#52c41a" }}>
-                    {steps[currentStep]?.title}
-                  </Title>
-                  <Text type="secondary" style={{ fontSize: "14px" }}>
-                    {steps[currentStep]?.description}
-                  </Text>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <Text strong style={{ fontSize: "16px", color: "#52c41a" }}>
-                    {currentStep + 1} / {steps.length}
-                  </Text>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#666",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {Math.round(((currentStep + 1) / steps.length) * 100)}%
-                    Complete
-                  </div>
-                </div>
-              </div>
-              <Progress
-                percent={((currentStep + 1) / steps.length) * 100}
-                showInfo={false}
-                strokeColor={{
-                  "0%": "#52c41a",
-                  "100%": "#389e0d",
-                }}
-                trailColor="#f0f0f0"
-                strokeWidth={8}
-                style={{ marginBottom: "8px" }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "12px",
-                  color: "#999",
-                }}
-              >
-                {steps.map((step, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      color: index <= currentStep ? "#52c41a" : "#d9d9d9",
-                      fontWeight: index === currentStep ? "bold" : "normal",
-                    }}
-                  >
-                    {step.title}
-                  </span>
-                ))}
-              </div>
-            </Card>
-
-            {/* Form Content */}
-            <Card
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-              }}
-            >
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={formData}
-                size="large"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderStepContent()}
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Navigation Buttons */}
-                <div className="form-navigation">
-                  <div>
-                    {(currentStep > 0 || showCategoryForm) && (
-                      <Button
-                        size="large"
-                        onClick={prevStep}
-                        icon={<LeftOutlined />}
-                        className="nav-btn secondary"
+              <Card style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+                <Title level={3} style={{ color: '#1a1a1a', marginBottom: 24, textAlign: 'center' }}>
+                  What would you like to share?
+                </Title>
+                <Row gutter={[20, 20]}>
+                  {categories.map((category) => (
+                    <Col xs={24} sm={8} key={category.value}>
+                      <motion.div
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        Previous
-                      </Button>
-                    )}
-                  </div>
+                        <Card
+                          hoverable
+                          style={{
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            border: '2px solid #e8eaed',
+                            borderRadius: 16,
+                            transition: 'all 0.3s',
+                            height: '100%',
+                          }}
+                          bodyStyle={{ padding: 24 }}
+                          onClick={() => handleCategorySelect(category.value)}
+                        >
+                          <div style={{ fontSize: 48, marginBottom: 16 }}>
+                            {category.emoji}
+                          </div>
+                          <Title level={4} style={{ margin: 0, marginBottom: 8, color: category.color }}>
+                            {category.label}
+                          </Title>
+                          <Text style={{ color: '#5f6368', fontSize: 14, lineHeight: 1.5 }}>
+                            {category.description}
+                          </Text>
+                        </Card>
+                      </motion.div>
+                    </Col>
+                  ))}
+                </Row>
+              </Card>
+            </motion.div>
+          )}
 
-                  <div className="nav-right">
+          {/* Selected Category Content */}
+          <AnimatePresence>
+            {selectedCategory && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', marginBottom: 24 }}>
+                  {/* Category Header */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: 24,
+                    padding: 20,
+                    backgroundColor: `${categories.find(c => c.value === selectedCategory)?.color}15`,
+                    borderRadius: 12,
+                  }}>
                     <Button
-                      size="large"
-                      onClick={() => router.push("/causes")}
-                      className="nav-btn secondary"
-                    >
-                      Save as Draft
-                    </Button>
-
-                    {currentStep < steps.length - 1 ? (
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={nextStep}
-                        className="nav-btn primary"
-                      >
-                        Next Step
-                        <RightOutlined />
-                      </Button>
-                    ) : (
-                      <Button
-                        type="primary"
-                        onClick={handleSubmit}
-                        loading={loading}
-                        size="large"
-                        className="nav-btn primary"
-                        icon={<CheckCircleOutlined />}
-                      >
-                        Publish Cause
-                      </Button>
-                    )}
+                      type="text"
+                      icon={<FiArrowLeft />}
+                      onClick={() => {
+                        setSelectedCategory('');
+                        setSelectedCauseType('');
+                        setCategoryDetails({});
+                      }}
+                      style={{ marginRight: 12 }}
+                    />
+                    <div style={{ fontSize: 32, marginRight: 16 }}>
+                      {categories.find(c => c.value === selectedCategory)?.emoji}
+                    </div>
+                    <div>
+                      <Text strong style={{ fontSize: 18, display: 'block' }}>
+                        {categories.find(c => c.value === selectedCategory)?.label}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: '#5f6368' }}>
+                        {categories.find(c => c.value === selectedCategory)?.description}
+                      </Text>
+                    </div>
                   </div>
-                </div>
-              </Form>
-            </Card>
-          </motion.div>
-        </div>
+
+                  {/* Cause Type Selection for Food/Clothes */}
+                  {categories.find(c => c.value === selectedCategory)?.hasType && !selectedCauseType && (
+                    <div style={{ marginBottom: 32 }}>
+                      <Title level={4} style={{ marginBottom: 20, textAlign: 'center' }}>
+                        Are you offering or looking for {selectedCategory}?
+                      </Title>
+                      <Row gutter={[20, 20]}>
+                        <Col xs={24} sm={12}>
+                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Card
+                              hoverable
+                              style={{
+                                cursor: 'pointer',
+                                border: '2px solid #e8eaed',
+                                borderRadius: 12,
+                                transition: 'all 0.3s',
+                              }}
+                              bodyStyle={{ padding: 24, textAlign: 'center' }}
+                              onClick={() => handleCauseTypeSelect('offered')}
+                            >
+                              <FiHeart style={{ fontSize: 32, color: '#52c41a', marginBottom: 12 }} />
+                              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Offering</div>
+                              <div style={{ fontSize: 14, color: '#5f6368' }}>
+                                I have {selectedCategory} to share
+                              </div>
+                            </Card>
+                          </motion.div>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Card
+                              hoverable
+                              style={{
+                                cursor: 'pointer',
+                                border: '2px solid #e8eaed',
+                                borderRadius: 12,
+                                transition: 'all 0.3s',
+                              }}
+                              bodyStyle={{ padding: 24, textAlign: 'center' }}
+                              onClick={() => handleCauseTypeSelect('wanted')}
+                            >
+                              <FiInfo style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }} />
+                              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Looking for</div>
+                              <div style={{ fontSize: 14, color: '#5f6368' }}>
+                                I need {selectedCategory} support
+                              </div>
+                            </Card>
+                          </motion.div>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+
+                  {/* Main Form Fields */}
+                  {(selectedCauseType || selectedCategory === 'training') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      {/* Basic Information */}
+                      <Title level={4} style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+                        <FiInfo style={{ marginRight: 8 }} />
+                        Basic Information
+                      </Title>
+                      
+                      <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                          <Form.Item
+                            name="title"
+                            label={<Text strong>Title</Text>}
+                            rules={[
+                              { required: true, message: 'Please enter a title' },
+                              { min: 10, message: 'Title should be at least 10 characters' },
+                            ]}
+                          >
+                            <Input
+                              size="large"
+                              placeholder={`e.g., ${selectedCategory === 'food' ? 'Fresh homemade meals for families in need' : selectedCategory === 'clothes' ? 'Winter coats for children aged 5-12' : 'Full-stack web development bootcamp'}`}
+                              style={{ borderRadius: 8 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                          <Form.Item
+                            name="description"
+                            label={<Text strong>Description</Text>}
+                            rules={[
+                              { required: true, message: 'Please provide a description' },
+                              { min: 20, message: 'Description should be at least 20 characters' },
+                            ]}
+                          >
+                            <MarkdownEditor
+                              placeholder="Describe what you're offering or what you need. Include details about quantity, timing, and any special requirements. You can use markdown formatting for better presentation."
+                              height={200}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="location"
+                            label={<Text strong>Location</Text>}
+                            rules={[{ required: true, message: 'Please enter location' }]}
+                          >
+                            <Input
+                              size="large"
+                              prefix={<FiMapPin style={{ color: '#5f6368' }} />}
+                              placeholder="City, neighborhood, or specific address"
+                              style={{ borderRadius: 8 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="priority"
+                            label={<Text strong>Urgency</Text>}
+                            rules={[{ required: true, message: 'Please select urgency level' }]}
+                            initialValue="medium"
+                          >
+                            <Select size="large" style={{ borderRadius: 8 }}>
+                              <Option value="low">Low - No rush</Option>
+                              <Option value="medium">Medium - Within a week</Option>
+                              <Option value="high">High - Within a few days</Option>
+                              <Option value="urgent">Urgent - ASAP</Option>
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      {/* Contact Information */}
+                      <Divider />
+                      <Title level={4} style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+                        <FiUser style={{ marginRight: 8 }} />
+                        Contact Information
+                      </Title>
+                      
+                      <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="contactEmail"
+                            label={<Text strong>Contact Email</Text>}
+                            rules={[
+                              { required: true, message: 'Please enter email' },
+                              { type: 'email', message: 'Please enter valid email' },
+                            ]}
+                            initialValue={session?.user?.email}
+                          >
+                            <Input size="large" style={{ borderRadius: 8 }} />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="contactPhone"
+                            label={<Text strong>Phone (optional)</Text>}
+                          >
+                            <Input
+                              size="large"
+                              placeholder="+1 (555) 123-4567"
+                              style={{ borderRadius: 8 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      {/* Category-Specific Fields */}
+                      {categoryFieldConfigs[selectedCategory] && (
+                        <>
+                          <Divider />
+                          <Title level={4} style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+                            {categoryFieldConfigs[selectedCategory].icon}
+                            <span style={{ marginLeft: 8 }}>
+                              {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Details
+                            </span>
+                          </Title>
+                          
+                          <Row gutter={[16, 16]}>
+                            {categoryFieldConfigs[selectedCategory].fields.map((field, index) => (
+                              <Col 
+                                key={field.name} 
+                                xs={24} 
+                                sm={field.type === 'markdown' || field.type === 'instructor-list' ? 24 : 12}
+                                md={field.type === 'markdown' || field.type === 'instructor-list' ? 24 : field.type === 'switch' ? 8 : 12}
+                              >
+                                <Form.Item
+                                  label={
+                                    <Text strong>
+                                      {field.label}
+                                      {field.required && <span style={{ color: '#ff4d4f', marginLeft: 4 }}>*</span>}
+                                    </Text>
+                                  }
+                                >
+                                  {renderCategorySpecificField(field, index)}
+                                </Form.Item>
+                              </Col>
+                            ))}
+                          </Row>
+                        </>
+                      )}
+
+                      {/* Images */}
+                      <Divider />
+                      <Title level={4} style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+                        <FiUpload style={{ marginRight: 8 }} />
+                        Images (optional)
+                      </Title>
+                      
+                      <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                          <Form.Item>
+                            <Upload
+                              {...uploadProps}
+                              listType="picture-card"
+                              className="enhanced-uploader"
+                            >
+                              {uploadedImages.length < 5 && (
+                                <div style={{ textAlign: 'center' }}>
+                                  <FiUpload style={{ fontSize: 24, marginBottom: 8 }} />
+                                  <div>Upload Image</div>
+                                </div>
+                              )}
+                            </Upload>
+                            
+                            {uploadedImages.length > 0 && (
+                              <div style={{ marginTop: 16 }}>
+                                <Row gutter={[12, 12]}>
+                                  {uploadedImages.map((url, index) => (
+                                    <Col key={index} xs={12} sm={8} md={6}>
+                                      <div style={{ position: 'relative' }}>
+                                        <Image
+                                          src={url}
+                                          alt={`Upload ${index + 1}`}
+                                          width="100%"
+                                          height={100}
+                                          style={{ 
+                                            objectFit: 'cover',
+                                            borderRadius: 8,
+                                          }}
+                                        />
+                                        {index === 0 && (
+                                          <Tag 
+                                            color="blue"
+                                            style={{
+                                              position: 'absolute',
+                                              top: 4,
+                                              left: 4,
+                                              fontSize: 10,
+                                            }}
+                                          >
+                                            Main
+                                          </Tag>
+                                        )}
+                                      </div>
+                                    </Col>
+                                  ))}
+                                </Row>
+                              </div>
+                            )}
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      {/* Tags */}
+                      <Row gutter={[16, 16]}>
+                        <Col span={24}>
+                          <Form.Item
+                            name="tags"
+                            label={<Text strong>Tags (optional)</Text>}
+                          >
+                            <Select
+                              mode="tags"
+                              size="large"
+                              placeholder="Add tags to help people find your cause"
+                              style={{ borderRadius: 8 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      {/* Submit Button */}
+                      <Row>
+                        <Col span={24}>
+                          <div style={{ textAlign: 'center', marginTop: 32 }}>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              size="large"
+                              loading={loading}
+                              style={{
+                                height: 56,
+                                padding: '0 48px',
+                                fontSize: 16,
+                                borderRadius: 28,
+                                fontWeight: 600,
+                                boxShadow: '0 4px 16px rgba(24, 144, 255, 0.3)',
+                              }}
+                            >
+                              Create Cause
+                            </Button>
+                            
+                            <div style={{ marginTop: 16 }}>
+                              <Text style={{ fontSize: 14, color: '#5f6368' }}>
+                                Your cause will be published immediately and visible to the community
+                              </Text>
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </motion.div>
+                  )}
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Form>
+      </div>
+      
+      <style jsx global>{`
+        .enhanced-uploader .ant-upload-select-picture-card {
+          border: 2px dashed #e8eaed !important;
+          border-radius: 12px !important;
+          background-color: #fafbfc !important;
+          transition: all 0.3s !important;
+        }
+        
+        .enhanced-uploader .ant-upload-select-picture-card:hover {
+          border-color: #1890ff !important;
+          background-color: #f0f8ff !important;
+        }
+        
+        .ant-select-dropdown {
+          border-radius: 12px !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        }
+        
+        .ant-input:focus,
+        .ant-input-focused {
+          border-color: #1890ff !important;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+        }
+        
+        .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+          border-color: #1890ff !important;
+        }
+        
+        .ant-select-focused .ant-select-selector {
+          border-color: #1890ff !important;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+        }
+
+        .ant-form-item-label > label {
+          font-weight: 600 !important;
+          color: #1a1a1a !important;
+        }
+      `}</style>
       </div>
     </MainLayout>
   );

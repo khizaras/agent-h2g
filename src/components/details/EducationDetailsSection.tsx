@@ -40,6 +40,7 @@ import {
   DesktopOutlined,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -411,14 +412,14 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({
                     }
                     description={
                       <div>
-                        <Paragraph
+                        <div
                           style={{
                             color: theme.textSecondary,
                             marginBottom: "12px",
                           }}
                         >
-                          {instructor.bio}
-                        </Paragraph>
+                          <MarkdownRenderer content={instructor.bio || ""} />
+                        </div>
                         {instructor.qualifications &&
                           instructor.qualifications.length > 0 && (
                             <div style={{ marginBottom: "8px" }}>
@@ -513,14 +514,14 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({
                       </Title>
                       <Tag color="blue">{module.duration}h</Tag>
                     </div>
-                    <Paragraph
+                    <div
                       style={{
                         color: theme.textSecondary,
                         marginBottom: "12px",
                       }}
                     >
-                      {module.description}
-                    </Paragraph>
+                      <MarkdownRenderer content={module.description || ""} />
+                    </div>
                     {module.resources && module.resources.length > 0 && (
                       <div>
                         <Text strong style={{ color: theme.text }}>
@@ -786,16 +787,15 @@ const EducationDetailsSection: React.FC<EducationDetailsSectionProps> = ({
                                     {prereq.type}
                                   </Tag>
                                 </Space>
-                                <Text
+                                <div
                                   style={{
                                     color: theme.textSecondary,
-                                    display: "block",
                                     marginLeft: "24px",
                                     marginTop: "4px",
                                   }}
                                 >
-                                  {prereq.description}
-                                </Text>
+                                  <MarkdownRenderer content={prereq.description || ""} />
+                                </div>
                               </div>
                             ),
                           )}

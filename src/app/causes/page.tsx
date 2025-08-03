@@ -1,892 +1,974 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Card,
   Row,
   Col,
-  Typography,
+  Card,
   Button,
   Input,
   Select,
   Tag,
-  Pagination,
-  Spin,
-  Empty,
-  Switch,
-  Space,
-  message,
   Avatar,
+  Typography,
+  Space,
+  Pagination,
+  Empty,
+  Spin,
+  Progress,
 } from "antd";
 import {
-  FiHeart,
-  FiMapPin,
   FiSearch,
+  FiFilter,
+  FiHeart,
+  FiEye,
+  FiMapPin,
+  FiClock,
   FiUser,
   FiPlus,
-  FiRefreshCw,
-  FiShare2,
-  FiFilter,
-  FiGrid,
-  FiList,
   FiTrendingUp,
-  FiClock,
   FiTarget,
+  FiUsers,
+  FiChevronRight,
+  FiGrid,
+  FiArrowRight,
 } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   fetchCauses,
-  loadMoreCauses,
   setFilters,
+  setSelectedCategory,
   setSearchQuery,
-  selectCausesList,
+  selectCauses,
   selectCausesLoading,
-  selectCausesLoadingMore,
+  selectPagination,
+  selectFilters,
+  selectSelectedCategory,
+  selectSearchQuery,
   selectCausesError,
-  selectCausesFilters,
-  selectCausesPagination,
-  selectCausesHasMore,
+  Cause,
 } from "@/store/slices/causesSlice";
+import { imageConfig, categoryColors, animations } from "@/config/theme";
+import { MainLayout } from "@/components/layout/MainLayout";
 
-const { Title, Paragraph, Text } = Typography;
-const { Search } = Input;
+const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
-export default function CausesPage() {
-  const dispatch = useAppDispatch();
-  const causes = useAppSelector(selectCausesList) || [];
-  const loading = useAppSelector(selectCausesLoading);
-  const loadingMore = useAppSelector(selectCausesLoadingMore);
-  const error = useAppSelector(selectCausesError);
-  const filters = useAppSelector(selectCausesFilters);
-  const pagination = useAppSelector(selectCausesPagination);
-  const hasMore = useAppSelector(selectCausesHasMore);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
-  const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const loadingRef = useRef<HTMLDivElement>(null);
-
-  const categories = [
-    { value: "food", label: "Food & Nutrition", color: "#52c41a" },
-    { value: "clothes", label: "Clothing", color: "#1890ff" },
-    { value: "education", label: "Education", color: "#722ed1" },
-    { value: "healthcare", label: "Healthcare", color: "#fa541c" },
-    { value: "housing", label: "Housing", color: "#13c2c2" },
-    { value: "other", label: "Other", color: "#eb2f96" },
+// Microsoft-style statistics section
+const StatsSection = ({ causes }: { causes: Cause[] }) => {
+  const stats = [
+    {
+      title: "Active initiatives",
+      value: causes.length,
+      icon: <FiTarget />,
+      description: "Community initiatives available",
+    },
+    {
+      title: "Total views",
+      value: causes.reduce((acc, cause) => acc + (cause.view_count || 0), 0),
+      icon: <FiTrendingUp />,
+      description: "Community engagement",
+    },
+    {
+      title: "Supporters",
+      value: causes.reduce((acc, cause) => acc + (cause.like_count || 0), 0),
+      icon: <FiUsers />,
+      description: "People actively participating",
+    },
+    {
+      title: "Success rate",
+      value: "94%",
+      icon: <FiChevronRight />,
+      description: "Initiatives completed successfully",
+    },
   ];
 
-  const urgencyLevels = [
-    { value: "low", label: "Low Priority", color: "#52c41a" },
-    { value: "medium", label: "Medium Priority", color: "#faad14" },
-    { value: "high", label: "High Priority", color: "#fa541c" },
-    { value: "critical", label: "Critical", color: "#f5222d" },
-  ];
+  return (
+    <section style={{
+      background: '#faf9f8',
+      padding: '48px 0',
+    }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+        <Row gutter={[24, 24]}>
+          {stats.map((stat, index) => (
+            <Col xs={12} sm={6} key={index}>
+              <motion.div {...animations.slideUp} style={{ transitionDelay: `${index * 0.1}s` }}>
+                <Card style={{
+                  textAlign: "center",
+                  borderRadius: 8,
+                  border: "1px solid #edebe9",
+                  height: '100%'
+                }}>
+                  <div style={{
+                    color: '#0078d4',
+                    fontSize: '20px',
+                    marginBottom: 12,
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}>
+                    {stat.icon}
+                  </div>
+                  <div style={{
+                    fontSize: '24px',
+                    fontWeight: 600,
+                    color: '#323130',
+                    marginBottom: 4,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}>
+                    {stat.value}
+                  </div>
+                  <Text style={{
+                    color: '#323130',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    display: 'block',
+                    marginBottom: 4,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}>
+                    {stat.title}
+                  </Text>
+                  <Text style={{
+                    color: '#605e5c',
+                    fontSize: 12,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}>
+                    {stat.description}
+                  </Text>
+                </Card>
+              </motion.div>
+            </Col>
+          ))}
+        </Row>
+      </div>
+    </section>
+  );
+};
 
-  // Fetch causes on component mount
-  useEffect(() => {
-    dispatch(fetchCauses(filters));
-  }, [dispatch]);
+// Microsoft-style cause card with category-specific information
+const CauseCard = ({ cause }: { cause: Cause }) => {
+  const router = useRouter();
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(cause.like_count || 0);
+  
+  const categoryColor = categoryColors[cause.category_name as keyof typeof categoryColors] || categoryColors.food;
 
-  // Handle search and filter changes
-  useEffect(() => {
-    const newFilters = {
-      ...filters,
-      search: searchTerm || undefined,
-      category: selectedCategory !== "all" ? selectedCategory : undefined,
-      urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
-      page: 1, // Reset to first page when filters change
-    };
-
-    dispatch(setFilters(newFilters));
-    dispatch(fetchCauses(newFilters));
-  }, [searchTerm, selectedCategory, selectedUrgency, dispatch]);
-
-  const handlePageChange = (page: number) => {
-    const newFilters = { ...filters, page };
-    dispatch(setFilters(newFilters));
-    dispatch(fetchCauses(newFilters));
+  const handleCardClick = () => {
+    router.push(`/causes/${cause.id}`);
   };
 
-  const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore && infiniteScrollEnabled) {
-      const nextPage = pagination.page + 1;
-      const newFilters = {
-        ...filters,
-        page: nextPage,
-        search: searchTerm || undefined,
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
-      };
-      dispatch(loadMoreCauses(newFilters));
-    }
-  }, [
-    dispatch,
-    loadingMore,
-    hasMore,
-    infiniteScrollEnabled,
-    pagination.page,
-    filters,
-    searchTerm,
-    selectedCategory,
-    selectedUrgency,
-  ]);
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLiked(!isLiked);
+    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+  };
 
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    if (!infiniteScrollEnabled) return;
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && hasMore && !loadingMore && !loading) {
-          loadMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "100px",
-        threshold: 0.1,
-      },
-    );
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
 
-    const currentRef = loadingRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [loadMore, hasMore, loadingMore, loading, infiniteScrollEnabled]);
-
-  const handleRefresh = useCallback(() => {
-    const refreshFilters = {
-      ...filters,
-      page: 1,
-      search: searchTerm || undefined,
-      category: selectedCategory !== "all" ? selectedCategory : undefined,
-      urgency: selectedUrgency !== "all" ? selectedUrgency : undefined,
-    };
-    dispatch(setFilters(refreshFilters));
-    dispatch(fetchCauses(refreshFilters));
-  }, [dispatch, filters, searchTerm, selectedCategory, selectedUrgency]);
-
-  const getUrgencyColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "#f5222d";
-      case "high":
-        return "#fa8c16";
-      case "medium":
-        return "#faad14";
-      case "low":
-        return "#52c41a";
+  // Render category-specific relevant information
+  const renderCategoryInfo = () => {
+    switch (cause.category_name) {
+      case 'food':
+        return (
+          <div style={{ marginTop: 8, marginBottom: 8 }}>
+            <Space size={4} wrap>
+              {cause.food_type && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.food_type}
+                </Tag>
+              )}
+              {cause.serving_size && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  Serves {cause.serving_size}
+                </Tag>
+              )}
+              {cause.expiration_date && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#fff3cd', 
+                  color: '#f7630c', 
+                  border: '1px solid #ffeaa7',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  Expires {new Date(cause.expiration_date).toLocaleDateString()}
+                </Tag>
+              )}
+            </Space>
+          </div>
+        );
+      
+      case 'clothes':
+        return (
+          <div style={{ marginTop: 8, marginBottom: 8 }}>
+            <Space size={4} wrap>
+              {cause.clothes_type && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.clothes_type.replace('-', ' ')}
+                </Tag>
+              )}
+              {cause.gender && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.gender}
+                </Tag>
+              )}
+              {cause.condition && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.condition}
+                </Tag>
+              )}
+            </Space>
+          </div>
+        );
+      
+      case 'training':
+        return (
+          <div style={{ marginTop: 8, marginBottom: 8 }}>
+            <Space size={4} wrap>
+              {cause.training_type && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.training_type}
+                </Tag>
+              )}
+              {cause.skill_level && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.skill_level.replace('-', ' ')}
+                </Tag>
+              )}
+              {cause.duration_hours && (
+                <Tag size="small" style={{ 
+                  backgroundColor: '#f0f8ff', 
+                  color: '#0078d4', 
+                  border: '1px solid #b3d9ff',
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.duration_hours}h
+                </Tag>
+              )}
+              {cause.is_free !== undefined && (
+                <Tag size="small" style={{ 
+                  backgroundColor: cause.is_free ? '#e8f5e8' : '#fff3cd',
+                  color: cause.is_free ? '#107c10' : '#f7630c',
+                  border: `1px solid ${cause.is_free ? '#90ee90' : '#ffeaa7'}`,
+                  fontSize: '10px',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.is_free ? 'Free' : 'Paid'}
+                </Tag>
+              )}
+            </Space>
+          </div>
+        );
+      
       default:
-        return "#d9d9d9";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // New helper functions for compact cards
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "food":
-        return "#ff6b6b";
-      case "clothes":
-        return "#4ecdc4";
-      case "education":
-        return "#45b7d1";
-      case "healthcare":
-        return "#f9ca24";
-      case "housing":
-        return "#6c5ce7";
-      default:
-        return "#a4b0be";
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "food":
-        return "🍽️";
-      case "clothes":
-        return "👕";
-      case "education":
-        return "📚";
-      case "healthcare":
-        return "🏥";
-      case "housing":
-        return "🏠";
-      default:
-        return "🤝";
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case "food":
-        return "Food";
-      case "clothes":
-        return "Clothes";
-      case "education":
-        return "Education";
-      case "healthcare":
-        return "Healthcare";
-      case "housing":
-        return "Housing";
-      default:
-        return "General";
-    }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
-    return num.toString();
-  };
-
-  const getCategoryDetails = (category: string) => {
-    switch (category) {
-      case "food":
-        return {
-          info: "🍽️ Providing meals & nutrition",
-          detail: "Food assistance program",
-        };
-      case "clothes":
-        return {
-          info: "👕 Clothing & essentials",
-          detail: "Clothing donation drive",
-        };
-      case "education":
-        return {
-          info: "📚 Learning & development",
-          detail: "Educational support",
-        };
-      case "healthcare":
-        return {
-          info: "🏥 Health & medical care",
-          detail: "Healthcare assistance",
-        };
-      case "housing":
-        return {
-          info: "🏠 Shelter & housing",
-          detail: "Housing support program",
-        };
-      default:
-        return {
-          info: "🤝 Community support",
-          detail: "General assistance",
-        };
-    }
-  };
-
-  const getCategoryActionText = (category: string) => {
-    switch (category) {
-      case "food":
-        return "🍽️ Support Food";
-      case "clothes":
-        return "👕 Donate Clothes";
-      case "education":
-        return "📚 Support Learning";
-      case "healthcare":
-        return "🏥 Support Health";
-      case "housing":
-        return "🏠 Support Housing";
-      default:
-        return "🤝 Support Cause";
+        return null;
     }
   };
 
   return (
-    <MainLayout>
-      <div className="page-container">
-        {/* Hero Section */}
-        <section
-          className="section-wrapper-hero"
-          style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    <motion.div {...animations.slideUp}>
+      <Card
+        hoverable
+        onClick={handleCardClick}
+        cover={
+          <div style={{
+            height: 220,
+            background: cause.image 
+              ? `url(${cause.image})`
+              : `linear-gradient(135deg, ${categoryColor.primary}20, ${categoryColor.primary}40), url(${imageConfig.getRandomImage(cause.category_name as any, { w: 400, h: 220 })})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             position: "relative",
+          }}>
+            <div style={{
+              position: "absolute",
+              top: 16,
+              left: 16,
+            }}>
+              <Tag style={{
+                backgroundColor: categoryColor.primary,
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                fontSize: "12px",
+                fontWeight: 600,
+                padding: "4px 10px",
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}>
+                {cause.category_display_name}
+              </Tag>
+            </div>
+            
+            {cause.cause_type && (
+              <div style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+              }}>
+                <Tag style={{
+                  backgroundColor: cause.cause_type === "offered" ? "#107c10" : "#d13438",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  padding: "3px 8px",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.cause_type === "offered" ? "OFFERING" : "SEEKING"}
+                </Tag>
+              </div>
+            )}
+
+            {cause.priority !== 'medium' && (
+              <div style={{
+                position: "absolute",
+                bottom: 16,
+                right: 16,
+              }}>
+                <Tag style={{
+                  backgroundColor: cause.priority === 'urgent' ? '#d13438' : cause.priority === 'high' ? '#f7630c' : '#0078d4',
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  padding: "2px 6px",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {cause.priority.toUpperCase()}
+                </Tag>
+              </div>
+            )}
+          </div>
+        }
+        style={{
+          borderRadius: 12,
+          overflow: "hidden",
+          border: "1px solid #edebe9",
+          height: "100%",
+          cursor: "pointer",
+          transition: 'all 0.3s ease-in-out',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+        }}
+        className="premium-cause-card"
+        bodyStyle={{ padding: "20px" }}
+      >
+        {/* Title and Description */}
+        <div style={{ marginBottom: 16 }}>
+          <Title level={4} style={{
+            marginBottom: 8,
+            color: "#323130",
+            fontSize: "16px",
+            fontWeight: 600,
+            lineHeight: "1.3",
+            height: "42px",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
             overflow: "hidden",
-          }}
-        >
-          <img
-            className="hero-background"
-            src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            alt="Community causes"
-          />
-          <div className="hero-overlay" />
-          <div className="container-standard">
-            <div className="card-content-hero">
-              <motion.h1
-                className="hero-title"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                Discover <span className="hero-title-accent">Causes</span> That
-                Matter
-              </motion.h1>
-              <motion.p
-                className="hero-subtitle"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                Join thousands of changemakers supporting meaningful causes in
-                communities worldwide. Every contribution creates real impact.
-              </motion.p>
-              <motion.div
-                className="hero-actions-section"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <div className="hero-actions">
-                  <Link href="/causes/create">
-                    <Button className="btn-hero-primary">
-                      <FiPlus style={{ marginRight: "8px" }} />
-                      Create a Cause
-                    </Button>
-                  </Link>
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            {cause.title}
+          </Title>
+
+          <div style={{
+            color: '#605e5c',
+            fontSize: '13px',
+            lineHeight: '1.4',
+            height: '36px',
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            fontFamily: "'Segoe UI', system-ui, sans-serif",
+            marginBottom: 12
+          }}>
+            {cause.short_description || cause.description}
+          </div>
+
+          {/* Category-specific information */}
+          {renderCategoryInfo()}
+        </div>
+
+        {/* Location and Time */}
+        <div style={{ marginBottom: 16 }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Space size={6} align="center">
+                <FiMapPin style={{ color: "#8a8886", fontSize: 14 }} />
+                <Text style={{ 
+                  color: "#8a8886", 
+                  fontSize: "12px",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "80px"
+                }}>
+                  {cause.location}
+                </Text>
+              </Space>
+            </Col>
+            <Col span={12}>
+              <Space size={6} align="center">
+                <FiClock style={{ color: "#8a8886", fontSize: 14 }} />
+                <Text style={{ 
+                  color: "#8a8886", 
+                  fontSize: "12px",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  {formatTimeAgo(cause.created_at)}
+                </Text>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+
+        {/* Footer with Creator and Actions */}
+        <div style={{
+          paddingTop: 16,
+          borderTop: "1px solid #f3f2f1",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Space size={8} align="center">
+            <Avatar size={28} src={cause.creator_avatar} icon={<FiUser />} />
+            <div>
+              <Text style={{ 
+                color: "#323130", 
+                fontSize: "13px", 
+                fontWeight: 600,
+                fontFamily: "'Segoe UI', system-ui, sans-serif",
+                display: "block",
+                lineHeight: 1.2
+              }}>
+                {cause.creator_name || 'Anonymous'}
+              </Text>
+              <Text style={{ 
+                color: "#8a8886", 
+                fontSize: "11px",
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}>
+                Creator
+              </Text>
+            </div>
+          </Space>
+
+          <Space size={8}>
+            <Button
+              type="text"
+              size="small"
+              icon={<FiHeart fill={isLiked ? "currentColor" : "none"} />}
+              onClick={handleLike}
+              style={{
+                padding: "6px 8px",
+                color: isLiked ? "#d13438" : "#8a8886",
+                fontSize: "12px",
+                fontFamily: "'Segoe UI', system-ui, sans-serif",
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}
+            >
+              {likeCount}
+            </Button>
+
+            <Button
+              type="text"
+              size="small"
+              icon={<FiEye />}
+              style={{ 
+                padding: "6px 8px", 
+                color: "#8a8886",
+                fontSize: "12px",
+                fontFamily: "'Segoe UI', system-ui, sans-serif",
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}
+            >
+              {cause.view_count || 0}
+            </Button>
+          </Space>
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Microsoft-style filter bar
+const FilterBar = () => {
+  const dispatch = useAppDispatch();
+  const filters = useAppSelector(selectFilters);
+  const selectedCategory = useAppSelector(selectSelectedCategory);
+  const searchQuery = useAppSelector(selectSearchQuery);
+
+  const categories = [
+    { key: "all", label: "All categories" },
+    { key: "food", label: "Food" },
+    { key: "clothes", label: "Clothing" },
+    { key: "training", label: "Training" },
+  ];
+
+  const handleCategoryChange = (category: string) => {
+    const newCategory = category === "all" ? null : category;
+    dispatch(setSelectedCategory(newCategory));
+  };
+
+  const handleSearchChange = (value: string) => {
+    dispatch(setSearchQuery(value));
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    dispatch(setFilters({ [key]: value }));
+  };
+
+  return (
+    <motion.div style={{ marginBottom: 32 }} {...animations.slideUp}>
+      {/* Category Filter */}
+      <div style={{ marginBottom: 20 }}>
+        <Space size={8} wrap>
+          {categories.map((category) => (
+            <Button
+              key={category.key}
+              type={
+                selectedCategory === category.key ||
+                (selectedCategory === null && category.key === "all")
+                  ? "primary"
+                  : "default"
+              }
+              onClick={() => handleCategoryChange(category.key)}
+              style={{
+                borderRadius: 4,
+                fontWeight: 600,
+                height: 32,
+                fontSize: 14,
+                backgroundColor:
+                  selectedCategory === category.key ||
+                  (selectedCategory === null && category.key === "all")
+                    ? "#0078d4"
+                    : undefined,
+                borderColor:
+                  selectedCategory === category.key ||
+                  (selectedCategory === null && category.key === "all")
+                    ? "#0078d4"
+                    : "#8a8886",
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}
+            >
+              {category.label}
+            </Button>
+          ))}
+        </Space>
+      </div>
+
+      {/* Search and Filters */}
+      <Card style={{
+        borderRadius: 8,
+        border: "1px solid #edebe9",
+      }}>
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} sm={12} md={10}>
+            <Input
+              placeholder="Search initiatives..."
+              prefix={<FiSearch style={{ color: "#8a8886" }} />}
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              style={{
+                borderRadius: 4,
+                borderColor: "#8a8886",
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}
+            />
+          </Col>
+
+          <Col xs={12} sm={6} md={4}>
+            <Select
+              placeholder="Type"
+              allowClear
+              value={filters.cause_type}
+              onChange={(value) => handleFilterChange("cause_type", value)}
+              style={{ width: "100%" }}
+            >
+              <Option value="wanted">Seeking help</Option>
+              <Option value="offered">Offering help</Option>
+            </Select>
+          </Col>
+
+          <Col xs={12} sm={6} md={4}>
+            <Select
+              placeholder="Priority"
+              allowClear
+              value={filters.priority}
+              onChange={(value) => handleFilterChange("priority", value)}
+              style={{ width: "100%" }}
+            >
+              <Option value="urgent">Urgent</Option>
+              <Option value="high">High</Option>
+              <Option value="medium">Medium</Option>
+              <Option value="low">Low</Option>
+            </Select>
+          </Col>
+
+          <Col xs={24} sm={12} md={6}>
+            <Input
+              placeholder="Location"
+              value={filters.location}
+              onChange={(e) => handleFilterChange("location", e.target.value)}
+              prefix={<FiMapPin style={{ color: "#8a8886" }} />}
+              style={{
+                borderRadius: 4,
+                borderColor: "#8a8886",
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}
+            />
+          </Col>
+        </Row>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Main Causes Page Component
+export default function CausesPage() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const causes = useAppSelector(selectCauses);
+  const loading = useAppSelector(selectCausesLoading);
+  const pagination = useAppSelector(selectPagination);
+  const filters = useAppSelector(selectFilters);
+  const error = useAppSelector(selectCausesError);
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    const category = searchParams.get("category");
+    const search = searchParams.get("search");
+    const type = searchParams.get("type");
+    const location = searchParams.get("location");
+    const page = searchParams.get("page");
+
+    const urlFilters: any = {};
+
+    if (category) {
+      dispatch(setSelectedCategory(category));
+      urlFilters.category = category;
+    }
+
+    if (search) {
+      dispatch(setSearchQuery(search));
+      urlFilters.search = search;
+    }
+
+    if (type) urlFilters.cause_type = type;
+    if (location) urlFilters.location = location;
+    if (page) urlFilters.page = parseInt(page);
+
+    if (Object.keys(urlFilters).length > 0) {
+      dispatch(setFilters(urlFilters));
+    }
+  }, [searchParams, dispatch]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    if (Object.keys(filters).length === 0) {
+      dispatch(fetchCauses({}));
+    }
+  }, [dispatch]);
+
+  // Fetch causes when filters change
+  useEffect(() => {
+    if (Object.keys(filters).length > 0) {
+      dispatch(fetchCauses(filters));
+    }
+  }, [filters, dispatch]);
+
+  const handlePageChange = (page: number) => {
+    dispatch(setFilters({ ...filters, page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <MainLayout>
+      <div style={{ minHeight: "100vh", backgroundColor: "#ffffff" }}>
+        {/* Microsoft-style hero section */}
+        <section style={{
+          background: '#f3f2f1',
+          padding: "80px 0 56px",
+        }}>
+          <div style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "0 24px",
+            textAlign: "center",
+          }}>
+            <motion.div {...animations.slideUp}>
+              <Title level={1} style={{
+                color: '#323130',
+                fontSize: '32px',
+                fontWeight: 600,
+                marginBottom: 16,
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}>
+                Community initiatives
+              </Title>
+              <Paragraph style={{
+                color: '#605e5c',
+                fontSize: 16,
+                marginBottom: 32,
+                maxWidth: 600,
+                margin: '0 auto 32px auto',
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}>
+                Discover opportunities to help your neighbors or find the support you need. 
+                Browse active community initiatives and make a difference today.
+              </Paragraph>
+              
+              <Space size="large">
+                <Link href="/causes/create">
                   <Button
-                    className="btn-hero-secondary"
-                    icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
-                    onClick={() =>
-                      setViewMode(viewMode === "grid" ? "list" : "grid")
-                    }
+                    type="primary"
+                    icon={<FiPlus />}
+                    size="large"
+                    style={{
+                      backgroundColor: '#0078d4',
+                      borderColor: '#0078d4',
+                      borderRadius: 4,
+                      height: 40,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      fontFamily: "'Segoe UI', system-ui, sans-serif"
+                    }}
                   >
-                    {viewMode === "grid" ? "List View" : "Grid View"}
+                    Start an initiative
                   </Button>
+                </Link>
+                
+                <Button
+                  icon={<FiGrid />}
+                  size="large"
+                  style={{
+                    borderRadius: 4,
+                    height: 40,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    borderColor: '#8a8886',
+                    color: '#323130',
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}
+                >
+                  Browse all
+                </Button>
+              </Space>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Statistics Section */}
+        <StatsSection causes={causes || []} />
+
+        {/* Main Content */}
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 24px" }}>
+          <FilterBar />
+
+          {error && (
+            <motion.div style={{ marginBottom: 24, textAlign: "center" }} {...animations.fadeIn}>
+              <Card style={{
+                borderRadius: 8,
+                backgroundColor: "#fdf4f4",
+                border: "1px solid #d13438",
+              }}>
+                <Text style={{ fontSize: 14, color: "#d13438", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+                  Error loading initiatives: {error}
+                </Text>
+              </Card>
+            </motion.div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{ textAlign: "center", padding: "60px 0" }}
+              >
+                <Spin size="large" />
+                <div style={{ marginTop: 16 }}>
+                  <Text style={{ 
+                    color: "#605e5c", 
+                    fontSize: 14,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif"
+                  }}>
+                    Loading community initiatives...
+                  </Text>
                 </div>
               </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Filters Section */}
-        <section
-          className="section-wrapper"
-          style={{ background: "var(--bg-secondary)" }}
-        >
-          <div className="container-standard">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="grid-4 mb-lg">
-                <div>
-                  <Text strong className="mb-xs block">
-                    Search Causes
-                  </Text>
-                  <Search
-                    placeholder="Search by title, description..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    size="large"
-                    prefix={<FiSearch />}
-                    className="search-modern"
-                  />
-                </div>
-                <div>
-                  <Text strong className="mb-xs block">
-                    Category
-                  </Text>
-                  <Select
-                    value={selectedCategory}
-                    onChange={setSelectedCategory}
-                    size="large"
-                    style={{ width: "100%" }}
-                    placeholder="Category"
-                    className="select-modern"
-                  >
-                    <Option value="all">All Categories</Option>
-                    {categories.map((category) => (
-                      <Option key={category.value} value={category.value}>
-                        {category.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-                <div>
-                  <Text strong className="mb-xs block">
-                    Priority Level
-                  </Text>
-                  <Select
-                    value={selectedUrgency}
-                    onChange={setSelectedUrgency}
-                    size="large"
-                    style={{ width: "100%" }}
-                    placeholder="Urgency"
-                    className="select-modern"
-                  >
-                    <Option value="all">All Priorities</Option>
-                    {urgencyLevels.map((level) => (
-                      <Option key={level.value} value={level.value}>
-                        {level.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-                <div>
-                  <Text strong className="mb-xs block">
-                    Options
-                  </Text>
-                  <div className="flex-between">
-                    <div className="flex-center">
-                      <Switch
-                        checked={infiniteScrollEnabled}
-                        onChange={setInfiniteScrollEnabled}
-                        size="small"
-                      />
-                      <Text className="ml-xs">Auto-load</Text>
-                    </div>
-                    <Button
-                      icon={<FiRefreshCw />}
-                      onClick={handleRefresh}
-                      className="btn-secondary"
-                    >
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Causes Grid Section */}
-        <section className="section-wrapper">
-          <div className="container-standard">
-            {loading ? (
-              <div className="text-center p-xl">
-                <Spin size="large" />
-                <p className="mt-md text-muted">Loading causes...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center p-xl">
-                <h3 className="text-danger mb-md">Error loading causes</h3>
-                <p className="mb-lg">{error}</p>
-                <Button
-                  className="btn-primary"
-                  onClick={() => dispatch(fetchCauses(filters))}
-                >
-                  Try Again
-                </Button>
-              </div>
-            ) : !Array.isArray(causes) || causes.length === 0 ? (
-              <div className="text-center p-xl">
+            ) : causes.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                style={{ textAlign: "center", padding: "60px 0" }}
+              >
                 <Empty
-                  description="No causes found matching your criteria"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                >
-                  <Link href="/causes/create">
-                    <Button className="btn-primary" icon={<FiPlus />}>
-                      Create First Cause
-                    </Button>
-                  </Link>
-                </Empty>
-              </div>
-            ) : (
-              <div className={viewMode === "grid" ? "grid-2" : "grid-1"}>
-                {causes.map((cause, index) => (
-                  <motion.div
-                    key={cause.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    whileHover={{ y: -8, scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    <Card className="card-professional">
-                      <div className="card-image-large">
-                        <img
-                          src={
-                            cause.image ||
-                            "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=350&fit=crop"
-                          }
-                          alt={cause.title}
-                          style={{
-                            width: "100%",
-                            height: "280px",
-                            objectFit: "cover",
-                            borderRadius: "12px 12px 0 0",
-                          }}
-                        />
-                        <div className="card-badges-large">
-                          <Tag
-                            color="green"
+                  description={
+                    <div>
+                      <Text style={{
+                        fontSize: 16,
+                        color: "#605e5c",
+                        display: "block",
+                        marginBottom: 12,
+                        fontFamily: "'Segoe UI', system-ui, sans-serif"
+                      }}>
+                        No initiatives found
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 14, 
+                        color: "#8a8886",
+                        fontFamily: "'Segoe UI', system-ui, sans-serif"
+                      }}>
+                        Try adjusting your filters or create a new initiative
+                      </Text>
+                      <div style={{ marginTop: 20 }}>
+                        <Link href="/causes/create">
+                          <Button
+                            type="primary"
+                            icon={<FiPlus />}
                             style={{
-                              fontSize: "14px",
-                              padding: "6px 12px",
-                              borderRadius: "20px",
-                              fontWeight: "600",
+                              backgroundColor: '#0078d4',
+                              borderColor: '#0078d4',
+                              borderRadius: 4,
+                              fontWeight: 600,
+                              fontFamily: "'Segoe UI', system-ui, sans-serif"
                             }}
                           >
-                            {String(cause.category?.name || cause.category)}
-                          </Tag>
-                          {(cause as any).urgency && (
-                            <Tag
-                              color={
-                                (cause as any).urgency === "critical"
-                                  ? "red"
-                                  : (cause as any).urgency === "high"
-                                    ? "orange"
-                                    : (cause as any).urgency === "medium"
-                                      ? "yellow"
-                                      : "green"
-                              }
-                              style={{
-                                fontSize: "12px",
-                                padding: "4px 10px",
-                                borderRadius: "16px",
-                                fontWeight: "700",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {String((cause as any).urgency)}
-                            </Tag>
-                          )}
-                        </div>
+                            Create the first initiative
+                          </Button>
+                        </Link>
                       </div>
-                      <div
-                        className="card-content-large"
-                        style={{ padding: "24px" }}
-                      >
-                        <h2
-                          className="card-title-large"
-                          style={{
-                            fontSize: "24px",
-                            fontWeight: "700",
-                            marginBottom: "12px",
-                            lineHeight: "1.3",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {cause.title}
-                        </h2>
-                        <p
-                          className="card-description-large"
-                          style={{
-                            fontSize: "16px",
-                            lineHeight: "1.6",
-                            marginBottom: "24px",
-                            color: "var(--text-secondary)",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }}
-                        >
-                          {cause.description}
-                        </p>
+                    </div>
+                  }
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="causes"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Row gutter={[32, 32]}>
+                  {causes.map((cause, index) => (
+                    <Col 
+                      xs={24} 
+                      sm={12} 
+                      md={12} 
+                      lg={8} 
+                      xl={6} 
+                      key={cause.id}
+                    >
+                      <CauseCard cause={cause} />
+                    </Col>
+                  ))}
+                </Row>
 
-                        <div
-                          className="cause-meta-large"
-                          style={{ marginBottom: "20px" }}
-                        >
-                          <div
-                            className="flex-between"
-                            style={{ marginBottom: "12px" }}
-                          >
-                            <div className="flex-center">
-                              <FiUser
-                                style={{
-                                  marginRight: "8px",
-                                  color: "var(--text-muted)",
-                                  fontSize: "16px",
-                                }}
-                              />
-                              <Text
-                                style={{
-                                  fontSize: "15px",
-                                  fontWeight: "500",
-                                  color: "var(--text-secondary)",
-                                }}
-                              >
-                                {(cause as any).creator?.name || "Anonymous"}
-                              </Text>
-                            </div>
-                            <div className="flex-center">
-                              <FiClock
-                                style={{
-                                  marginRight: "8px",
-                                  color: "var(--text-muted)",
-                                  fontSize: "16px",
-                                }}
-                              />
-                              <Text
-                                style={{
-                                  fontSize: "15px",
-                                  color: "var(--text-muted)",
-                                }}
-                              >
-                                {getTimeAgo(cause.createdAt)}
-                              </Text>
-                            </div>
-                          </div>
-
-                          {(cause as any).location && (
-                            <div
-                              className="flex-center"
-                              style={{ marginBottom: "8px" }}
-                            >
-                              <FiMapPin
-                                style={{
-                                  marginRight: "8px",
-                                  color: "var(--text-muted)",
-                                  fontSize: "16px",
-                                }}
-                              />
-                              <Text
-                                style={{
-                                  fontSize: "15px",
-                                  color: "var(--text-muted)",
-                                }}
-                              >
-                                {(cause as any).location}
-                              </Text>
-                            </div>
-                          )}
-                        </div>
-
-                        {(cause as any).raised !== undefined &&
-                          (cause as any).goal !== undefined && (
-                            <div
-                              className="funding-section"
-                              style={{ marginBottom: "24px" }}
-                            >
-                              <div
-                                className="flex-between"
-                                style={{ marginBottom: "12px" }}
-                              >
-                                <Text
-                                  strong
-                                  style={{
-                                    fontSize: "20px",
-                                    fontWeight: "700",
-                                    color: "var(--brand-primary)",
-                                  }}
-                                >
-                                  $
-                                  {(
-                                    (cause as any).raised || 0
-                                  ).toLocaleString()}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: "16px",
-                                    color: "var(--text-secondary)",
-                                  }}
-                                >
-                                  of $
-                                  {((cause as any).goal || 0).toLocaleString()}
-                                </Text>
-                              </div>
-                              <div
-                                className="progress-bar-large"
-                                style={{
-                                  background: "#f0f0f0",
-                                  height: "12px",
-                                  borderRadius: "6px",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                <div
-                                  className="progress-fill-large"
-                                  style={{
-                                    background:
-                                      "linear-gradient(90deg, var(--brand-primary), var(--brand-secondary))",
-                                    height: "100%",
-                                    borderRadius: "6px",
-                                    width: `${Math.min(((cause as any).raised / (cause as any).goal) * 100 || 0, 100)}%`,
-                                    transition: "width 0.3s ease",
-                                  }}
-                                />
-                              </div>
-                              <div
-                                className="flex-between"
-                                style={{ marginTop: "8px" }}
-                              >
-                                <Text
-                                  style={{
-                                    fontSize: "14px",
-                                    color: "var(--text-muted)",
-                                  }}
-                                >
-                                  {Math.round(
-                                    ((cause as any).raised /
-                                      (cause as any).goal) *
-                                      100 || 0,
-                                  )}
-                                  % funded
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: "14px",
-                                    color: "var(--text-muted)",
-                                  }}
-                                >
-                                  {(cause as any).supporters || 0} supporters
-                                </Text>
-                              </div>
-                            </div>
-                          )}
-
-                        <div className="card-actions-large">
-                          <Link href={`/causes/${cause.id}`}>
-                            <Button
-                              className="btn-primary-xl"
-                              block
-                              style={{
-                                height: "56px",
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                borderRadius: "12px",
-                              }}
-                            >
-                              <FiHeart
-                                style={{
-                                  marginRight: "12px",
-                                  fontSize: "18px",
-                                }}
-                              />
-                              Support This Cause
-                            </Button>
-                          </Link>
-                          <div
-                            className="flex-between"
-                            style={{ marginTop: "12px" }}
-                          >
-                            <Button
-                              icon={<FiShare2 />}
-                              style={{
-                                fontSize: "14px",
-                                border: "none",
-                                background: "transparent",
-                                color: "var(--text-muted)",
-                              }}
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  `${window.location.origin}/causes/${cause.id}`,
-                                );
-                                message.success("Link copied!");
-                              }}
-                            >
-                              Share
-                            </Button>
-                            <Button
-                              icon={<FiTarget />}
-                              style={{
-                                fontSize: "14px",
-                                border: "none",
-                                background: "transparent",
-                                color: "var(--text-muted)",
-                              }}
-                            >
-                              Learn More
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
+                {/* Pagination */}
+                {pagination && pagination.total_pages > 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    style={{
+                      textAlign: "center",
+                      marginTop: 48,
+                      paddingTop: 32,
+                      borderTop: "1px solid #edebe9",
+                    }}
+                  >
+                    <Pagination
+                      current={pagination.page}
+                      total={pagination.total}
+                      pageSize={pagination.limit}
+                      onChange={handlePageChange}
+                      showSizeChanger={false}
+                      showQuickJumper
+                      showTotal={(total, range) =>
+                        `${range[0]}-${range[1]} of ${total} initiatives`
+                      }
+                      style={{ 
+                        fontSize: 14,
+                        fontFamily: "'Segoe UI', system-ui, sans-serif"
+                      }}
+                    />
                   </motion.div>
-                ))}
-              </div>
+                )}
+              </motion.div>
             )}
-
-            {/* Load More / Pagination */}
-            {!infiniteScrollEnabled && pagination.total > causes.length && (
-              <div className="text-center mt-xl">
-                <Button
-                  className="btn-secondary-large"
-                  onClick={loadMore}
-                  loading={loadingMore}
-                  icon={<FiTrendingUp />}
-                >
-                  Load More Causes
-                </Button>
-              </div>
-            )}
-
-            {/* Infinite Scroll Trigger */}
-            {infiniteScrollEnabled && hasMore && (
-              <div ref={loadingRef} className="text-center p-lg">
-                {loadingMore && <Spin size="large" />}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="cta-section">
-          <div className="container-standard">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="cta-title">Can't Find What You're Looking For?</h2>
-              <p className="cta-description">
-                Create your own cause and rally your community around issues
-                that matter to you. Making a difference starts with taking the
-                first step.
-              </p>
-              <div className="cta-actions">
-                <Link href="/causes/create">
-                  <Button className="cta-btn-primary">
-                    <FiPlus style={{ marginRight: "8px" }} />
-                    Start a New Cause
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button className="cta-btn-secondary">
-                    <FiHeart style={{ marginRight: "8px" }} />
-                    Get Help
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+          </AnimatePresence>
+        </div>
       </div>
     </MainLayout>
   );
-
-  // Helper functions
-  function getTimeAgo(dateString: string) {
-    if (!dateString) return "Recent";
-
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 2592000)
-      return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  }
 }

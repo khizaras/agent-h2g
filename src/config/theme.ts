@@ -1,306 +1,368 @@
-import type { ThemeConfig } from "antd";
-import { theme } from "antd";
+// Microsoft Fluent Design System for Hands2gether
+// Based on Microsoft.com design principles
+// Professional, clean, and trustworthy styling
 
-const { defaultAlgorithm, darkAlgorithm } = theme;
-
-// Professional Theme Configuration for Complete Redesign
-export const antdTheme: ThemeConfig = {
-  algorithm: defaultAlgorithm,
+export const revampedTheme = {
   token: {
-    // Professional Brand Colors - Matching globals.css
-    colorPrimary: "#1a365d",
-    colorSuccess: "#38a169",
-    colorWarning: "#d69e2e",
-    colorError: "#e53e3e",
-    colorInfo: "#3182ce",
+    // Primary Colors - Microsoft Fluent blue palette
+    colorPrimary: '#0078d4', // Microsoft Communication Blue
+    colorPrimaryHover: '#106ebe',
+    colorPrimaryActive: '#005a9e',
+    colorPrimaryBg: '#deecf9',
+    colorPrimaryBorder: '#92c5f7',
+    colorPrimaryText: '#0078d4',
 
-    // Typography System - Professional
-    fontFamily:
-      'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-    fontSize: 16,
-    fontSizeSM: 14,
+    // Secondary Colors - Microsoft Fluent semantic colors
+    colorSuccess: '#0078d4', // Microsoft Blue for success (consistent theme)
+    colorWarning: '#797775', // Microsoft Warning Gray
+    colorError: '#d13438',   // Microsoft Red
+    colorInfo: '#0078d4',    // Microsoft Blue
+
+    // Neutral Colors - Microsoft Fluent gray scale
+    colorBgBase: '#ffffff',
+    colorBgContainer: '#ffffff',
+    colorBgElevated: '#faf9f8',
+    colorBgLayout: '#f3f2f1',
+    colorBgSpotlight: '#fefefe',
+    
+    // Text Colors - Microsoft Fluent text hierarchy
+    colorText: '#323130',        // Fluent primary text
+    colorTextSecondary: '#605e5c', // Fluent secondary text
+    colorTextTertiary: '#8a8886',  // Fluent tertiary text
+    colorTextQuaternary: '#c8c6c4',
+    
+    // Border Colors - Microsoft Fluent neutrals
+    colorBorder: '#edebe9',
+    colorBorderSecondary: '#f3f2f1',
+    
+    // Typography - Using Segoe UI for authentic Microsoft appearance
+    fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    fontSizeHeading1: 32,
+    fontSizeHeading2: 28,
+    fontSizeHeading3: 24,
+    fontSizeHeading4: 20,
+    fontSizeHeading5: 16,
+    fontSizeLG: 16,
+    fontSizeSM: 12,
     fontSizeXL: 20,
-    fontSizeHeading1: 48,
-    fontSizeHeading2: 40,
-    fontSizeHeading3: 32,
-    fontSizeHeading4: 24,
-    fontSizeHeading5: 20,
-
-    // Layout & Spacing - Generous Whitespace
-    borderRadius: 12,
-    borderRadiusLG: 16,
-    borderRadiusSM: 8,
-    borderRadiusXS: 6,
-
-    // Professional Spacing Scale
+    
+    // Line Heights - Microsoft Fluent specifications
+    lineHeight: 1.43,
+    lineHeightHeading1: 1.25,
+    lineHeightHeading2: 1.29,
+    lineHeightHeading3: 1.33,
+    
+    // Spacing - Microsoft 4px base unit system
     padding: 16,
     paddingXS: 8,
     paddingSM: 12,
     paddingLG: 24,
     paddingXL: 32,
-
+    
     margin: 16,
     marginXS: 8,
     marginSM: 12,
     marginLG: 24,
     marginXL: 32,
-
-    // Color Palette - Minimal & Clean
-    colorBgBase: "#ffffff",
-    colorBgContainer: "#ffffff",
-    colorBgElevated: "#fafafa",
-    colorBgLayout: "#f7f7f7",
-    colorBorder: "#e2e8f0",
-    colorBorderSecondary: "#f7fafc",
-
-    // Text Colors - Professional Hierarchy
-    colorText: "#1a202c",
-    colorTextSecondary: "#4a5568",
-    colorTextTertiary: "#718096",
-    colorTextQuaternary: "#a0aec0",
-
-    // Shadows - Elegant & Subtle
-    boxShadow:
-      "0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-    boxShadowSecondary:
-      "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-    boxShadowTertiary:
-      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-
-    // Interactive Elements
-    controlHeight: 40,
-    controlHeightSM: 32,
-    controlHeightLG: 48,
-
-    // Professional Motion
-    motionDurationFast: "0.1s",
-    motionDurationMid: "0.2s",
-    motionDurationSlow: "0.3s",
-    motionEaseInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
-    motionEaseOut: "cubic-bezier(0.0, 0, 0.2, 1)",
-
-    // Z-Index Management
+    
+    // Border Radius - Microsoft Fluent specifications
+    borderRadius: 4,
+    borderRadiusXS: 2,
+    borderRadiusSM: 4,
+    borderRadiusLG: 8,
+    borderRadiusXL: 12,
+    
+    // Shadows - Microsoft Fluent elevation
+    boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+    boxShadowSecondary: '0 6.4px 14.4px 0 rgba(0,0,0,.132), 0 1.2px 3.6px 0 rgba(0,0,0,.108)',
+    
+    // Motion - Microsoft Fluent easing
+    motionDurationFast: '0.1s',
+    motionDurationMid: '0.2s',
+    motionDurationSlow: '0.3s',
+    
+    // Z-index
     zIndexBase: 0,
     zIndexPopupBase: 1000,
-
-    // Professional Line Heights
-    lineHeight: 1.7,
-    lineHeightHeading1: 1.1,
-    lineHeightHeading2: 1.15,
-    lineHeightHeading3: 1.2,
-    lineHeightHeading4: 1.3,
-    lineHeightHeading5: 1.4,
-
-    // Professional Weights
-    fontWeightStrong: 600,
-    wireframe: false,
   },
+  
+  // Component specific styling - Microsoft Fluent components
   components: {
-    // Button - Professional Styling
     Button: {
-      borderRadius: 8,
-      controlHeight: 40,
-      controlHeightSM: 32,
-      controlHeightLG: 48,
-      fontWeight: 600,
-      primaryShadow: "0 2px 0 rgba(26, 54, 93, 0.045)",
-      dangerShadow: "0 2px 0 rgba(229, 62, 62, 0.045)",
+      borderRadius: 4,
+      controlHeight: 32,
+      controlHeightSM: 24,
+      controlHeightLG: 40,
+      fontWeight: 600, // Semibold - Microsoft standard
+      primaryShadow: 'none',
+      defaultBorderColor: '#8a8886',
+      defaultColor: '#323130',
+      defaultHoverBorderColor: '#0078d4',
+      defaultHoverColor: '#0078d4',
+      primaryColor: '#ffffff',
+      primaryBg: '#0078d4',
     },
-
-    // Card - Clean & Interactive
+    
     Card: {
-      borderRadius: 16,
-      boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
-      headerFontSize: 18,
-      headerFontSizeSM: 16,
+      borderRadius: 8,
+      boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+      headerBg: '#ffffff',
       bodyPadding: 24,
-      headerBg: "transparent",
     },
-
-    // Input - Professional Forms
+    
     Input: {
-      borderRadius: 8,
-      controlHeight: 40,
-      controlHeightSM: 32,
-      controlHeightLG: 48,
+      borderRadius: 4,
+      controlHeight: 32,
       paddingInline: 12,
-      fontSize: 16,
+      fontSize: 14,
+      borderColor: '#8a8886',
+      hoverBorderColor: '#0078d4',
+      activeBorderColor: '#0078d4',
     },
-
-    // Select - Enhanced UX
-    Select: {
-      borderRadius: 8,
-      controlHeight: 40,
-      controlHeightSM: 32,
-      controlHeightLG: 48,
-      fontSize: 16,
-      optionPadding: "8px 12px",
+    
+    Layout: {
+      headerBg: '#ffffff',
+      headerPadding: '0 24px',
+      headerHeight: 48,
+      siderBg: '#faf9f8',
+      bodyBg: '#f3f2f1',
     },
-
-    // Menu - Professional Navigation
+    
     Menu: {
-      borderRadius: 8,
-      itemHeight: 40,
-      itemPaddingInline: 16,
-      fontSize: 15,
-      subMenuItemBorderRadius: 6,
+      itemBg: 'transparent',
+      itemSelectedBg: '#deecf9',
+      itemSelectedColor: '#0078d4',
+      itemHoverBg: '#f3f2f1',
+      borderRadius: 4,
     },
-
-    // Typography - Enhanced Readability
+    
     Typography: {
-      titleMarginBottom: "0.5em",
-      titleMarginTop: "1.2em",
+      titleMarginTop: 0,
+      titleMarginBottom: 16,
     },
-
-    // Table - Professional Data Display
-    Table: {
-      borderRadius: 12,
-      headerBg: "#fafafa",
-      headerColor: "#1a202c",
-      headerSortActiveBg: "#f1f1f1",
-      rowHoverBg: "#fafafa",
-      fontSize: 15,
-      cellPaddingInline: 16,
-      cellPaddingBlock: 16,
+    
+    Form: {
+      labelColor: '#323130',
+      itemMarginBottom: 24,
+      verticalLabelPadding: '0 0 8px',
     },
-
-    // Modal - Elegant Overlays
+    
+    Select: {
+      borderRadius: 4,
+      controlHeight: 32,
+      optionSelectedBg: '#deecf9',
+    },
+    
+    Tabs: {
+      itemSelectedColor: '#0078d4',
+      itemHoverColor: '#0078d4',
+      inkBarColor: '#0078d4',
+      titleFontSize: 14,
+    },
+    
+    Tag: {
+      borderRadius: 4,
+      fontSizeSM: 12,
+      lineHeightSM: 1.43,
+    },
+    
     Modal: {
-      borderRadius: 16,
-      titleFontSize: 20,
-      titleLineHeight: 1.3,
-      contentBg: "#ffffff",
-      footerBg: "#fafafa",
-      headerBg: "transparent",
+      borderRadius: 8,
+      headerBg: '#ffffff',
+      contentBg: '#ffffff',
     },
-
-    // Drawer - Smooth Interactions
+    
+    Avatar: {
+      borderRadius: 50,
+    },
+    
+    Badge: {
+      borderRadius: 10,
+    },
+    
+    Alert: {
+      borderRadius: 4,
+      withDescriptionIconSize: 20,
+    },
+    
     Drawer: {
       borderRadius: 0,
-      footerPaddingBlock: 16,
-      footerPaddingInline: 24,
+      headerHeight: 48,
     },
-
-    // Notification - Professional Alerts
-    Notification: {
-      borderRadius: 12,
-      padding: 20,
-      paddingContentHorizontal: 20,
-      fontSize: 15,
-      lineHeight: 1.6,
-    },
-
-    // Message - Clean Feedback
-    Message: {
-      borderRadius: 8,
-      contentPadding: "10px 16px",
-      fontSize: 15,
-    },
-
-    // Tooltip - Helpful & Subtle
-    Tooltip: {
-      borderRadius: 6,
-      colorBgSpotlight: "rgba(26, 32, 44, 0.85)",
-      fontSize: 13,
-      lineHeight: 1.5,
-    },
-
-    // Popover - Professional Overlays
-    Popover: {
-      borderRadius: 12,
-      titleMinWidth: 177,
-      minWidth: 177,
-      fontSize: 14,
-      lineHeight: 1.6,
-    },
-
-    // Dropdown - Enhanced Menus
-    Dropdown: {
-      borderRadius: 8,
-      controlPaddingHorizontal: 12,
-      fontSize: 15,
-      lineHeight: 1.6,
-    },
-
-    // Tabs - Professional Navigation
-    Tabs: {
-      borderRadius: 6,
-      cardHeight: 40,
-      fontSize: 15,
-      margin: 0,
-      padding: 12,
-      inkBarColor: "#1a365d",
-      itemActiveColor: "#1a365d",
-      itemHoverColor: "#2d3748",
-    },
-
-    // Form - Enhanced UX
-    Form: {
-      itemMarginBottom: 24,
-      verticalLabelPadding: "0 0 8px",
-      labelFontSize: 15,
-      labelColor: "#1a202c",
-      labelColonMarginInlineStart: 2,
-      labelColonMarginInlineEnd: 8,
-    },
-
-    // Layout - Professional Structure
-    Layout: {
-      bodyBg: "#ffffff",
-      headerBg: "#ffffff",
-      headerHeight: 64,
-      headerPadding: "0 24px",
-      footerBg: "#fafafa",
-      footerPadding: "24px 24px",
-      siderBg: "#ffffff",
-      triggerBg: "#fafafa",
-      triggerColor: "#1a202c",
+    
+    Steps: {
+      titleLineHeight: 1.43,
+      descriptionMaxWidth: 200,
     },
   },
 };
 
-// Dark theme variant for professional look
-export const darkTheme: ThemeConfig = {
-  ...antdTheme,
-  algorithm: darkAlgorithm,
-  token: {
-    ...antdTheme.token,
-    colorPrimary: "#63b3ed",
-    colorBgBase: "#1a202c",
-    colorBgContainer: "#2d3748",
-    colorBgElevated: "#4a5568",
-    colorBgLayout: "#171923",
-    colorBorder: "#4a5568",
-    colorBorderSecondary: "#2d3748",
-    colorText: "#f7fafc",
-    colorTextSecondary: "#e2e8f0",
-    colorTextTertiary: "#cbd5e0",
-    colorTextQuaternary: "#a0aec0",
+// Microsoft Fluent inspired color palette for categories
+export const categoryColors = {
+  food: {
+    primary: '#d13438',
+    light: '#fdf4f4',
+    dark: '#a4262c',
+    gradient: 'linear-gradient(135deg, #d13438 0%, #ff8080 100%)',
+  },
+  clothes: {
+    primary: '#8764b8',
+    light: '#f7f4fb',
+    dark: '#6b4d94',
+    gradient: 'linear-gradient(135deg, #8764b8 0%, #c3a6d6 100%)',
+  },
+  training: {
+    primary: '#0078d4',
+    light: '#deecf9',
+    dark: '#005a9e',
+    gradient: 'linear-gradient(135deg, #0078d4 0%, #40e0d0 100%)',
+  },
+  education: {
+    primary: '#0078d4',
+    light: '#deecf9',
+    dark: '#005a9e',
+    gradient: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
   },
 };
 
-// Professional CSS variables for enhanced styling
-export const cssVariables = {
-  "--primary-gradient": "linear-gradient(135deg, #1a365d 0%, #2d3748 100%)",
-  "--success-gradient": "linear-gradient(135deg, #38a169 0%, #2f855a 100%)",
-  "--warning-gradient": "linear-gradient(135deg, #d69e2e 0%, #b7791f 100%)",
-  "--error-gradient": "linear-gradient(135deg, #e53e3e 0%, #c53030 100%)",
-  "--accent-gradient": "linear-gradient(135deg, #3182ce 0%, #2c5282 100%)",
-  "--glass-bg": "rgba(255, 255, 255, 0.8)",
-  "--glass-border": "rgba(255, 255, 255, 0.2)",
-  "--shadow-glass": "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-  "--backdrop-blur": "blur(12px)",
-  "--shadow-elegant": "0 25px 50px -12px rgba(0, 0, 0, 0.12)",
-  "--shadow-strong": "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-  "--shadow-medium": "0 10px 15px -3px rgba(0, 0, 0, 0.08)",
-  "--shadow-soft": "0 4px 6px -1px rgba(0, 0, 0, 0.07)",
-  "--shadow-minimal": "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+// Microsoft-inspired image configuration with Unsplash
+export const imageConfig = {
+  baseUrl: 'https://images.unsplash.com',
+  defaultParams: {
+    w: 1200,
+    h: 600,
+    fit: 'crop',
+    q: 80,
+    fm: 'webp',
+  },
+  
+  // Category-specific professional image collections
+  collections: {
+    hero: [
+      'photo-1582213782179-e0d53f98f2ca', // Community support
+      'photo-1559027615-cd4628902d4a', // People helping
+      'photo-1600298881974-6be191ceeda1', // Community gathering
+      'photo-1593113598332-cd288d649433', // Group collaboration
+      'photo-1517486808906-6ca8b3f04846', // Professional meeting
+    ],
+    food: [
+      'photo-1504674900247-0877df9cc836', // Professional food spread
+      'photo-1504113888839-1c8eb50233d3', // Community meal
+      'photo-1567620905732-2d1ec7ab7445', // Food preparation
+      'photo-1546554137-f86b9593a222',   // Cooking together
+      'photo-1555939594-58d7cb561ad1',   // Professional kitchen
+    ],
+    clothes: [
+      'photo-1441986300917-64674bd600d8', // Professional clothing display
+      'photo-1434389677669-e08b4cac3105', // Clothing donation
+      'photo-1523381210434-271e8be1f52b', // Organized wardrobe
+      'photo-1445205170230-053b83016050', // Fashion arrangement
+      'photo-1515372039744-b8f02a3ae446', // Clothing collection
+    ],
+    training: [
+      'photo-1522202176988-66273c2fd55f', // Professional learning
+      'photo-1571019613454-1cb2f99b2d8b', // Online education
+      'photo-1513475382585-d06e58bcb0e0', // Workshop setting
+      'photo-1517486808906-6ca8b3f04846', // Training session
+      'photo-1507003211169-0a1dd7228f2d', // Professional development
+    ],
+  },
+  
+  // Helper function to get image with Microsoft-style parameters
+  getImage: (imageId: string, params?: Record<string, any>) => {
+    const queryParams = new URLSearchParams({
+      ...imageConfig.defaultParams,
+      ...params,
+    });
+    return `${imageConfig.baseUrl}/${imageId}?${queryParams.toString()}`;
+  },
+  
+  // Helper function to get random image from collection
+  getRandomImage: (collection: keyof typeof imageConfig.collections, params?: Record<string, any>) => {
+    const images = imageConfig.collections[collection];
+    const randomImage = images[Math.floor(Math.random() * images.length)];
+    return imageConfig.getImage(randomImage, params);
+  },
 };
 
-export const getThemeConfig = (
-  mode: "light" | "dark" = "light",
-): ThemeConfig => {
-  return mode === "dark" ? darkTheme : antdTheme;
+// Microsoft Fluent layout configurations
+export const layoutConfig = {
+  header: {
+    height: 48,
+    padding: '0 24px',
+    background: '#ffffff',
+    borderBottom: '1px solid #edebe9',
+    boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132)',
+  },
+  
+  main: {
+    padding: '24px',
+    background: '#f3f2f1',
+    minHeight: 'calc(100vh - 48px)',
+  },
+  
+  footer: {
+    background: '#faf9f8',
+    borderTop: '1px solid #edebe9',
+    padding: '32px 24px 24px',
+  },
+  
+  container: {
+    maxWidth: 1200,
+    margin: '0 auto',
+    padding: '0 24px',
+  },
+  
+  section: {
+    padding: '56px 0',
+    marginBottom: 0,
+  },
 };
 
-export default antdTheme;
+// Microsoft Fluent animation configurations
+export const animations = {
+  fadeIn: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+  },
+  
+  slideUp: {
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+  },
+  
+  slideDown: {
+    initial: { opacity: 0, y: -16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+  },
+  
+  scaleIn: {
+    initial: { opacity: 0, scale: 0.95 },
+    animate: { opacity: 1, scale: 1 },
+    transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+  },
+  
+  stagger: {
+    animate: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  },
+};
+
+// Microsoft Fluent responsive breakpoints
+export const breakpoints = {
+  xs: 320,
+  sm: 480,
+  md: 640,
+  lg: 1024,
+  xl: 1366,
+  xxl: 1920,
+};
+
+export default revampedTheme;

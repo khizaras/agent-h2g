@@ -5,11 +5,11 @@ import { Database } from "@/lib/database";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user || !(session.user as any)?.is_admin) {
       return NextResponse.json(
         { success: false, error: "Unauthorized - Admin access required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       Database.query(countQuery, params),
     ]);
 
-    const total = countResult[0]?.total || 0;
+    const total = (countResult as any[])[0]?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching admin causes:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch causes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -106,11 +106,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user || !(session.user as any)?.is_admin) {
       return NextResponse.json(
         { success: false, error: "Unauthorized - Admin access required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -130,33 +130,33 @@ export async function POST(request: NextRequest) {
     if (!title || !description || !category_id || !user_id || !location) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Verify category exists
     const categoryExists = await Database.query(
       "SELECT id FROM categories WHERE id = ?",
-      [category_id]
+      [category_id],
     );
 
-    if (categoryExists.length === 0) {
+    if ((categoryExists as any[]).length === 0) {
       return NextResponse.json(
         { success: false, error: "Invalid category" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Verify user exists
     const userExists = await Database.query(
       "SELECT id FROM users WHERE id = ?",
-      [user_id]
+      [user_id],
     );
 
-    if (userExists.length === 0) {
+    if ((userExists as any[]).length === 0) {
       return NextResponse.json(
         { success: false, error: "Invalid user" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -183,13 +183,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { id: result.insertId, message: "Cause created successfully" },
+      data: {
+        id: (result as any).insertId,
+        message: "Cause created successfully",
+      },
     });
   } catch (error) {
     console.error("Error creating cause:", error);
     return NextResponse.json(
       { success: false, error: "Failed to create cause" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

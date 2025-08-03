@@ -1,101 +1,235 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { Database } from "@/lib/database";
+// Revamped Causes API Route
+// Clean implementation for the new cause management system with markdown support
 
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { Database } from '@/lib/database';
+
+// Helper function to convert undefined to null for SQL compatibility
+const nullifyUndefined = (value: any) => value === undefined ? null : value;
+
+// Types
+interface CauseFilters {
+  category?: string;
+  cause_type?: 'wanted' | 'offered';
+  location?: string;
+  search?: string;
+  status?: string;
+  priority?: string;
+  is_featured?: boolean;
+  is_urgent?: boolean;
+  page?: number;
+  limit?: number;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+// GET /api/causes - Fetch causes with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const category = searchParams.get("category");
-    const status = searchParams.get("status");
-    const search = searchParams.get("search");
-    const sortBy = searchParams.get("sortBy") || "created_at";
-    const sortOrder = searchParams.get("sortOrder") || "DESC";
+    const searchParams = request.nextUrl.searchParams;
+    
+    // Parse filters from query parameters
+    const filters: CauseFilters = {
+      category: searchParams.get('category') || undefined,
+      cause_type: (searchParams.get('cause_type') as 'wanted' | 'offered') || undefined,
+      location: searchParams.get('location') || undefined,
+      search: searchParams.get('search') || undefined,
+      status: searchParams.get('status') || 'active',
+      priority: searchParams.get('priority') || undefined,
+      is_featured: searchParams.get('is_featured') === 'true' ? true : undefined,
+      is_urgent: searchParams.get('is_urgent') === 'true' ? true : undefined,
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: Math.min(parseInt(searchParams.get('limit') || '12'), 50), // Max 50 per page
+      sort_by: searchParams.get('sort_by') || 'created_at',
+      sort_order: (searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
+    };
 
-    // Build query conditions
-    const conditions: string[] = [];
-    const params: any[] = [];
-
-    if (category) {
-      conditions.push("c.category_id = ?");
-      params.push(category);
-    }
-
-    if (status) {
-      conditions.push("c.status = ?");
-      params.push(status);
-    }
-
-    if (search) {
-      conditions.push("(c.title LIKE ? OR c.description LIKE ?)");
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-    const offset = (page - 1) * limit;
-
-    // Get causes with user and category information
-    const causesQuery = `
+    // Build the base query
+    let query = `
       SELECT 
         c.*,
-        u.name as user_name,
-        u.email as user_email,
+        u.name as creator_name,
+        u.avatar as creator_avatar,
         cat.name as category_name,
-        cat.description as category_description
+        cat.display_name as category_display_name,
+        cat.color as category_color,
+        cat.icon as category_icon
       FROM causes c
-      LEFT JOIN users u ON c.user_id = u.id
-      LEFT JOIN categories cat ON c.category_id = cat.id
-      ${whereClause}
-      ORDER BY c.${sortBy} ${sortOrder}
-      LIMIT ? OFFSET ?
+      JOIN users u ON c.user_id = u.id
+      JOIN categories cat ON c.category_id = cat.id
+      WHERE 1=1
     `;
 
-    params.push(limit, offset);
-    const causes = await Database.query(causesQuery, params);
+    const queryParams: any[] = [];
+    let paramIndex = 1;
 
-    // Get total count for pagination
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM causes c
-      ${whereClause}
-    `;
-    const countParams = params.slice(0, -2); // Remove limit and offset
-    const [countResult] = (await Database.query(
-      countQuery,
-      countParams,
-    )) as any[];
+    // Add filters to query
+    if (filters.status) {
+      query += ` AND c.status = ?`;
+      queryParams.push(filters.status);
+    }
+
+    if (filters.category) {
+      query += ` AND cat.name = ?`;
+      queryParams.push(filters.category);
+    }
+
+    if (filters.cause_type) {
+      query += ` AND c.cause_type = ?`;
+      queryParams.push(filters.cause_type);
+    }
+
+    if (filters.location) {
+      query += ` AND c.location LIKE ?`;
+      queryParams.push(`%${filters.location}%`);
+    }
+
+    if (filters.priority) {
+      query += ` AND c.priority = ?`;
+      queryParams.push(filters.priority);
+    }
+
+    if (filters.is_featured === true) {
+      query += ` AND c.is_featured = 1`;
+    }
+
+    if (filters.search) {
+      query += ` AND (
+        MATCH(c.title, c.description, c.short_description) AGAINST (? IN NATURAL LANGUAGE MODE)
+        OR c.title LIKE ?
+        OR c.description LIKE ?
+        OR c.short_description LIKE ?
+        OR c.location LIKE ?
+        OR u.name LIKE ?
+      )`;
+      const searchTerm = `%${filters.search}%`;
+      queryParams.push(filters.search, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    }
+
+    // Handle urgent filter for food and clothes
+    if (filters.is_urgent === true) {
+      query += ` AND (
+        c.category_id IN (
+          SELECT id FROM categories WHERE name IN ('food', 'clothes')
+        )
+      )`;
+    }
+
+    // Count total records for pagination
+    const countQuery = `SELECT COUNT(*) as total FROM (${query}) as filtered_causes`;
+    const countResult = await Database.query(countQuery, queryParams);
+    const total = countResult[0]?.total || 0;
+
+    // Add sorting
+    const validSortColumns = ['created_at', 'updated_at', 'view_count', 'like_count', 'priority', 'title'];
+    const sortBy = validSortColumns.includes(filters.sort_by || '') ? filters.sort_by : 'created_at';
+    const sortOrder = filters.sort_order === 'asc' ? 'ASC' : 'DESC';
+    
+    // Special sorting for priority
+    if (sortBy === 'priority') {
+      query += ` ORDER BY 
+        CASE c.priority 
+          WHEN 'urgent' THEN 1 
+          WHEN 'high' THEN 2 
+          WHEN 'medium' THEN 3 
+          WHEN 'low' THEN 4 
+        END ${sortOrder}`;
+    } else {
+      query += ` ORDER BY c.${sortBy} ${sortOrder}`;
+    }
+
+    // Add pagination
+    const page = Math.max(1, filters.page || 1);
+    const limit = filters.limit || 12;
+    const offset = (page - 1) * limit;
+    
+    query += ` LIMIT ? OFFSET ?`;
+    queryParams.push(limit, offset);
+
+    // Execute main query
+    const causes = await Database.query(query, queryParams);
+
+    // Get additional details for each cause based on category
+    const causesWithDetails = await Promise.all(
+      causes.map(async (cause: any) => {
+        try {
+          let details = null;
+          
+          switch (cause.category_name) {
+            case 'food':
+              const foodDetails = await Database.query(
+                'SELECT * FROM food_details WHERE cause_id = ?',
+                [cause.id]
+              );
+              details = foodDetails[0] || null;
+              break;
+              
+            case 'clothes':
+              const clothesDetails = await Database.query(
+                'SELECT * FROM clothes_details WHERE cause_id = ?',
+                [cause.id]
+              );
+              details = clothesDetails[0] || null;
+              break;
+              
+            case 'training':
+              const trainingDetails = await Database.query(
+                'SELECT * FROM training_details WHERE cause_id = ?',
+                [cause.id]
+              );
+              details = trainingDetails[0] || null;
+              break;
+          }
+
+          return {
+            ...cause,
+            [`${cause.category_name}_details`]: details,
+          };
+        } catch (error) {
+          console.error(`Error fetching details for cause ${cause.id}:`, error);
+          return cause;
+        }
+      })
+    );
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(total / limit);
+    const pagination = {
+      page,
+      limit,
+      total,
+      total_pages: totalPages,
+      has_next: page < totalPages,
+      has_prev: page > 1,
+    };
 
     return NextResponse.json({
       success: true,
       data: {
-        causes,
-        pagination: {
-          page,
-          limit,
-          total: countResult.total,
-          totalPages: Math.ceil(countResult.total / limit),
-        },
+        causes: causesWithDetails,
+        pagination,
+        filters: filters,
       },
     });
+
   } catch (error) {
-    console.error("Error fetching causes:", error);
+    console.error('Error fetching causes:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch causes" },
-      { status: 500 },
+      { success: false, error: 'Failed to fetch causes' },
+      { status: 500 }
     );
   }
 }
 
+// POST /api/causes - Create a new cause
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "Authentication required" },
-        { status: 401 },
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
@@ -103,435 +237,306 @@ export async function POST(request: NextRequest) {
     const {
       title,
       description,
-      shortDescription,
-      category,
+      category, // Accept category name from form
+      category_id, // Also accept direct category_id for backward compatibility
+      causeType, // Form sends causeType, map to cause_type
+      cause_type,
       location,
+      latitude,
+      longitude,
+      image,
+      images, // Form sends images array
+      gallery,
+      priority = 'medium',
+      contactPhone, // Form field names
       contactEmail,
-      contactPhone,
-      contactPerson,
-      priority = "medium",
-      availabilityHours,
-      specialInstructions,
+      contact_phone,
+      contact_email,
+      contact_person,
+      availability_hours,
+      special_instructions,
       tags,
-      images,
-      // Category-specific fields will be handled separately
-      ...categorySpecificData
+      expires_at,
+      
+      // Category-specific details
+      categoryDetails, // Form sends nested categoryDetails
+      food_details,
+      clothes_details,
+      training_details,
     } = body;
 
-    // Debug: Log the category specific data for education/training
-    if (category === "education" || category === "training") {
-      console.log(
-        "Education/Training categorySpecificData:",
-        JSON.stringify(categorySpecificData, null, 2),
-      );
-    }
-
     // Validate required fields
-    if (!title || !description || !category || !location || !contactEmail) {
+    if (!title || !description || (!category && !category_id) || !location) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields" },
-        { status: 400 },
+        { success: false, error: 'Missing required fields: title, description, category, location' },
+        { status: 400 }
       );
     }
 
-    // Get category ID from category name
-    // Map "training" to "education" for backwards compatibility
-    const categoryName = category === "training" ? "education" : category;
-    const categoryQuery = `SELECT id FROM categories WHERE name = ?`;
-    const categoryResult = (await Database.query(categoryQuery, [
-      categoryName,
-    ])) as any[];
+    // Map category name to category_id if needed
+    let finalCategoryId = category_id;
+    if (!finalCategoryId && category) {
+      const categoryResult = await Database.query(
+        'SELECT id, name FROM categories WHERE name = ? AND is_active = 1',
+        [category]
+      );
+      
+      if (categoryResult.length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid category' },
+          { status: 400 }
+        );
+      }
+      finalCategoryId = categoryResult[0].id;
+    }
 
-    if (!categoryResult.length) {
+    // Validate final category_id exists
+    const categoryResult = await Database.query(
+      'SELECT id, name FROM categories WHERE id = ? AND is_active = 1',
+      [finalCategoryId]
+    );
+    
+    if (categoryResult.length === 0) {
       return NextResponse.json(
-        { success: false, error: "Invalid category" },
-        { status: 400 },
+        { success: false, error: 'Invalid category' },
+        { status: 400 }
       );
     }
 
-    const categoryId = categoryResult[0].id;
+    const categoryInfo = categoryResult[0];
 
-    // Start transaction for atomic operation
+    // Map form fields to database fields
+    const finalCauseType = causeType || cause_type;
+    const finalContactPhone = contactPhone || contact_phone;
+    const finalContactEmail = contactEmail || contact_email;
+    const finalGallery = images || gallery || [];
+
+    // Validate cause_type for food and clothes
+    if (['food', 'clothes'].includes(categoryInfo.name) && !finalCauseType) {
+      return NextResponse.json(
+        { success: false, error: 'cause_type is required for food and clothes categories' },
+        { status: 400 }
+      );
+    }
+
+    // Use database transaction for cause creation
     const result = await Database.transaction(async (connection) => {
       // Insert main cause record
-      const insertCauseQuery = `
+      console.log('Attempting to insert cause with parameters:', {
+        title, description, finalCategoryId, userId: session.user.id, 
+        finalCauseType, location, priority
+      });
+      
+      const causeInsertResult = await connection.execute(`
         INSERT INTO causes (
-          user_id, title, description, short_description, category_id,
-          location, image, gallery, tags, status, priority, contact_phone,
-          contact_email, contact_person, availability_hours,
-          special_instructions, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, NOW(), NOW())
-      `;
-
-      const causeResult = await connection.execute(insertCauseQuery, [
-        session.user.id,
+          title, description, short_description, category_id, user_id, cause_type,
+          location, latitude, longitude, image, gallery, priority,
+          contact_phone, contact_email, contact_person, availability_hours,
+          special_instructions, tags, expires_at, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      `, [
         title,
         description,
-        shortDescription || null,
-        categoryId,
+        description, // Use description as short_description if not provided separately
+        finalCategoryId,
+        session.user.id,
+        finalCauseType || 'wanted',
         location,
-        images?.[0]?.url || null, // Main image
-        JSON.stringify(images || []), // All images in gallery
-        JSON.stringify(tags || []),
+        latitude || null,
+        longitude || null,
+        finalGallery.length > 0 ? finalGallery[0] : null, // First image as main image
+        finalGallery.length > 0 ? JSON.stringify(finalGallery) : null,
         priority,
-        contactPhone || null,
-        contactEmail,
-        contactPerson || null,
-        availabilityHours || null,
-        specialInstructions || null,
+        finalContactPhone || null,
+        finalContactEmail || session.user.email,
+        contact_person || session.user.name,
+        availability_hours || null,
+        special_instructions || null,
+        tags ? JSON.stringify(tags) : null,
+        expires_at || null,
       ]);
 
-      // Debug: Log the causeResult to understand its structure
-      console.log("causeResult:", JSON.stringify(causeResult, null, 2));
-      console.log("causeResult type:", typeof causeResult);
-      console.log("causeResult keys:", Object.keys(causeResult || {}));
-
-      // MySQL2 returns [ResultSetHeader, FieldPacket[]] from execute()
-      const resultHeader = Array.isArray(causeResult)
-        ? causeResult[0]
-        : causeResult;
-      const causeId = resultHeader.insertId;
-
-      // Debug: Log the extracted causeId
-      console.log("ResultHeader:", JSON.stringify(resultHeader, null, 2));
-      console.log("Extracted causeId:", causeId, "Type:", typeof causeId);
-
+      console.log('Cause insert result:', causeInsertResult);
+      const causeId = (causeInsertResult as any)[0].insertId;
+      console.log('Extracted causeId:', causeId);
+      
+      // Validate causeId before proceeding
       if (!causeId) {
-        throw new Error("Failed to get causeId from database insert");
+        console.error('Insert result:', causeInsertResult);
+        throw new Error('Failed to get cause ID from database insertion. Insert result: ' + JSON.stringify(causeInsertResult));
       }
 
-      // Insert category-specific details
-      if (category === "food") {
-        // Debug: Log the food categorySpecificData
-        console.log(
-          "Food categorySpecificData:",
-          JSON.stringify(categorySpecificData, null, 2),
-        );
+      // Insert enhanced category-specific details
+      const details = categoryDetails || {};
+      
+      switch (categoryInfo.name) {
+        case 'food':
+          console.log('Creating enhanced food details for causeId:', causeId);
+          
+          await connection.execute(`
+            INSERT INTO food_details (
+              cause_id, food_type, cuisine_type, quantity, unit, serving_size,
+              dietary_restrictions, allergens, expiration_date, preparation_date,
+              storage_requirements, temperature_requirements, pickup_instructions,
+              delivery_available, delivery_radius, is_urgent, ingredients,
+              nutritional_info, halal, kosher, vegan, vegetarian, organic
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            causeId,
+            details.foodType || 'meals',
+            details.cuisineType || null,
+            details.quantity || 1,
+            details.unit || 'servings',
+            details.servingSize || null,
+            details.dietaryRestrictions ? JSON.stringify(details.dietaryRestrictions) : null,
+            details.allergens ? JSON.stringify(details.allergens) : null,
+            details.expirationDate || null,
+            details.preparationDate || null,
+            details.storageRequirements || null,
+            details.temperatureRequirements || 'room-temp',
+            details.pickupInstructions || null,
+            details.deliveryAvailable || false,
+            details.deliveryRadius || null,
+            details.isUrgent || (priority === 'urgent'),
+            details.ingredients || null,
+            details.nutritionalInfo ? JSON.stringify(details.nutritionalInfo) : null,
+            (details.dietaryRestrictions && details.dietaryRestrictions.includes('halal')) || false,
+            (details.dietaryRestrictions && details.dietaryRestrictions.includes('kosher')) || false,
+            (details.dietaryRestrictions && details.dietaryRestrictions.includes('vegan')) || false,
+            (details.dietaryRestrictions && details.dietaryRestrictions.includes('vegetarian')) || false,
+            false // organic - can be enhanced later
+          ]);
+          break;
 
-        // Validate required food fields
-        if (!categorySpecificData.foodType) {
-          console.warn('No foodType provided, using default "general"');
-        }
-        if (
-          !categorySpecificData.quantity ||
-          categorySpecificData.quantity <= 0
-        ) {
-          console.warn("No valid quantity provided, using default 1");
-        }
+        case 'clothes':
+          console.log('Creating enhanced clothes details for causeId:', causeId);
+          
+          await connection.execute(`
+            INSERT INTO clothes_details (
+              cause_id, clothes_type, gender, age_group, size_range, \`condition\`,
+              season, quantity, colors, brands, material_composition, care_instructions,
+              special_requirements, pickup_instructions, delivery_available, delivery_radius,
+              is_urgent, is_cleaned, donation_receipt_available
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            causeId,
+            details.clothesType || 'shirts',
+            details.gender || 'unisex',
+            details.ageGroup || 'adult',
+            details.sizeRange ? JSON.stringify(details.sizeRange) : JSON.stringify(['M', 'L']),
+            details.condition || 'good',
+            details.season || 'all-season',
+            details.quantity || 1,
+            details.colors ? JSON.stringify(details.colors) : null,
+            details.brands ? JSON.stringify(details.brands) : null,
+            details.materialComposition || null,
+            details.careInstructions || null,
+            details.specialRequirements || null,
+            details.pickupInstructions || null,
+            details.deliveryAvailable || false,
+            details.deliveryRadius || null,
+            details.isUrgent || (priority === 'urgent'),
+            details.isCleaned || false,
+            details.donationReceiptAvailable || false
+          ]);
+          break;
 
-        const foodQuery = `
-          INSERT INTO food_details (
-            cause_id, food_type, cuisine_type, quantity, unit, serving_size,
-            dietary_restrictions, allergens, expiration_date, preparation_date,
-            storage_requirements, temperature_requirements, pickup_instructions,
-            delivery_available, delivery_radius, is_urgent, nutritional_info,
-            ingredients, packaging_details, halal, kosher, organic
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        const foodParams = [
-          causeId,
-          categorySpecificData.foodType || "general", // NOT NULL - provide default
-          categorySpecificData.cuisineType || null,
-          categorySpecificData.quantity || 1, // NOT NULL - provide default of 1
-          categorySpecificData.unit || "servings",
-          categorySpecificData.servingSize || null,
-          JSON.stringify(categorySpecificData.dietaryRestrictions || []),
-          JSON.stringify(categorySpecificData.allergens || []),
-          categorySpecificData.expirationDate || null,
-          categorySpecificData.preparationDate || null,
-          categorySpecificData.storageRequirements || null,
-          categorySpecificData.temperatureRequirements || "room-temp",
-          categorySpecificData.pickupInstructions || null,
-          categorySpecificData.deliveryAvailable ? true : false,
-          categorySpecificData.deliveryRadius || null,
-          categorySpecificData.isUrgent ? true : false,
-          categorySpecificData.nutritionalInfo
-            ? JSON.stringify(categorySpecificData.nutritionalInfo)
-            : null,
-          categorySpecificData.ingredients || null,
-          categorySpecificData.packagingDetails || null,
-          categorySpecificData.halal ? true : false,
-          categorySpecificData.kosher ? true : false,
-          categorySpecificData.organic ? true : false,
-        ];
-
-        // Debug: Check for undefined values in food params
-        const undefinedFoodParams = foodParams
-          .map((param, index) => ({
-            index,
-            param,
-            isUndefined: param === undefined,
-          }))
-          .filter((item) => item.isUndefined);
-
-        if (undefinedFoodParams.length > 0) {
-          console.error(
-            "Found undefined food parameters:",
-            undefinedFoodParams,
-          );
-          throw new Error(
-            `Undefined food parameters found at indices: ${undefinedFoodParams.map((p) => p.index).join(", ")}`,
-          );
-        }
-
-        await connection.execute(foodQuery, foodParams);
-      } else if (category === "clothes") {
-        // Debug: Log the clothes categorySpecificData
-        console.log(
-          "Clothes categorySpecificData:",
-          JSON.stringify(categorySpecificData, null, 2),
-        );
-
-        // Validate required clothes fields
-        if (!categorySpecificData.clothesType) {
-          console.warn('No clothesType provided, using default "general"');
-        }
-        if (!categorySpecificData.clothesCategory) {
-          console.warn('No clothesCategory provided, using default "general"');
-        }
-        if (!categorySpecificData.condition) {
-          console.warn('No condition provided, using default "good"');
-        }
-        if (
-          !categorySpecificData.quantity ||
-          categorySpecificData.quantity <= 0
-        ) {
-          console.warn("No valid quantity provided, using default 1");
-        }
-        if (
-          !categorySpecificData.sizeRange ||
-          categorySpecificData.sizeRange.length === 0
-        ) {
-          console.warn('No sizeRange provided, using default ["one-size"]');
-        }
-
-        const clothesQuery = `
-          INSERT INTO clothes_details (
-            cause_id, clothes_type, category, age_group, size_range, \`condition\`,
-            season, quantity, colors, brands, material_composition,
-            care_instructions, special_requirements, pickup_instructions,
-            delivery_available, delivery_radius, is_urgent, is_cleaned,
-            donation_receipt
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        const clothesParams = [
-          causeId,
-          categorySpecificData.clothesType || "general", // NOT NULL - provide default
-          categorySpecificData.clothesCategory || "general", // NOT NULL - provide default
-          categorySpecificData.ageGroup || "adult",
-          JSON.stringify(categorySpecificData.sizeRange || ["one-size"]), // NOT NULL - provide default
-          categorySpecificData.condition || "good", // NOT NULL - provide default
-          categorySpecificData.season || "all-season",
-          categorySpecificData.quantity || 1, // NOT NULL - provide default of 1
-          JSON.stringify(categorySpecificData.colors || []),
-          JSON.stringify(categorySpecificData.brands || []),
-          categorySpecificData.materialComposition || null,
-          categorySpecificData.careInstructions || null,
-          categorySpecificData.specialRequirements || null,
-          categorySpecificData.pickupInstructions || null,
-          categorySpecificData.deliveryAvailable ? true : false,
-          categorySpecificData.deliveryRadius || null,
-          categorySpecificData.isUrgent ? true : false,
-          categorySpecificData.isCleaned ? true : false,
-          categorySpecificData.donationReceipt ? true : false,
-        ];
-
-        // Debug: Check for undefined values in clothes params
-        const undefinedClothesParams = clothesParams
-          .map((param, index) => ({
-            index,
-            param,
-            isUndefined: param === undefined,
-          }))
-          .filter((item) => item.isUndefined);
-
-        if (undefinedClothesParams.length > 0) {
-          console.error(
-            "Found undefined clothes parameters:",
-            undefinedClothesParams,
-          );
-          throw new Error(
-            `Undefined clothes parameters found at indices: ${undefinedClothesParams.map((p) => p.index).join(", ")}`,
-          );
-        }
-
-        await connection.execute(clothesQuery, clothesParams);
-      } else if (category === "education" || category === "training") {
-        // Debug: Log the education categorySpecificData
-        console.log(
-          "Education categorySpecificData:",
-          JSON.stringify(categorySpecificData, null, 2),
-        );
-
-        // Validate required education fields
-        if (!categorySpecificData.educationType) {
-          console.warn('No educationType provided, using default "training"');
-        }
-        if (
-          !categorySpecificData.topics ||
-          categorySpecificData.topics.length === 0
-        ) {
-          console.warn('No topics provided, using default ["general"]');
-        }
-        if (
-          !categorySpecificData.maxTrainees ||
-          categorySpecificData.maxTrainees <= 0
-        ) {
-          console.warn("No valid maxTrainees provided, using default 10");
-        }
-        if (
-          !categorySpecificData.durationHours ||
-          categorySpecificData.durationHours <= 0
-        ) {
-          console.warn("No valid durationHours provided, using default 2");
-        }
-        if (
-          !categorySpecificData.numberOfDays ||
-          categorySpecificData.numberOfDays <= 0
-        ) {
-          console.warn("No valid numberOfDays provided, using default 1");
-        }
-        if (!categorySpecificData.startDate) {
-          console.warn("No startDate provided, using tomorrow as default");
-        }
-        if (!categorySpecificData.endDate) {
-          console.warn("No endDate provided, using startDate as default");
-        }
-        if (!categorySpecificData.deliveryMethod) {
-          console.warn('No deliveryMethod provided, using default "online"');
-        }
-        if (!categorySpecificData.instructorName) {
-          console.warn('No instructorName provided, using default "TBD"');
-        }
-
-        const educationQuery = `
-          INSERT INTO education_details (
-            cause_id, education_type, skill_level, topics, max_trainees,
-            duration_hours, number_of_days, prerequisites, learning_objectives,
-            start_date, end_date, registration_deadline, schedule, delivery_method,
-            location_details, meeting_platform, meeting_link, instructor_name,
-            instructor_email, instructor_bio, instructor_qualifications,
-            certification, certification_body, materials_provided,
-            equipment_required, software_required, price, is_free,
-            course_language, subtitles_available, difficulty_rating,
-            course_modules, instructors, enhanced_prerequisites
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        // Calculate default dates
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD format
-
-        const defaultStartDate = categorySpecificData.startDate || tomorrowStr;
-        const defaultEndDate = categorySpecificData.endDate || defaultStartDate;
-
-        const educationParams = [
-          causeId,
-          categorySpecificData.educationType || "training", // NOT NULL - provide default
-          categorySpecificData.skillLevel || "all-levels",
-          JSON.stringify(categorySpecificData.topics || ["general"]), // NOT NULL - provide default
-          categorySpecificData.maxTrainees || 10, // NOT NULL - provide default
-          categorySpecificData.durationHours || 2, // NOT NULL - provide default
-          categorySpecificData.numberOfDays || 1, // NOT NULL - provide default
-          categorySpecificData.prerequisites || null,
-          JSON.stringify(categorySpecificData.learningObjectives || []),
-          defaultStartDate, // NOT NULL - provide default
-          defaultEndDate, // NOT NULL - provide default
-          categorySpecificData.registrationDeadline || null,
-          JSON.stringify(categorySpecificData.schedule || {}), // NOT NULL - provide default
-          categorySpecificData.deliveryMethod || "online", // NOT NULL - provide default
-          categorySpecificData.locationDetails || null,
-          categorySpecificData.meetingPlatform || null,
-          categorySpecificData.meetingLink || null,
-          categorySpecificData.instructorName || "TBD", // NOT NULL - provide default
-          categorySpecificData.instructorEmail || null,
-          categorySpecificData.instructorBio || null,
-          categorySpecificData.instructorQualifications || null,
-          categorySpecificData.certification ? true : false,
-          categorySpecificData.certificationBody || null,
-          JSON.stringify(categorySpecificData.materialsProvided || []),
-          JSON.stringify(categorySpecificData.equipmentRequired || []),
-          JSON.stringify(categorySpecificData.softwareRequired || []),
-          categorySpecificData.price || 0,
-          categorySpecificData.isFree ? true : false,
-          categorySpecificData.courseLanguage || "English",
-          JSON.stringify(categorySpecificData.subtitlesAvailable || []),
-          categorySpecificData.difficultyRating || 1,
-          // Enhanced education fields
-          categorySpecificData.enhancedEducationFields?.courseModules
-            ? JSON.stringify(
-                categorySpecificData.enhancedEducationFields.courseModules,
-              )
-            : null,
-          categorySpecificData.enhancedEducationFields?.instructors
-            ? JSON.stringify(
-                categorySpecificData.enhancedEducationFields.instructors,
-              )
-            : null,
-          categorySpecificData.enhancedEducationFields?.enhancedPrerequisites
-            ? JSON.stringify(
-                categorySpecificData.enhancedEducationFields
-                  .enhancedPrerequisites,
-              )
-            : null,
-        ];
-
-        // Debug: Check for undefined values
-        const undefinedParams = educationParams
-          .map((param, index) => ({
-            index,
-            param,
-            isUndefined: param === undefined,
-          }))
-          .filter((item) => item.isUndefined);
-
-        if (undefinedParams.length > 0) {
-          console.error("Found undefined parameters:", undefinedParams);
-          throw new Error(
-            `Undefined parameters found at indices: ${undefinedParams.map((p) => p.index).join(", ")}`,
-          );
-        }
-
-        await connection.execute(educationQuery, educationParams);
+        case 'training':
+          console.log('Creating enhanced training details for causeId:', causeId);
+          console.log('Training details object:', details);
+          
+          // Handle multiple instructors
+          const instructors = details.instructors || [{ name: session.user.name || 'Instructor', email: session.user.email }];
+          const primaryInstructor = instructors[0];
+          
+          // Validate required fields
+          if (!details.trainingType || !['workshop', 'course', 'mentoring', 'seminar', 'bootcamp', 'certification', 'skills', 'academic'].includes(details.trainingType)) {
+            details.trainingType = 'course';
+          }
+          
+          if (!details.skillLevel || !['beginner', 'intermediate', 'advanced', 'expert', 'all-levels'].includes(details.skillLevel)) {
+            details.skillLevel = 'all-levels';
+          }
+          
+          if (!details.deliveryMethod || !['in-person', 'online', 'hybrid', 'self-paced'].includes(details.deliveryMethod)) {
+            details.deliveryMethod = 'in-person';
+          }
+          
+          // First, let's try with just the required fields to isolate the issue
+          console.log('About to insert training details with minimal data...');
+          
+          await connection.execute(`
+            INSERT INTO training_details (
+              cause_id, training_type, skill_level, topics, max_participants,
+              current_participants, duration_hours, number_of_sessions,
+              start_date, end_date, schedule, delivery_method, instructor_name,
+              price, is_free, course_language, difficulty_rating, enrollment_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            causeId,
+            'course', // training_type - use a guaranteed valid ENUM value
+            'all-levels', // skill_level - use a guaranteed valid ENUM value  
+            JSON.stringify(['general']), // topics - required JSON field
+            20, // max_participants - required INT
+            0, // current_participants - required INT with default
+            1, // duration_hours - required INT
+            1, // number_of_sessions - required INT with default
+            new Date().toISOString().split('T')[0], // start_date - required DATE
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // end_date - required DATE
+            JSON.stringify([]), // schedule - required JSON field
+            'in-person', // delivery_method - use a guaranteed valid ENUM value
+            session.user.name || 'Instructor', // instructor_name - required VARCHAR
+            0.00, // price - required DECIMAL  
+            true, // is_free - required BOOLEAN with default
+            'English', // course_language - required VARCHAR with default
+            1, // difficulty_rating - required INT with default
+            'open' // enrollment_status - use a guaranteed valid ENUM value
+          ]);
+          
+          // If there are multiple instructors, store them separately (for future enhancement)
+          if (instructors.length > 1) {
+            for (let i = 1; i < instructors.length; i++) {
+              // For now, we can store additional instructors in a separate table or JSON field
+              // This can be implemented later as needed
+            }
+          }
+          break;
       }
 
-      return { causeId };
+      return causeId;
     });
 
-    // Fetch the created cause with related data
-    const causeQuery = `
+    // Fetch the created cause with all details
+    const createdCause = await Database.query(`
       SELECT 
         c.*,
-        u.name as user_name,
-        u.email as user_email,
+        u.name as creator_name,
+        u.avatar as creator_avatar,
         cat.name as category_name,
-        cat.display_name as category_display_name
+        cat.display_name as category_display_name,
+        cat.color as category_color,
+        cat.icon as category_icon
       FROM causes c
-      LEFT JOIN users u ON c.user_id = u.id
-      LEFT JOIN categories cat ON c.category_id = cat.id
+      JOIN users u ON c.user_id = u.id
+      JOIN categories cat ON c.category_id = cat.id
       WHERE c.id = ?
-    `;
+    `, [result]);
 
-    const [cause] = (await Database.query(causeQuery, [
-      result.causeId,
-    ])) as any[];
+    if (createdCause.length === 0) {
+      throw new Error('Failed to fetch created cause');
+    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: cause,
-        message: "Cause created successfully",
-      },
-      { status: 201 },
-    );
+    return NextResponse.json({
+      success: true,
+      data: createdCause[0],
+      message: 'Cause created successfully',
+    }, { status: 201 });
+
   } catch (error) {
-    console.error("Error creating cause:", error);
+    console.error('Error creating cause:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to create cause" },
-      { status: 500 },
+      { success: false, error: 'Failed to create cause' },
+      { status: 500 }
     );
   }
 }

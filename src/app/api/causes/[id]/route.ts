@@ -59,12 +59,12 @@ export async function GET(
         causeId,
       ])) as any[];
       categoryDetails = clothesDetails;
-    } else if (cause.category_name === "education") {
-      const educationQuery = `SELECT * FROM education_details WHERE cause_id = ?`;
-      const [educationDetails] = (await Database.query(educationQuery, [
+    } else if (cause.category_name === "training") {
+      const trainingQuery = `SELECT * FROM training_details WHERE cause_id = ?`;
+      const [trainingDetails] = (await Database.query(trainingQuery, [
         causeId,
       ])) as any[];
-      categoryDetails = educationDetails;
+      categoryDetails = trainingDetails;
     }
 
     // Get comments for this cause
@@ -76,24 +76,38 @@ export async function GET(
       FROM comments c
       LEFT JOIN users u ON c.user_id = u.id
       WHERE c.cause_id = ? AND c.is_approved = TRUE
-      ORDER BY c.is_pinned DESC, c.created_at DESC
+      ORDER BY c.created_at DESC
     `;
 
-    const comments = await Database.query(commentsQuery, [causeId]);
+    // Get comments for this cause (with error handling)
+    let comments = [];
+    try {
+      comments = await Database.query(commentsQuery, [causeId]);
+    } catch (error) {
+      console.log('Comments table not available:', error.message);
+      comments = [];
+    }
 
-    // Get activities/updates for this cause
-    const activitiesQuery = `
-      SELECT 
-        a.*,
-        u.name as user_name
-      FROM activities a
-      LEFT JOIN users u ON a.user_id = u.id
-      WHERE a.cause_id = ?
-      ORDER BY a.created_at DESC
-      LIMIT 10
-    `;
-
-    const activities = await Database.query(activitiesQuery, [causeId]);
+    // Get recent analytics events as updates for this cause (if table exists)
+    let activities = [];
+    try {
+      const activitiesQuery = `
+        SELECT 
+          ae.*,
+          u.name as user_name
+        FROM analytics_events ae
+        LEFT JOIN users u ON ae.user_id = u.id
+        WHERE ae.cause_id = ?
+        AND ae.event_type IN ('cause_updated', 'cause_status_changed', 'milestone_reached')
+        ORDER BY ae.created_at DESC
+        LIMIT 10
+      `;
+      activities = await Database.query(activitiesQuery, [causeId]);
+    } catch (error) {
+      // Analytics table might not exist, use empty array
+      console.log('Analytics events table not available:', error.message);
+      activities = [];
+    }
 
     // Update view count
     await Database.query(
@@ -181,8 +195,18 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching cause details:", error);
+    
+    // Provide more specific error information in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Failed to fetch cause details: ${error.message}`
+      : "Failed to fetch cause details";
+    
     return NextResponse.json(
-      { success: false, error: "Failed to fetch cause details" },
+      { 
+        success: false, 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 },
     );
   }
@@ -241,8 +265,11 @@ export async function PUT(
           ${categoryId ? "category_id = ?," : ""}
           priority = ?, 
           location = ?, 
-          expires_at = ?,
+          contact_email = ?,
+          contact_phone = ?,
+          special_instructions = ?,
           gallery = ?,
+          tags = ?,
           updated_at = NOW()
       WHERE id = ?
     `;
@@ -250,7 +277,7 @@ export async function PUT(
     const updateParams = [
       updateData.title ?? "",
       updateData.description ?? "",
-      updateData.detailedDescription ?? "",
+      updateData.short_description ?? "",
     ];
 
     if (categoryId) {
@@ -258,10 +285,13 @@ export async function PUT(
     }
 
     updateParams.push(
-      updateData.urgencyLevel ?? "medium",
+      updateData.priority ?? "medium",
       updateData.location ?? "",
-      updateData.deadline ?? null,
-      JSON.stringify(updateData.gallery ?? []),
+      updateData.contactEmail ?? "",
+      updateData.contactPhone ?? null,
+      updateData.special_instructions ?? null,
+      JSON.stringify(updateData.images ?? []),
+      JSON.stringify(updateData.tags ?? []),
       causeId,
     );
 
@@ -286,18 +316,52 @@ export async function PUT(
               `
               UPDATE food_details 
               SET food_type = ?, 
+                  cuisine_type = ?,
                   quantity = ?, 
+                  unit = ?,
+                  serving_size = ?,
                   dietary_restrictions = ?, 
+                  allergens = ?,
+                  expiration_date = ?,
+                  preparation_date = ?,
                   storage_requirements = ?, 
-                  pickup_instructions = ?
+                  temperature_requirements = ?,
+                  pickup_instructions = ?,
+                  delivery_available = ?,
+                  delivery_radius = ?,
+                  is_urgent = ?,
+                  ingredients = ?,
+                  nutritional_info = ?,
+                  halal = ?,
+                  kosher = ?,
+                  vegan = ?,
+                  vegetarian = ?,
+                  organic = ?
               WHERE cause_id = ?
             `,
               [
-                categoryDetails.food_type ?? "meals",
+                categoryDetails.foodType ?? "meals",
+                categoryDetails.cuisineType ?? null,
                 categoryDetails.quantity ?? 1,
-                JSON.stringify(categoryDetails.dietary_restrictions ?? []),
-                categoryDetails.storage_requirements ?? "",
-                categoryDetails.pickup_instructions ?? "",
+                categoryDetails.unit ?? "servings",
+                categoryDetails.servingSize ?? null,
+                JSON.stringify(categoryDetails.dietaryRestrictions ?? []),
+                JSON.stringify(categoryDetails.allergens ?? []),
+                categoryDetails.expirationDate ?? null,
+                categoryDetails.preparationDate ?? null,
+                categoryDetails.storageRequirements ?? null,
+                categoryDetails.temperatureRequirements ?? "room-temp",
+                categoryDetails.pickupInstructions ?? null,
+                categoryDetails.deliveryAvailable ?? false,
+                categoryDetails.deliveryRadius ?? null,
+                categoryDetails.isUrgent ?? false,
+                categoryDetails.ingredients ?? null,
+                JSON.stringify(categoryDetails.nutritionalInfo ?? {}),
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('halal')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('kosher')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegan')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegetarian')) ?? false,
+                false, // organic
                 causeId,
               ],
             );
@@ -306,16 +370,35 @@ export async function PUT(
             await Database.query(
               `
               INSERT INTO food_details 
-              (cause_id, food_type, quantity, dietary_restrictions, storage_requirements, pickup_instructions)
-              VALUES (?, ?, ?, ?, ?, ?)
+              (cause_id, food_type, cuisine_type, quantity, unit, serving_size, dietary_restrictions, allergens,
+               expiration_date, preparation_date, storage_requirements, temperature_requirements, pickup_instructions,
+               delivery_available, delivery_radius, is_urgent, ingredients, nutritional_info, halal, kosher, vegan, vegetarian, organic)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `,
               [
                 causeId,
-                categoryDetails.food_type ?? "meals",
+                categoryDetails.foodType ?? "meals",
+                categoryDetails.cuisineType ?? null,
                 categoryDetails.quantity ?? 1,
-                JSON.stringify(categoryDetails.dietary_restrictions ?? []),
-                categoryDetails.storage_requirements ?? "",
-                categoryDetails.pickup_instructions ?? "",
+                categoryDetails.unit ?? "servings",
+                categoryDetails.servingSize ?? null,
+                JSON.stringify(categoryDetails.dietaryRestrictions ?? []),
+                JSON.stringify(categoryDetails.allergens ?? []),
+                categoryDetails.expirationDate ?? null,
+                categoryDetails.preparationDate ?? null,
+                categoryDetails.storageRequirements ?? null,
+                categoryDetails.temperatureRequirements ?? "room-temp",
+                categoryDetails.pickupInstructions ?? null,
+                categoryDetails.deliveryAvailable ?? false,
+                categoryDetails.deliveryRadius ?? null,
+                categoryDetails.isUrgent ?? false,
+                categoryDetails.ingredients ?? null,
+                JSON.stringify(categoryDetails.nutritionalInfo ?? {}),
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('halal')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('kosher')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegan')) ?? false,
+                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegetarian')) ?? false,
+                false, // organic
               ],
             );
           }
@@ -333,18 +416,44 @@ export async function PUT(
               `
               UPDATE clothes_details 
               SET clothes_type = ?, 
+                  gender = ?,
+                  age_group = ?,
                   size_range = ?, 
-                  age_group = ?, 
+                  \`condition\` = ?,
                   season = ?, 
-                  \`condition\` = ?
+                  quantity = ?,
+                  colors = ?,
+                  brands = ?,
+                  material_composition = ?,
+                  care_instructions = ?,
+                  special_requirements = ?,
+                  pickup_instructions = ?,
+                  delivery_available = ?,
+                  delivery_radius = ?,
+                  is_urgent = ?,
+                  is_cleaned = ?,
+                  donation_receipt_available = ?
               WHERE cause_id = ?
             `,
               [
-                categoryDetails.clothes_type ?? "shirts",
-                JSON.stringify(categoryDetails.size_range ?? []),
-                categoryDetails.age_group ?? "adult",
-                categoryDetails.season ?? "all-season",
+                categoryDetails.clothesType ?? "shirts",
+                categoryDetails.gender ?? "unisex",
+                categoryDetails.ageGroup ?? "adult",
+                JSON.stringify(categoryDetails.sizeRange ?? []),
                 categoryDetails.condition ?? "good",
+                categoryDetails.season ?? "all-season",
+                categoryDetails.quantity ?? 1,
+                JSON.stringify(categoryDetails.colors ?? []),
+                JSON.stringify(categoryDetails.brands ?? []),
+                categoryDetails.materialComposition ?? null,
+                categoryDetails.careInstructions ?? null,
+                categoryDetails.specialRequirements ?? null,
+                categoryDetails.pickupInstructions ?? null,
+                categoryDetails.deliveryAvailable ?? false,
+                categoryDetails.deliveryRadius ?? null,
+                categoryDetails.isUrgent ?? false,
+                categoryDetails.isCleaned ?? false,
+                categoryDetails.donationReceiptAvailable ?? false,
                 causeId,
               ],
             );
@@ -352,43 +461,61 @@ export async function PUT(
             await Database.query(
               `
               INSERT INTO clothes_details 
-              (cause_id, clothes_type, category, age_group, size_range, \`condition\`, season, quantity)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+              (cause_id, clothes_type, gender, age_group, size_range, \`condition\`, season, quantity,
+               colors, brands, material_composition, care_instructions, special_requirements, pickup_instructions,
+               delivery_available, delivery_radius, is_urgent, is_cleaned, donation_receipt_available)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `,
               [
                 causeId,
-                categoryDetails.clothes_type ?? "shirts",
-                categoryDetails.category ?? "general",
-                categoryDetails.age_group ?? "adult",
-                JSON.stringify(categoryDetails.size_range ?? []),
+                categoryDetails.clothesType ?? "shirts",
+                categoryDetails.gender ?? "unisex",
+                categoryDetails.ageGroup ?? "adult",
+                JSON.stringify(categoryDetails.sizeRange ?? []),
                 categoryDetails.condition ?? "good",
                 categoryDetails.season ?? "all-season",
                 categoryDetails.quantity ?? 1,
+                JSON.stringify(categoryDetails.colors ?? []),
+                JSON.stringify(categoryDetails.brands ?? []),
+                categoryDetails.materialComposition ?? null,
+                categoryDetails.careInstructions ?? null,
+                categoryDetails.specialRequirements ?? null,
+                categoryDetails.pickupInstructions ?? null,
+                categoryDetails.deliveryAvailable ?? false,
+                categoryDetails.deliveryRadius ?? null,
+                categoryDetails.isUrgent ?? false,
+                categoryDetails.isCleaned ?? false,
+                categoryDetails.donationReceiptAvailable ?? false,
               ],
             );
           }
           break;
 
-        case "education":
-          const existingEducationResult = (await Database.query(
-            "SELECT id FROM education_details WHERE cause_id = ?",
+        case "training":
+          const existingTrainingResult = (await Database.query(
+            "SELECT id FROM training_details WHERE cause_id = ?",
             [causeId],
           )) as any[];
-          const existingEducation = existingEducationResult[0];
+          const existingTraining = existingTrainingResult[0];
 
-          if (existingEducation) {
+          if (existingTraining) {
+            // Handle multiple instructors
+            const instructors = categoryDetails.instructors || [];
+            const primaryInstructor = instructors[0] || { name: '', email: '', bio: '', qualifications: '' };
+            
             await Database.query(
               `
-              UPDATE education_details 
-              SET education_type = ?, 
+              UPDATE training_details 
+              SET training_type = ?, 
                   skill_level = ?, 
                   topics = ?, 
-                  max_trainees = ?, 
-                  current_trainees = ?,
+                  max_participants = ?, 
+                  current_participants = ?,
                   duration_hours = ?, 
-                  number_of_days = ?,
+                  number_of_sessions = ?,
                   prerequisites = ?, 
                   learning_objectives = ?, 
+                  curriculum = ?,
                   start_date = ?,
                   end_date = ?,
                   registration_deadline = ?,
@@ -401,123 +528,121 @@ export async function PUT(
                   meeting_password = ?,
                   instructor_name = ?, 
                   instructor_email = ?, 
+                  instructor_phone = ?,
                   instructor_bio = ?,
                   instructor_qualifications = ?,
-                  instructor_rating = ?,
-                  certification = ?,
+                  certification_provided = ?,
                   certification_body = ?,
                   materials_provided = ?,
-                  equipment_required = ?,
+                  materials_required = ?,
                   software_required = ?,
                   price = ?,
                   is_free = ?,
                   course_language = ?,
                   subtitles_available = ?,
                   difficulty_rating = ?,
-                  course_modules = ?,
-                  instructors = ?,
-                  enhanced_prerequisites = ?,
-                  updated_at = NOW()
+                  course_materials_url = ?,
+                  enrollment_status = ?
               WHERE cause_id = ?
             `,
               [
-                categoryDetails.education_type ?? "course",
-                categoryDetails.skill_level ?? "all-levels",
+                categoryDetails.trainingType ?? "course",
+                categoryDetails.skillLevel ?? "all-levels",
                 JSON.stringify(categoryDetails.topics ?? []),
-                categoryDetails.max_trainees ?? 20,
-                categoryDetails.current_trainees ?? 0,
-                categoryDetails.duration_hours ?? 1,
-                categoryDetails.number_of_days ?? 1,
+                categoryDetails.maxParticipants ?? 20,
+                categoryDetails.currentParticipants ?? 0,
+                categoryDetails.durationHours ?? 1,
+                categoryDetails.numberOfSessions ?? 1,
                 categoryDetails.prerequisites ?? null,
-                JSON.stringify(categoryDetails.learning_objectives ?? []),
-                categoryDetails.start_date ??
-                  new Date().toISOString().split("T")[0],
-                categoryDetails.end_date ??
-                  new Date().toISOString().split("T")[0],
-                categoryDetails.registration_deadline ?? null,
+                JSON.stringify(categoryDetails.learningObjectives ?? []),
+                categoryDetails.curriculum ?? null,
+                categoryDetails.startDate ?? null,
+                categoryDetails.endDate ?? null,
+                categoryDetails.registrationDeadline ?? null,
                 JSON.stringify(categoryDetails.schedule ?? []),
-                categoryDetails.delivery_method ?? "in-person",
-                categoryDetails.location_details ?? null,
-                categoryDetails.meeting_platform ?? null,
-                categoryDetails.meeting_link ?? null,
-                categoryDetails.meeting_id ?? null,
-                categoryDetails.meeting_password ?? null,
-                categoryDetails.instructor_name ?? "",
-                categoryDetails.instructor_email ?? null,
-                categoryDetails.instructor_bio ?? null,
-                categoryDetails.instructor_qualifications ?? null,
-                categoryDetails.instructor_rating ?? 0.0,
-                categoryDetails.certification ?? false,
-                categoryDetails.certification_body ?? null,
-                JSON.stringify(categoryDetails.materials_provided ?? []),
-                JSON.stringify(categoryDetails.equipment_required ?? []),
-                JSON.stringify(categoryDetails.software_required ?? []),
+                categoryDetails.deliveryMethod ?? "in-person",
+                categoryDetails.locationDetails ?? null,
+                categoryDetails.meetingPlatform ?? null,
+                categoryDetails.meetingLink ?? null,
+                categoryDetails.meetingId ?? null,
+                categoryDetails.meetingPassword ?? null,
+                primaryInstructor.name ?? "",
+                primaryInstructor.email ?? null,
+                primaryInstructor.phone ?? null,
+                primaryInstructor.bio ?? null,
+                primaryInstructor.qualifications ?? null,
+                categoryDetails.certificationProvided ?? false,
+                categoryDetails.certificationBody ?? null,
+                JSON.stringify(categoryDetails.materialsProvided ?? []),
+                JSON.stringify(categoryDetails.materialsRequired ?? []),
+                JSON.stringify(categoryDetails.softwareRequired ?? []),
                 categoryDetails.price ?? 0.0,
-                categoryDetails.is_free ?? true,
-                categoryDetails.course_language ?? "English",
-                JSON.stringify(categoryDetails.subtitles_available ?? []),
-                categoryDetails.difficulty_rating ?? 1,
-                JSON.stringify(categoryDetails.course_modules ?? []),
-                JSON.stringify(categoryDetails.instructors ?? []),
-                JSON.stringify(categoryDetails.enhanced_prerequisites ?? []),
+                categoryDetails.isFree ?? true,
+                categoryDetails.courseLanguage ?? "English",
+                JSON.stringify(categoryDetails.subtitlesAvailable ?? []),
+                categoryDetails.difficultyRating ?? 1,
+                categoryDetails.courseMaterialsUrl ?? null,
+                categoryDetails.enrollmentStatus ?? "open",
                 causeId,
               ],
             );
           } else {
+            // Handle multiple instructors
+            const instructors = categoryDetails.instructors || [];
+            const primaryInstructor = instructors[0] || { name: '', email: '', bio: '', qualifications: '' };
+            
             await Database.query(
               `
-              INSERT INTO education_details 
-              (cause_id, education_type, skill_level, topics, max_trainees, current_trainees,
-               duration_hours, number_of_days, prerequisites, learning_objectives, 
+              INSERT INTO training_details 
+              (cause_id, training_type, skill_level, topics, max_participants, current_participants,
+               duration_hours, number_of_sessions, prerequisites, learning_objectives, curriculum,
                start_date, end_date, registration_deadline, schedule, delivery_method,
                location_details, meeting_platform, meeting_link, meeting_id, meeting_password,
-               instructor_name, instructor_email, instructor_bio, instructor_qualifications,
-               instructor_rating, certification, certification_body, materials_provided,
-               equipment_required, software_required, price, is_free, course_language,
-               subtitles_available, difficulty_rating, course_modules, instructors, enhanced_prerequisites)
+               instructor_name, instructor_email, instructor_phone, instructor_bio, instructor_qualifications,
+               certification_provided, certification_body, materials_provided, materials_required,
+               software_required, price, is_free, course_language, subtitles_available,
+               difficulty_rating, course_materials_url, enrollment_status)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `,
               [
                 causeId,
-                categoryDetails.education_type ?? "course",
-                categoryDetails.skill_level ?? "all-levels",
+                categoryDetails.trainingType ?? "course",
+                categoryDetails.skillLevel ?? "all-levels",
                 JSON.stringify(categoryDetails.topics ?? []),
-                categoryDetails.max_trainees ?? 20,
-                categoryDetails.current_trainees ?? 0,
-                categoryDetails.duration_hours ?? 1,
-                categoryDetails.number_of_days ?? 1,
+                categoryDetails.maxParticipants ?? 20,
+                categoryDetails.currentParticipants ?? 0,
+                categoryDetails.durationHours ?? 1,
+                categoryDetails.numberOfSessions ?? 1,
                 categoryDetails.prerequisites ?? null,
-                JSON.stringify(categoryDetails.learning_objectives ?? []),
-                categoryDetails.start_date ??
-                  new Date().toISOString().split("T")[0],
-                categoryDetails.end_date ??
-                  new Date().toISOString().split("T")[0],
-                categoryDetails.registration_deadline ?? null,
+                JSON.stringify(categoryDetails.learningObjectives ?? []),
+                categoryDetails.curriculum ?? null,
+                categoryDetails.startDate ?? null,
+                categoryDetails.endDate ?? null,
+                categoryDetails.registrationDeadline ?? null,
                 JSON.stringify(categoryDetails.schedule ?? []),
-                categoryDetails.delivery_method ?? "in-person",
-                categoryDetails.location_details ?? null,
-                categoryDetails.meeting_platform ?? null,
-                categoryDetails.meeting_link ?? null,
-                categoryDetails.meeting_id ?? null,
-                categoryDetails.meeting_password ?? null,
-                categoryDetails.instructor_name ?? "",
-                categoryDetails.instructor_email ?? null,
-                categoryDetails.instructor_bio ?? null,
-                categoryDetails.instructor_qualifications ?? null,
-                categoryDetails.instructor_rating ?? 0.0,
-                categoryDetails.certification ?? false,
-                categoryDetails.certification_body ?? null,
-                JSON.stringify(categoryDetails.materials_provided ?? []),
-                JSON.stringify(categoryDetails.equipment_required ?? []),
-                JSON.stringify(categoryDetails.software_required ?? []),
+                categoryDetails.deliveryMethod ?? "in-person",
+                categoryDetails.locationDetails ?? null,
+                categoryDetails.meetingPlatform ?? null,
+                categoryDetails.meetingLink ?? null,
+                categoryDetails.meetingId ?? null,
+                categoryDetails.meetingPassword ?? null,
+                primaryInstructor.name ?? "",
+                primaryInstructor.email ?? null,
+                primaryInstructor.phone ?? null,
+                primaryInstructor.bio ?? null,
+                primaryInstructor.qualifications ?? null,
+                categoryDetails.certificationProvided ?? false,
+                categoryDetails.certificationBody ?? null,
+                JSON.stringify(categoryDetails.materialsProvided ?? []),
+                JSON.stringify(categoryDetails.materialsRequired ?? []),
+                JSON.stringify(categoryDetails.softwareRequired ?? []),
                 categoryDetails.price ?? 0.0,
-                categoryDetails.is_free ?? true,
-                categoryDetails.course_language ?? "English",
-                JSON.stringify(categoryDetails.subtitles_available ?? []),
-                categoryDetails.difficulty_rating ?? 1,
-                JSON.stringify(categoryDetails.course_modules ?? []),
-                JSON.stringify(categoryDetails.instructors ?? []),
-                JSON.stringify(categoryDetails.enhanced_prerequisites ?? []),
+                categoryDetails.isFree ?? true,
+                categoryDetails.courseLanguage ?? "English",
+                JSON.stringify(categoryDetails.subtitlesAvailable ?? []),
+                categoryDetails.difficultyRating ?? 1,
+                categoryDetails.courseMaterialsUrl ?? null,
+                categoryDetails.enrollmentStatus ?? "open",
               ],
             );
           }
@@ -554,7 +679,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Implementation for deleting a cause

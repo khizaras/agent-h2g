@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { Database } from "@/lib/database";
+import { EmailService } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     if (!cause_id) {
       return NextResponse.json(
         { success: false, error: "cause_id is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,10 +59,10 @@ export async function GET(request: NextRequest) {
       ${whereClause}
     `;
 
-    const [comments, countResult] = await Promise.all([
+    const [comments, countResult] = (await Promise.all([
       Database.query(commentsQuery, [...params, limit, offset]),
       Database.query(countQuery, params),
-    ]);
+    ])) as [any[], any[]];
 
     const total = countResult[0]?.total || 0;
     const totalPages = Math.ceil(total / limit);
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch comments" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -92,11 +93,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -113,34 +114,34 @@ export async function POST(request: NextRequest) {
     if (!cause_id || !content) {
       return NextResponse.json(
         { success: false, error: "cause_id and content are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Verify cause exists
-    const causeExists = await Database.query(
+    const causeExists = (await Database.query(
       "SELECT id FROM causes WHERE id = ?",
-      [cause_id]
-    );
+      [cause_id],
+    )) as any[];
 
     if (causeExists.length === 0) {
       return NextResponse.json(
         { success: false, error: "Cause not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // If replying to a comment, verify parent exists
     if (parent_id) {
-      const parentExists = await Database.query(
+      const parentExists = (await Database.query(
         "SELECT id FROM comments WHERE id = ? AND cause_id = ?",
-        [parent_id, cause_id]
-      );
+        [parent_id, cause_id],
+      )) as any[];
 
       if (parentExists.length === 0) {
         return NextResponse.json(
           { success: false, error: "Parent comment not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
       VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, NOW(), NOW())
     `;
 
-    const result = await Database.query(insertQuery, [
+    const result = (await Database.query(insertQuery, [
       cause_id,
       session.user.id,
       parent_id || null,
@@ -162,18 +163,19 @@ export async function POST(request: NextRequest) {
       content,
       rating || null,
       is_anonymous,
-    ]);
+    ])) as any;
 
     // Update reply count for parent comment if this is a reply
     if (parent_id) {
       await Database.query(
         "UPDATE comments SET reply_count = reply_count + 1 WHERE id = ?",
-        [parent_id]
+        [parent_id],
       );
     }
 
     // Get the created comment with user information
-    const newComment = await Database.query(`
+    const newComment = (await Database.query(
+      `
       SELECT 
         c.*,
         u.name as user_name,
@@ -182,7 +184,53 @@ export async function POST(request: NextRequest) {
       FROM comments c
       LEFT JOIN users u ON c.user_id = u.id
       WHERE c.id = ?
-    `, [result.insertId]);
+    `,
+      [result.insertId],
+    )) as any[];
+
+    // Send email notification to cause creator (don't block the response)
+    if (!is_anonymous && !parent_id) {
+      // Only for top-level comments, not replies
+      try {
+        const causeCreatorQuery = (await Database.query(
+          `
+          SELECT c.title as cause_title, u.name as creator_name, u.email as creator_email
+          FROM causes c
+          INNER JOIN users u ON c.user_id = u.id
+          WHERE c.id = ?
+        `,
+          [cause_id],
+        )) as any[];
+
+        const commenterQuery = (await Database.query(
+          "SELECT name FROM users WHERE id = ?",
+          [session.user.id],
+        )) as any[];
+
+        if (
+          causeCreatorQuery[0] &&
+          commenterQuery[0] &&
+          causeCreatorQuery[0].creator_email !== session.user.email
+        ) {
+          // Don't email self
+          EmailService.sendCommentNotification({
+            creatorName: causeCreatorQuery[0].creator_name,
+            creatorEmail: causeCreatorQuery[0].creator_email,
+            causeName: causeCreatorQuery[0].cause_title,
+            commenterName: commenterQuery[0].name,
+            comment: content,
+            causeId: cause_id,
+          }).catch((error) => {
+            console.error(
+              "Comment notification email failed (non-blocking):",
+              error,
+            );
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send comment notification email:", emailError);
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -195,7 +243,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating comment:", error);
     return NextResponse.json(
       { success: false, error: "Failed to create comment" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -10,14 +10,14 @@ import {
   Button,
   Typography,
   Divider,
-  Space,
   message,
   Checkbox,
 } from "antd";
-import { FiUser, FiLock, FiMail } from "react-icons/fi";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { animations } from "@/config/theme";
 
 const { Title, Text } = Typography;
 
@@ -64,51 +64,95 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="auth-page">
+    <div style={{
+      minHeight: '100vh',
+      background: '#f3f2f1',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      fontFamily: "'Segoe UI', system-ui, sans-serif"
+    }}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="auth-container"
+        {...animations.fadeIn}
+        style={{
+          width: '100%',
+          maxWidth: '360px',
+        }}
       >
-        {/* Logo and Brand */}
-        <div className="auth-header">
+        {/* Microsoft-style header */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: 32,
+        }}>
           <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="auth-logo"
+            {...animations.scaleIn}
+            style={{
+              width: 48,
+              height: 48,
+              backgroundColor: '#0078d4',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              color: 'white',
+              fontSize: 20,
+              fontWeight: 600,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}
           >
-            <span className="auth-logo-text">H2G</span>
+            H2G
           </motion.div>
-          <Title level={2} className="auth-title">
-            Welcome Back
+          <Title level={2} style={{
+            color: '#323130',
+            marginBottom: 8,
+            fontSize: 24,
+            fontWeight: 600,
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            Sign in
           </Title>
-          <Text className="auth-subtitle">
-            Sign in to continue making a difference
+          <Text style={{
+            color: '#605e5c',
+            fontSize: 14,
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            to continue to Hands2gether
           </Text>
         </div>
 
-        <Card className="auth-card">
+        <Card style={{
+          border: '1px solid #edebe9',
+          borderRadius: 8,
+          boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+          padding: '8px',
+        }}>
           <Form
             name="signin"
             onFinish={onFinish}
             layout="vertical"
-            size="large"
+            size="middle"
             autoComplete="off"
+            style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}
           >
             <Form.Item
               name="email"
-              label="Email Address"
+              label="Email"
               rules={[
-                { required: true, message: "Please enter your email" },
+                { required: true, message: "Email is required" },
                 { type: "email", message: "Please enter a valid email" },
               ]}
+              style={{ marginBottom: 16 }}
             >
               <Input
-                prefix={<FiMail className="input-icon" />}
+                prefix={<MailOutlined style={{ color: '#605e5c' }} />}
                 placeholder="Enter your email"
-                className="auth-input"
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#8a8886',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               />
             </Form.Item>
 
@@ -116,84 +160,160 @@ export default function SignInPage() {
               name="password"
               label="Password"
               rules={[
-                { required: true, message: "Please enter your password" },
+                { required: true, message: "Password is required" },
               ]}
+              style={{ marginBottom: 16 }}
             >
               <Input.Password
-                prefix={<FiLock className="input-icon" />}
+                prefix={<LockOutlined style={{ color: '#605e5c' }} />}
                 placeholder="Enter your password"
-                className="auth-input"
+                style={{
+                  borderRadius: 4,
+                  borderColor: '#8a8886',
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               />
             </Form.Item>
 
-            <div className="auth-form-row">
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: 24
+            }}>
               <Form.Item
                 name="remember"
                 valuePropName="checked"
-                className="auth-checkbox"
+                style={{ margin: 0 }}
               >
-                <Checkbox>Remember me</Checkbox>
+                <Checkbox style={{
+                  fontSize: 14,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}>
+                  Keep me signed in
+                </Checkbox>
               </Form.Item>
-              <Link href="/auth/forgot-password" className="auth-link">
+              <Link 
+                href="/auth/forgot-password" 
+                style={{ 
+                  color: '#0078d4', 
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
+              >
                 Forgot password?
               </Link>
             </div>
 
-            <Form.Item className="auth-submit">
+            <Form.Item style={{ marginBottom: 16 }}>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
-                className="auth-btn-primary"
+                size="large"
+                block
+                style={{
+                  backgroundColor: '#0078d4',
+                  borderColor: '#0078d4',
+                  borderRadius: 4,
+                  height: 40,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
               >
-                Sign In
+                Sign in
               </Button>
             </Form.Item>
           </Form>
 
-          <Divider>
-            <Text type="secondary">Or continue with</Text>
+          <Divider style={{
+            margin: '16px 0',
+            borderColor: '#edebe9',
+            fontSize: 12,
+            color: '#8a8886',
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            Or
           </Divider>
 
           <Button
             size="large"
-            icon={<FcGoogle />}
+            icon={<FcGoogle style={{ fontSize: 16 }} />}
             loading={googleLoading}
             onClick={handleGoogleSignIn}
-            className="auth-btn-google"
+            block
+            style={{
+              borderRadius: 4,
+              height: 40,
+              borderColor: '#8a8886',
+              color: '#323130',
+              fontWeight: 600,
+              fontSize: 14,
+              marginBottom: 24,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}
           >
-            Continue with Google
+            Sign in with Google
           </Button>
 
-          <div className="auth-footer">
-            <Text type="secondary">
-              Don't have an account?{" "}
-              <Link href="/auth/signup" className="auth-link">
-                Sign up
+          <div style={{ textAlign: 'center' }}>
+            <Text style={{
+              color: '#605e5c',
+              fontSize: 14,
+              fontFamily: "'Segoe UI', system-ui, sans-serif"
+            }}>
+              No account?{" "}
+              <Link 
+                href="/auth/signup" 
+                style={{ 
+                  color: '#0078d4', 
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  fontFamily: "'Segoe UI', system-ui, sans-serif"
+                }}
+              >
+                Create one!
               </Link>
             </Text>
           </div>
         </Card>
 
-        {/* Features */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="auth-features"
-        >
-          <Space direction="vertical" size="small">
-            <Text type="secondary" className="auth-feature-text">
-              🤝 Connect with your community
-            </Text>
-            <Text type="secondary" className="auth-feature-text">
-              💝 Make meaningful contributions
-            </Text>
-            <Text type="secondary" className="auth-feature-text">
-              🌟 Track your impact
-            </Text>
-          </Space>
-        </motion.div>
+        {/* Terms and Privacy */}
+        <div style={{
+          marginTop: 24,
+          textAlign: 'center'
+        }}>
+          <Text style={{
+            color: '#8a8886',
+            fontSize: 12,
+            fontFamily: "'Segoe UI', system-ui, sans-serif"
+          }}>
+            By signing in, you agree to our{" "}
+            <Link 
+              href="/terms" 
+              style={{ 
+                color: '#0078d4', 
+                textDecoration: 'none',
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link 
+              href="/privacy" 
+              style={{ 
+                color: '#0078d4', 
+                textDecoration: 'none',
+                fontFamily: "'Segoe UI', system-ui, sans-serif"
+              }}
+            >
+              Privacy Policy
+            </Link>
+          </Text>
+        </div>
       </motion.div>
     </div>
   );

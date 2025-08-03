@@ -1,14 +1,16 @@
 -- Hands2gether MySQL Database Schema
--- Version: 2.0.0
--- Created for Next.js 15 with Prisma ORM
+-- Version: 3.0.0
+-- Created for Next.js 15 with Direct MySQL (No ORM)
+-- Updated: August 2025
+-- Includes all missing features: notifications, newsletter, contact, search, interactions, analytics, chat
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 
 -- Create database if not exists
-CREATE DATABASE IF NOT EXISTS `next_h2g` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `next_h2g`;
+CREATE DATABASE IF NOT EXISTS `hands2gether_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `hands2gether_db`;
 
 -- -----------------------------------------------------
 -- Table `users`
@@ -140,6 +142,9 @@ CREATE TABLE IF NOT EXISTS `causes` (
   `contact_person` VARCHAR(100) NULL DEFAULT NULL,
   `availability_hours` VARCHAR(255) NULL DEFAULT NULL,
   `special_instructions` TEXT NULL DEFAULT NULL,
+  `goal_amount` DECIMAL(10,2) NULL DEFAULT NULL,
+  `raised_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `supporter_count` INT NOT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `expires_at` DATETIME NULL DEFAULT NULL,
@@ -164,6 +169,35 @@ CREATE TABLE IF NOT EXISTS `causes` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
+-- Table `cause_supporters`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cause_supporters` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `cause_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `amount` DECIMAL(10,2) NOT NULL,
+  `message` TEXT NULL DEFAULT NULL,
+  `anonymous` BOOLEAN NOT NULL DEFAULT FALSE,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_cause_id` (`cause_id` ASC),
+  INDEX `idx_user_id` (`user_id` ASC),
+  INDEX `idx_created_at` (`created_at` ASC),
+  INDEX `idx_amount` (`amount` ASC),
+  CONSTRAINT `cause_supporters_cause_id_fkey`
+    FOREIGN KEY (`cause_id`)
+    REFERENCES `causes` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `cause_supporters_user_id_fkey`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
 -- Table `food_details`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `food_details` (
@@ -184,11 +218,13 @@ CREATE TABLE IF NOT EXISTS `food_details` (
   `delivery_available` BOOLEAN NOT NULL DEFAULT FALSE,
   `delivery_radius` INT NULL DEFAULT NULL,
   `is_urgent` BOOLEAN NOT NULL DEFAULT FALSE,
-  `nutritional_info` JSON NULL DEFAULT NULL,
-  `ingredients` TEXT NULL DEFAULT NULL,
+  `ingredients` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted main ingredients list',
+  `nutritional_info` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted nutritional information',
   `packaging_details` TEXT NULL DEFAULT NULL,
   `halal` BOOLEAN NOT NULL DEFAULT FALSE,
   `kosher` BOOLEAN NOT NULL DEFAULT FALSE,
+  `vegan` BOOLEAN NOT NULL DEFAULT FALSE,
+  `vegetarian` BOOLEAN NOT NULL DEFAULT FALSE,
   `organic` BOOLEAN NOT NULL DEFAULT FALSE,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -197,6 +233,7 @@ CREATE TABLE IF NOT EXISTS `food_details` (
   INDEX `idx_food_type` (`food_type` ASC),
   INDEX `idx_expiration_date` (`expiration_date` ASC),
   INDEX `idx_is_urgent` (`is_urgent` ASC),
+  INDEX `idx_dietary_restrictions` (`halal`, `kosher`, `vegan`, `vegetarian`),
   CONSTRAINT `food_details_cause_id_fkey`
     FOREIGN KEY (`cause_id`)
     REFERENCES `causes` (`id`)
@@ -210,8 +247,8 @@ CREATE TABLE IF NOT EXISTS `food_details` (
 CREATE TABLE IF NOT EXISTS `clothes_details` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `cause_id` INT NOT NULL,
-  `clothes_type` VARCHAR(20) NOT NULL,
-  `category` VARCHAR(20) NOT NULL,
+  `clothes_type` VARCHAR(50) NOT NULL,
+  `gender` VARCHAR(20) NOT NULL DEFAULT 'unisex',
   `age_group` VARCHAR(20) NOT NULL DEFAULT 'adult',
   `size_range` JSON NOT NULL,
   `condition` VARCHAR(20) NOT NULL,
@@ -220,22 +257,24 @@ CREATE TABLE IF NOT EXISTS `clothes_details` (
   `colors` JSON NULL DEFAULT NULL,
   `brands` JSON NULL DEFAULT NULL,
   `material_composition` TEXT NULL DEFAULT NULL,
-  `care_instructions` TEXT NULL DEFAULT NULL,
-  `special_requirements` TEXT NULL DEFAULT NULL,
-  `pickup_instructions` TEXT NULL DEFAULT NULL,
+  `care_instructions` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted care instructions',
+  `special_requirements` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted special requirements',
+  `pickup_instructions` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted pickup instructions',
   `delivery_available` BOOLEAN NOT NULL DEFAULT FALSE,
   `delivery_radius` INT NULL DEFAULT NULL,
   `is_urgent` BOOLEAN NOT NULL DEFAULT FALSE,
   `is_cleaned` BOOLEAN NOT NULL DEFAULT FALSE,
-  `donation_receipt` BOOLEAN NOT NULL DEFAULT FALSE,
+  `donation_receipt_available` BOOLEAN NOT NULL DEFAULT FALSE,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `clothes_details_cause_id_key` (`cause_id` ASC),
   INDEX `idx_clothes_type` (`clothes_type` ASC),
-  INDEX `idx_category` (`category` ASC),
+  INDEX `idx_gender` (`gender` ASC),
+  INDEX `idx_age_group` (`age_group` ASC),
   INDEX `idx_condition` (`condition` ASC),
   INDEX `idx_is_urgent` (`is_urgent` ASC),
+  INDEX `idx_season` (`season` ASC),
   CONSTRAINT `clothes_details_cause_id_fkey`
     FOREIGN KEY (`cause_id`)
     REFERENCES `causes` (`id`)
@@ -244,25 +283,26 @@ CREATE TABLE IF NOT EXISTS `clothes_details` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
--- Table `education_details`
+-- Table `training_details`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `education_details` (
+CREATE TABLE IF NOT EXISTS `training_details` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `cause_id` INT NOT NULL,
-  `education_type` VARCHAR(20) NOT NULL,
+  `training_type` VARCHAR(50) NOT NULL DEFAULT 'course',
   `skill_level` VARCHAR(20) NOT NULL DEFAULT 'all-levels',
   `topics` JSON NOT NULL,
-  `max_trainees` INT NOT NULL,
-  `current_trainees` INT NOT NULL DEFAULT 0,
-  `duration_hours` INT NOT NULL,
-  `number_of_days` INT NOT NULL,
-  `prerequisites` TEXT NULL DEFAULT NULL,
-  `learning_objectives` JSON NULL DEFAULT NULL,
+  `max_participants` INT NOT NULL DEFAULT 20,
+  `current_participants` INT NOT NULL DEFAULT 0,
+  `duration_hours` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+  `number_of_sessions` INT NOT NULL DEFAULT 1,
+  `prerequisites` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted prerequisites',
+  `learning_objectives` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted learning objectives',
+  `curriculum` TEXT NULL DEFAULT NULL COMMENT 'Markdown formatted curriculum/syllabus',
   `start_date` DATE NOT NULL,
   `end_date` DATE NOT NULL,
   `registration_deadline` DATE NULL DEFAULT NULL,
-  `schedule` JSON NOT NULL,
-  `delivery_method` VARCHAR(20) NOT NULL,
+  `schedule` JSON NULL DEFAULT NULL COMMENT 'Schedule details and timing information',
+  `delivery_method` VARCHAR(20) NOT NULL DEFAULT 'in-person',
   `location_details` TEXT NULL DEFAULT NULL,
   `meeting_platform` VARCHAR(100) NULL DEFAULT NULL,
   `meeting_link` VARCHAR(500) NULL DEFAULT NULL,
@@ -270,37 +310,38 @@ CREATE TABLE IF NOT EXISTS `education_details` (
   `meeting_password` VARCHAR(100) NULL DEFAULT NULL,
   `instructor_name` VARCHAR(100) NOT NULL,
   `instructor_email` VARCHAR(100) NULL DEFAULT NULL,
+  `instructor_phone` VARCHAR(20) NULL DEFAULT NULL,
   `instructor_bio` TEXT NULL DEFAULT NULL,
   `instructor_qualifications` TEXT NULL DEFAULT NULL,
   `instructor_rating` DECIMAL(3,2) NOT NULL DEFAULT 0.00,
-  `certification` BOOLEAN NOT NULL DEFAULT FALSE,
+  `certification_provided` BOOLEAN NOT NULL DEFAULT FALSE,
   `certification_body` VARCHAR(100) NULL DEFAULT NULL,
   `materials_provided` JSON NULL DEFAULT NULL,
-  `equipment_required` JSON NULL DEFAULT NULL,
+  `materials_required` JSON NULL DEFAULT NULL,
   `software_required` JSON NULL DEFAULT NULL,
   `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `is_free` BOOLEAN NOT NULL DEFAULT TRUE,
-  `course_language` VARCHAR(50) NOT NULL DEFAULT 'English',
+  `course_language` VARCHAR(50) NOT NULL DEFAULT 'english',
   `subtitles_available` JSON NULL DEFAULT NULL,
   `difficulty_rating` INT NOT NULL DEFAULT 1,
-  `course_modules` JSON NULL DEFAULT NULL COMMENT 'JSON array of course modules with title, description, duration, resources, assessment',
-  `instructors` JSON NULL DEFAULT NULL COMMENT 'JSON array of multiple instructors with name, email, phone, bio, qualifications, avatar',
-  `enhanced_prerequisites` JSON NULL DEFAULT NULL COMMENT 'JSON array of structured prerequisites with title, description, resources',
+  `course_materials_url` VARCHAR(500) NULL DEFAULT NULL,
+  `enrollment_status` VARCHAR(20) NOT NULL DEFAULT 'open',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `education_details_cause_id_key` (`cause_id` ASC),
-  INDEX `idx_education_type` (`education_type` ASC),
+  UNIQUE INDEX `training_details_cause_id_key` (`cause_id` ASC),
+  INDEX `idx_training_type` (`training_type` ASC),
   INDEX `idx_skill_level` (`skill_level` ASC),
   INDEX `idx_start_date` (`start_date` ASC),
   INDEX `idx_delivery_method` (`delivery_method` ASC),
   INDEX `idx_is_free` (`is_free` ASC),
-  CONSTRAINT `education_details_cause_id_fkey`
+  INDEX `idx_enrollment_status` (`enrollment_status` ASC),
+  CONSTRAINT `training_details_cause_id_fkey`
     FOREIGN KEY (`cause_id`)
     REFERENCES `causes` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Enhanced education course details with support for course modules, multiple instructors, and structured prerequisites';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Enhanced training course details with markdown support for prerequisites, curriculum, and multiple instructors';
 
 -- -----------------------------------------------------
 -- Table `registrations`
@@ -468,12 +509,12 @@ CREATE TABLE IF NOT EXISTS `user_interactions` (
   CONSTRAINT `user_interactions_user_id_fkey`
     FOREIGN KEY (`user_id`)
     REFERENCES `users` (`id`)
-    ON DELETE RESTRICT
+    ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `user_interactions_cause_id_fkey`
     FOREIGN KEY (`cause_id`)
     REFERENCES `causes` (`id`)
-    ON DELETE RESTRICT
+    ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -513,7 +554,8 @@ CREATE TABLE IF NOT EXISTS `media` (
 CREATE TABLE IF NOT EXISTS `analytics_events` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NULL DEFAULT NULL,
-  `session_id` VARCHAR(100) NOT NULL,
+  `cause_id` INT NULL DEFAULT NULL,
+  `session_id` VARCHAR(100) NULL DEFAULT NULL,
   `event_type` VARCHAR(100) NOT NULL,
   `event_data` JSON NULL DEFAULT NULL,
   `page_url` VARCHAR(500) NULL DEFAULT NULL,
@@ -522,11 +564,17 @@ CREATE TABLE IF NOT EXISTS `analytics_events` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `idx_user_id` (`user_id` ASC),
+  INDEX `idx_cause_id` (`cause_id` ASC),
   INDEX `idx_event_type` (`event_type` ASC),
   INDEX `idx_created_at` (`created_at` ASC),
   CONSTRAINT `analytics_events_user_id_fkey`
     FOREIGN KEY (`user_id`)
     REFERENCES `users` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `analytics_events_cause_id_fkey`
+    FOREIGN KEY (`cause_id`)
+    REFERENCES `causes` (`id`)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -536,23 +584,33 @@ CREATE TABLE IF NOT EXISTS `analytics_events` (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `chat_conversations` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
-  `session_id` VARCHAR(100) NOT NULL,
-  `messages` JSON NOT NULL,
-  `context` JSON NULL DEFAULT NULL,
-  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
-  `rating` INT NULL DEFAULT NULL,
-  `feedback` TEXT NULL DEFAULT NULL,
+  `participant1_id` INT NOT NULL,
+  `participant2_id` INT NOT NULL,
+  `cause_id` INT NULL DEFAULT NULL,
+  `last_message` TEXT NULL DEFAULT NULL,
+  `last_message_at` DATETIME NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `idx_user_id` (`user_id` ASC),
-  INDEX `idx_session_id` (`session_id` ASC),
-  INDEX `idx_created_at` (`created_at` ASC),
-  CONSTRAINT `chat_conversations_user_id_fkey`
-    FOREIGN KEY (`user_id`)
+  INDEX `idx_participant1` (`participant1_id` ASC),
+  INDEX `idx_participant2` (`participant2_id` ASC),
+  INDEX `idx_cause_id` (`cause_id` ASC),
+  INDEX `idx_last_message_at` (`last_message_at` ASC),
+  UNIQUE INDEX `unique_conversation` (`participant1_id` ASC, `participant2_id` ASC, `cause_id` ASC),
+  CONSTRAINT `chat_conversations_participant1_fkey`
+    FOREIGN KEY (`participant1_id`)
     REFERENCES `users` (`id`)
-    ON DELETE RESTRICT
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `chat_conversations_participant2_fkey`
+    FOREIGN KEY (`participant2_id`)
+    REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `chat_conversations_cause_fkey`
+    FOREIGN KEY (`cause_id`)
+    REFERENCES `causes` (`id`)
+    ON DELETE SET NULL
     ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -578,6 +636,10 @@ INSERT INTO `users` (`name`, `email`, `password`, `is_admin`, `is_verified`) VAL
 CREATE INDEX `idx_causes_status_category` ON `causes` (`status`, `category_id`);
 CREATE INDEX `idx_causes_featured` ON `causes` (`is_featured`, `status`);
 CREATE INDEX `idx_causes_priority_created` ON `causes` (`priority`, `created_at`);
+CREATE INDEX `idx_causes_raised_amount` ON `causes` (`raised_amount` DESC);
+CREATE INDEX `idx_causes_goal_amount` ON `causes` (`goal_amount` DESC);
+CREATE INDEX `idx_causes_supporter_count` ON `causes` (`supporter_count` DESC);
+CREATE INDEX `idx_cause_supporters_amount` ON `cause_supporters` (`amount` DESC);
 CREATE INDEX `idx_food_urgent_expiry` ON `food_details` (`is_urgent`, `expiration_date`);
 CREATE INDEX `idx_education_dates` ON `education_details` (`start_date`, `end_date`);
 CREATE INDEX `idx_notifications_user_read` ON `notifications` (`user_id`, `is_read`);
@@ -652,6 +714,24 @@ BEGIN
   GROUP BY c.id;
 END //
 
+-- Update cause raised amount and supporter count
+CREATE PROCEDURE `UpdateCauseAmounts`(IN cause_id INT)
+BEGIN
+  UPDATE `causes` 
+  SET 
+    `raised_amount` = (
+      SELECT COALESCE(SUM(amount), 0) 
+      FROM `cause_supporters` 
+      WHERE `cause_id` = cause_id
+    ),
+    `supporter_count` = (
+      SELECT COUNT(*) 
+      FROM `cause_supporters` 
+      WHERE `cause_id` = cause_id
+    )
+  WHERE `id` = cause_id;
+END //
+
 -- Get user dashboard data
 CREATE PROCEDURE `GetUserDashboard`(IN user_id INT)
 BEGIN
@@ -693,4 +773,113 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 -- -----------------------------------------------------
 -- Database Setup Complete
 -- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Additional Tables for New Features
+-- -----------------------------------------------------
+
+-- Newsletter subscriptions table
+CREATE TABLE IF NOT EXISTS `newsletter_subscriptions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(100) NOT NULL,
+  `name` VARCHAR(100) NULL DEFAULT NULL,
+  `preferences` JSON NULL DEFAULT NULL,
+  `subscription_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `unsubscribe_token` VARCHAR(255) NULL DEFAULT NULL,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `newsletter_email_key` (`email` ASC),
+  INDEX `idx_active` (`is_active` ASC),
+  INDEX `idx_subscription_date` (`subscription_date` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Contact form submissions table
+CREATE TABLE IF NOT EXISTS `contact_submissions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `subject` VARCHAR(255) NOT NULL,
+  `message` TEXT NOT NULL,
+  `category` ENUM('general', 'support', 'partnership', 'feedback', 'bug_report') NOT NULL DEFAULT 'general',
+  `priority` ENUM('low', 'medium', 'high') NOT NULL DEFAULT 'medium',
+  `status` ENUM('pending', 'in_progress', 'resolved', 'closed') NOT NULL DEFAULT 'pending',
+  `admin_notes` TEXT NULL DEFAULT NULL,
+  `responded_at` DATETIME NULL DEFAULT NULL,
+  `submitted_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_email` (`email` ASC),
+  INDEX `idx_status` (`status` ASC),
+  INDEX `idx_category` (`category` ASC),
+  INDEX `idx_priority` (`priority` ASC),
+  INDEX `idx_submitted_at` (`submitted_at` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Chat messages table
+CREATE TABLE IF NOT EXISTS `chat_messages` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `conversation_id` INT NOT NULL,
+  `sender_id` INT NOT NULL,
+  `message` TEXT NOT NULL,
+  `message_type` ENUM('text', 'image', 'file') NOT NULL DEFAULT 'text',
+  `is_read` BOOLEAN NOT NULL DEFAULT FALSE,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_conversation` (`conversation_id` ASC),
+  INDEX `idx_sender` (`sender_id` ASC),
+  INDEX `idx_created_at` (`created_at` ASC),
+  CONSTRAINT `fk_chat_messages_conversation`
+    FOREIGN KEY (`conversation_id`)
+    REFERENCES `chat_conversations` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_chat_messages_sender`
+    FOREIGN KEY (`sender_id`)
+    REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- User sessions tracking table
+CREATE TABLE IF NOT EXISTS `user_sessions` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `session_token` VARCHAR(255) NOT NULL,
+  `ip_address` VARCHAR(45) NULL DEFAULT NULL,
+  `user_agent` TEXT NULL DEFAULT NULL,
+  `last_activity` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `session_token_key` (`session_token` ASC),
+  INDEX `idx_user_id` (`user_id` ASC),
+  INDEX `idx_last_activity` (`last_activity` ASC),
+  INDEX `idx_expires_at` (`expires_at` ASC),
+  CONSTRAINT `fk_user_sessions_user`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Add missing columns to existing tables
+ALTER TABLE `causes` 
+ADD COLUMN IF NOT EXISTS `view_count` INT NOT NULL DEFAULT 0 AFTER `is_featured`,
+ADD COLUMN IF NOT EXISTS `like_count` INT NOT NULL DEFAULT 0 AFTER `view_count`,
+ADD COLUMN IF NOT EXISTS `share_count` INT NOT NULL DEFAULT 0 AFTER `like_count`;
+
+-- Additional performance indexes
+CREATE INDEX IF NOT EXISTS `idx_causes_featured` ON `causes` (`is_featured` ASC, `created_at` DESC);
+CREATE INDEX IF NOT EXISTS `idx_causes_likes` ON `causes` (`like_count` DESC);
+CREATE INDEX IF NOT EXISTS `idx_causes_views` ON `causes` (`view_count` DESC);
+CREATE INDEX IF NOT EXISTS `idx_causes_category_status` ON `causes` (`category_id` ASC, `status` ASC);
+CREATE INDEX IF NOT EXISTS `idx_user_interactions_type` ON `user_interactions` (`interaction_type` ASC, `created_at` DESC);
+CREATE INDEX IF NOT EXISTS `idx_notifications_user_read` ON `notifications` (`user_id` ASC, `is_read` ASC, `created_at` DESC);
+CREATE INDEX IF NOT EXISTS `idx_newsletter_active` ON `newsletter_subscriptions` (`is_active` ASC, `subscription_date` DESC);
+CREATE INDEX IF NOT EXISTS `idx_contact_status_priority` ON `contact_submissions` (`status` ASC, `priority` ASC, `submitted_at` DESC);
+CREATE INDEX IF NOT EXISTS `idx_chat_messages_conversation` ON `chat_messages` (`conversation_id` ASC, `created_at` ASC);
+CREATE INDEX IF NOT EXISTS `idx_analytics_events_type_date` ON `analytics_events` (`event_type` ASC, `created_at` DESC);
+
 SELECT 'Hands2gether database schema installed successfully!' as status;

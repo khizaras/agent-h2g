@@ -5,7 +5,7 @@ import { Layout } from 'antd';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Header } from './Header';
+import RevampedHeader from './Header';
 import { Footer } from './Footer';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setViewportDimensions, selectViewport } from '@/store/slices/uiSlice';
@@ -79,9 +79,9 @@ export function MainLayout({
   const shouldShowHeader = showHeader && !isFullPageApp;
   const shouldShowFooter = showFooter && !isAuthPage && !isAdminPage && !isFullPageApp;
 
-  // Calculate content padding based on header (now we have two headers: 64px each = 128px total)
+  // Calculate content padding based on header (60px for Microsoft header)
   const contentStyle = {
-    minHeight: shouldShowHeader ? 'calc(100vh - 128px)' : '100vh',
+    minHeight: shouldShowHeader ? 'calc(100vh - 60px)' : '100vh',
     paddingTop: shouldShowHeader ? '0' : '0',
   };
 
@@ -91,12 +91,12 @@ export function MainLayout({
       <AnimatePresence mode="wait">
         {shouldShowHeader && (
           <motion.div
-            initial={{ y: -64, opacity: 0 }}
+            initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -64, opacity: 0 }}
+            exit={{ y: -60, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <Header />
+            <RevampedHeader />
           </motion.div>
         )}
       </AnimatePresence>

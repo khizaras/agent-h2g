@@ -11,7 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "@/store";
-import { antdTheme } from "@/config/theme";
+import { revampedTheme } from "@/config/theme";
 import { MotionConfig } from "framer-motion";
 import "antd/dist/reset.css";
 import "@/styles/globals.css";
@@ -74,6 +74,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
         <link rel="preconnect" href="https://ik.imagekit.io" />
       </head>
       <body style={{ minHeight: "100vh", background: "var(--color-bg)" }}>
@@ -87,7 +91,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   enableSystem
                   disableTransitionOnChange={false}
                 >
-                  <ConfigProvider theme={antdTheme}>
+                  <ConfigProvider theme={revampedTheme}>
                     <MotionConfig
                       transition={{
                         type: "spring",
@@ -98,7 +102,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       reducedMotion="user"
                     >
                       <div className="relative">
-                        {children}
+                        <main
+                          style={{ minHeight: "100vh", background: "#ffffff" }}
+                        >
+                          {children}
+                        </main>
                         <Toaster
                           position="top-right"
                           theme="light"

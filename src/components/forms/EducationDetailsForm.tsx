@@ -16,6 +16,7 @@ import {
   Divider,
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -29,13 +30,19 @@ interface EducationDetailsFormProps {
     instructors: any[];
     enhancedPrerequisites: any[];
   }) => void;
+  initialEnhancedFields?: {
+    courseModules?: any[];
+    instructors?: any[];
+    enhancedPrerequisites?: any[];
+  };
 }
 
 const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
   form,
   onEnhancedFieldsChange,
+  initialEnhancedFields,
 }) => {
-  // Enhanced education state
+  // Enhanced education state - initialize with existing data if available
   const [courseModules, setCourseModules] = useState<
     Array<{
       title: string;
@@ -44,7 +51,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       resources: string[];
       assessment: string;
     }>
-  >([]);
+  >(initialEnhancedFields?.courseModules || []);
 
   const [instructors, setInstructors] = useState<
     Array<{
@@ -55,7 +62,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       qualifications?: string[];
       avatar?: string;
     }>
-  >([]);
+  >(initialEnhancedFields?.instructors || []);
 
   const [enhancedPrerequisites, setEnhancedPrerequisites] = useState<
     Array<{
@@ -63,23 +70,111 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
       description: string;
       resources: string[];
     }>
-  >([]);
+  >(initialEnhancedFields?.enhancedPrerequisites || []);
 
-  // Notify parent component of enhanced fields changes
+  // Initialize state from props only once when component mounts or when initialEnhancedFields changes
+  const initializedRef = React.useRef<string>('');
+  
   React.useEffect(() => {
-    if (onEnhancedFieldsChange) {
+    if (initialEnhancedFields) {
+      const currentKey = JSON.stringify(initialEnhancedFields);
+      // Only update if this is truly new initial data
+      if (currentKey !== initializedRef.current) {
+        setCourseModules(initialEnhancedFields.courseModules || []);
+        setInstructors(initialEnhancedFields.instructors || []);
+        setEnhancedPrerequisites(initialEnhancedFields.enhancedPrerequisites || []);
+        initializedRef.current = currentKey;
+      }
+    }
+  }, [initialEnhancedFields]);
+
+  // Notify parent when internal state changes - but exclude the callback function from deps
+  React.useEffect(() => {
+    // Only notify if we have been initialized (to avoid initial empty state notification)
+    if (initializedRef.current && onEnhancedFieldsChange) {
       onEnhancedFieldsChange({
         courseModules,
         instructors,
         enhancedPrerequisites,
       });
     }
-  }, [
-    courseModules,
-    instructors,
-    enhancedPrerequisites,
-    onEnhancedFieldsChange,
-  ]);
+  }, [courseModules, instructors, enhancedPrerequisites]); // Removed onEnhancedFieldsChange from deps
+
+  // Memoized update functions to prevent unnecessary re-renders
+  const updateInstructor = React.useCallback((index: number, field: string, value: any) => {
+    setInstructors(prev => {
+      const newInstructors = [...prev];
+      (newInstructors[index] as any)[field] = value;
+      return newInstructors;
+    });
+  }, []);
+
+  const addInstructor = React.useCallback(() => {
+    setInstructors(prev => [
+      ...prev,
+      {
+        name: "",
+        email: "",
+        phone: "",
+        bio: "",
+        qualifications: [],
+        avatar: "",
+      },
+    ]);
+  }, []);
+
+  const removeInstructor = React.useCallback((index: number) => {
+    setInstructors(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updateCourseModule = React.useCallback((index: number, field: string, value: any) => {
+    setCourseModules(prev => {
+      const newModules = [...prev];
+      (newModules[index] as any)[field] = value;
+      return newModules;
+    });
+  }, []);
+
+  const addCourseModule = React.useCallback(() => {
+    setCourseModules(prev => [
+      ...prev,
+      {
+        title: "",
+        description: "",
+        duration: "",
+        resources: [],
+        assessment: "",
+      },
+    ]);
+  }, []);
+
+  const removeCourseModule = React.useCallback((index: number) => {
+    setCourseModules(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updatePrerequisite = React.useCallback((index: number, field: string, value: any) => {
+    setEnhancedPrerequisites(prev => {
+      const newPrereqs = [...prev];
+      (newPrereqs[index] as any)[field] = value;
+      return newPrereqs;
+    });
+  }, []);
+
+  const addPrerequisite = React.useCallback(() => {
+    setEnhancedPrerequisites(prev => [
+      ...prev,
+      {
+        title: "",
+        description: "",
+        resources: [],
+      },
+    ]);
+  }, []);
+
+  const removePrerequisite = React.useCallback((index: number) => {
+    setEnhancedPrerequisites(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
   return (
     <div className="modern-form-step">
       <div className="step-header">
@@ -360,12 +455,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   type="text"
                   danger
                   icon={<DeleteOutlined />}
-                  onClick={() => {
-                    const newModules = courseModules.filter(
-                      (_, i) => i !== index,
-                    );
-                    setCourseModules(newModules);
-                  }}
+                  onClick={() => removeCourseModule(index)}
                 />
               }
             >
@@ -374,34 +464,22 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   <Input
                     placeholder="Module Title"
                     value={module.title}
-                    onChange={(e) => {
-                      const newModules = [...courseModules];
-                      newModules[index].title = e.target.value;
-                      setCourseModules(newModules);
-                    }}
+                    onChange={(e) => updateCourseModule(index, 'title', e.target.value)}
                   />
                 </Col>
                 <Col xs={24} md={12}>
                   <Input
                     placeholder="Duration (e.g., 2 weeks)"
                     value={module.duration}
-                    onChange={(e) => {
-                      const newModules = [...courseModules];
-                      newModules[index].duration = e.target.value;
-                      setCourseModules(newModules);
-                    }}
+                    onChange={(e) => updateCourseModule(index, 'duration', e.target.value)}
                   />
                 </Col>
                 <Col xs={24}>
-                  <TextArea
-                    placeholder="Module Description"
-                    rows={2}
+                  <MarkdownEditor
+                    placeholder="Module Description - Use markdown for formatting"
                     value={module.description}
-                    onChange={(e) => {
-                      const newModules = [...courseModules];
-                      newModules[index].description = e.target.value;
-                      setCourseModules(newModules);
-                    }}
+                    onChange={(value) => updateCourseModule(index, 'description', value || "")}
+                    height={150}
                   />
                 </Col>
                 <Col xs={24} md={12}>
@@ -409,11 +487,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                     mode="tags"
                     placeholder="Resources (videos, PDFs, etc.)"
                     value={module.resources}
-                    onChange={(values) => {
-                      const newModules = [...courseModules];
-                      newModules[index].resources = values;
-                      setCourseModules(newModules);
-                    }}
+                    onChange={(values) => updateCourseModule(index, 'resources', values)}
                     style={{ width: "100%" }}
                   />
                 </Col>
@@ -421,11 +495,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   <Input
                     placeholder="Assessment Method"
                     value={module.assessment}
-                    onChange={(e) => {
-                      const newModules = [...courseModules];
-                      newModules[index].assessment = e.target.value;
-                      setCourseModules(newModules);
-                    }}
+                    onChange={(e) => updateCourseModule(index, 'assessment', e.target.value)}
                   />
                 </Col>
               </Row>
@@ -434,18 +504,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
           <Button
             type="dashed"
             icon={<PlusOutlined />}
-            onClick={() =>
-              setCourseModules([
-                ...courseModules,
-                {
-                  title: "",
-                  description: "",
-                  duration: "",
-                  resources: [],
-                  assessment: "",
-                },
-              ])
-            }
+            onClick={addCourseModule}
             block
           >
             Add Course Module
@@ -480,11 +539,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   <Input
                     placeholder="Instructor Name"
                     value={instructor.name}
-                    onChange={(e) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].name = e.target.value;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(e) => updateInstructor(index, 'name', e.target.value)}
                   />
                 </Col>
                 <Col xs={24} md={8}>
@@ -492,34 +547,22 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                     type="email"
                     placeholder="Email"
                     value={instructor.email}
-                    onChange={(e) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].email = e.target.value;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(e) => updateInstructor(index, 'email', e.target.value)}
                   />
                 </Col>
                 <Col xs={24} md={8}>
                   <Input
                     placeholder="Phone (optional)"
                     value={instructor.phone || ""}
-                    onChange={(e) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].phone = e.target.value;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(e) => updateInstructor(index, 'phone', e.target.value)}
                   />
                 </Col>
                 <Col xs={24}>
-                  <TextArea
-                    placeholder="Bio (optional)"
-                    rows={2}
+                  <MarkdownEditor
+                    placeholder="Bio (optional) - Use markdown for formatting"
                     value={instructor.bio || ""}
-                    onChange={(e) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].bio = e.target.value;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(value) => updateInstructor(index, 'bio', value || "")}
+                    height={150}
                   />
                 </Col>
                 <Col xs={24} md={12}>
@@ -527,11 +570,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                     mode="tags"
                     placeholder="Qualifications (optional)"
                     value={instructor.qualifications || []}
-                    onChange={(values) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].qualifications = values;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(values) => updateInstructor(index, 'qualifications', values)}
                     style={{ width: "100%" }}
                   />
                 </Col>
@@ -539,11 +578,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   <Input
                     placeholder="Avatar URL (optional)"
                     value={instructor.avatar || ""}
-                    onChange={(e) => {
-                      const newInstructors = [...instructors];
-                      newInstructors[index].avatar = e.target.value;
-                      setInstructors(newInstructors);
-                    }}
+                    onChange={(e) => updateInstructor(index, 'avatar', e.target.value)}
                   />
                 </Col>
               </Row>
@@ -552,19 +587,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
           <Button
             type="dashed"
             icon={<PlusOutlined />}
-            onClick={() =>
-              setInstructors([
-                ...instructors,
-                {
-                  name: "",
-                  email: "",
-                  phone: "",
-                  bio: "",
-                  qualifications: [],
-                  avatar: "",
-                },
-              ])
-            }
+            onClick={addInstructor}
             block
           >
             Add Instructor
@@ -603,11 +626,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                   <Input
                     placeholder="Prerequisite Title"
                     value={prereq.title}
-                    onChange={(e) => {
-                      const newPrereqs = [...enhancedPrerequisites];
-                      newPrereqs[index].title = e.target.value;
-                      setEnhancedPrerequisites(newPrereqs);
-                    }}
+                    onChange={(e) => updatePrerequisite(index, 'title', e.target.value)}
                   />
                 </Col>
                 <Col xs={24} md={12}>
@@ -615,24 +634,16 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
                     mode="tags"
                     placeholder="Resources"
                     value={prereq.resources}
-                    onChange={(values) => {
-                      const newPrereqs = [...enhancedPrerequisites];
-                      newPrereqs[index].resources = values;
-                      setEnhancedPrerequisites(newPrereqs);
-                    }}
+                    onChange={(values) => updatePrerequisite(index, 'resources', values)}
                     style={{ width: "100%" }}
                   />
                 </Col>
                 <Col xs={24}>
-                  <TextArea
-                    placeholder="Description"
-                    rows={2}
+                  <MarkdownEditor
+                    placeholder="Description - Use markdown for formatting"
                     value={prereq.description}
-                    onChange={(e) => {
-                      const newPrereqs = [...enhancedPrerequisites];
-                      newPrereqs[index].description = e.target.value;
-                      setEnhancedPrerequisites(newPrereqs);
-                    }}
+                    onChange={(value) => updatePrerequisite(index, 'description', value || "")}
+                    height={150}
                   />
                 </Col>
               </Row>
@@ -641,16 +652,7 @@ const EducationDetailsForm: React.FC<EducationDetailsFormProps> = ({
           <Button
             type="dashed"
             icon={<PlusOutlined />}
-            onClick={() =>
-              setEnhancedPrerequisites([
-                ...enhancedPrerequisites,
-                {
-                  title: "",
-                  description: "",
-                  resources: [],
-                },
-              ])
-            }
+            onClick={addPrerequisite}
             block
           >
             Add Prerequisite

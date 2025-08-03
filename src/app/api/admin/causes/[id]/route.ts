@@ -4,15 +4,15 @@ import { Database } from "@/lib/database";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
-    
+
     if (!session?.user || !(session.user as any)?.is_admin) {
       return NextResponse.json(
         { success: false, error: "Unauthorized - Admin access required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -31,13 +31,13 @@ export async function PUT(
     // Check if cause exists
     const existingCause = await Database.query(
       "SELECT id FROM causes WHERE id = ?",
-      [id]
+      [id],
     );
 
-    if (existingCause.length === 0) {
+    if ((existingCause as any[]).length === 0) {
       return NextResponse.json(
         { success: false, error: "Cause not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -64,13 +64,13 @@ export async function PUT(
       // Verify category exists
       const categoryExists = await Database.query(
         "SELECT id FROM categories WHERE id = ?",
-        [category_id]
+        [category_id],
       );
 
-      if (categoryExists.length === 0) {
+      if ((categoryExists as any[]).length === 0) {
         return NextResponse.json(
           { success: false, error: "Invalid category" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -101,7 +101,7 @@ export async function PUT(
     if (updates.length === 0) {
       return NextResponse.json(
         { success: false, error: "No fields to update" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -119,22 +119,22 @@ export async function PUT(
     console.error("Error updating cause:", error);
     return NextResponse.json(
       { success: false, error: "Failed to update cause" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
-    
+
     if (!session?.user || !(session.user as any)?.is_admin) {
       return NextResponse.json(
         { success: false, error: "Unauthorized - Admin access required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -143,13 +143,13 @@ export async function DELETE(
     // Check if cause exists
     const existingCause = await Database.query(
       "SELECT id FROM causes WHERE id = ?",
-      [id]
+      [id],
     );
 
-    if (existingCause.length === 0) {
+    if ((existingCause as any[]).length === 0) {
       return NextResponse.json(
         { success: false, error: "Cause not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -164,7 +164,7 @@ export async function DELETE(
     console.error("Error deleting cause:", error);
     return NextResponse.json(
       { success: false, error: "Failed to delete cause" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,683 +1,670 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { Cause, FilterParams, ApiResponse } from "@/types";
+// Revamped Causes Redux Slice
+// Clean, type-safe implementation for the new cause management system
 
-interface CausesState {
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+
+// Type Definitions
+export interface CauseBase {
+  id: number;
+  title: string;
+  description: string;
+  short_description?: string;
+  category_id: number;
+  user_id: number;
+  cause_type: 'wanted' | 'offered';
+  location: string;
+  latitude?: number;
+  longitude?: number;
+  image?: string;
+  gallery?: string[];
+  status: 'pending' | 'active' | 'completed' | 'cancelled' | 'expired';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  is_featured: boolean;
+  view_count: number;
+  like_count: number;
+  share_count: number;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_person?: string;
+  availability_hours?: string;
+  special_instructions?: string;
+  tags?: string[];
+  expires_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  
+  // Joined fields
+  creator_name?: string;
+  creator_avatar?: string;
+  category_name?: string;
+  category_display_name?: string;
+  category_color?: string;
+  category_icon?: string;
+
+  // Flattened category-specific fields for display purposes
+  // Food fields
+  food_type?: string;
+  serving_size?: number;
+  expiration_date?: string;
+  
+  // Clothes fields
+  clothes_type?: string;
+  gender?: string;
+  condition?: string;
+  
+  // Training fields
+  training_type?: string;
+  skill_level?: string;
+  duration_hours?: number;
+  is_free?: boolean;
+}
+
+export interface FoodDetails {
+  id: number;
+  cause_id: number;
+  food_type: string;
+  cuisine_type?: string;
+  quantity: number;
+  unit: string;
+  serving_size?: number;
+  dietary_restrictions?: string[];
+  allergens?: string[];
+  expiration_date?: string;
+  preparation_date?: string;
+  storage_requirements?: string;
+  temperature_requirements: 'frozen' | 'refrigerated' | 'room-temp' | 'hot';
+  pickup_instructions?: string;
+  delivery_available: boolean;
+  delivery_radius?: number;
+  is_urgent: boolean;
+  ingredients?: string;
+  nutritional_info?: Record<string, any>;
+  halal: boolean;
+  kosher: boolean;
+  vegan: boolean;
+  vegetarian: boolean;
+  organic: boolean;
+}
+
+export interface ClothesDetails {
+  id: number;
+  cause_id: number;
+  clothes_type: string;
+  gender: 'men' | 'women' | 'unisex' | 'boys' | 'girls';
+  age_group: 'infant' | 'toddler' | 'child' | 'teen' | 'adult' | 'senior';
+  size_range: string[];
+  condition: 'new' | 'like-new' | 'good' | 'fair' | 'poor';
+  season: 'spring' | 'summer' | 'fall' | 'winter' | 'all-season';
+  quantity: number;
+  colors?: string[];
+  brands?: string[];
+  material_composition?: string;
+  care_instructions?: string;
+  special_requirements?: string;
+  pickup_instructions?: string;
+  delivery_available: boolean;
+  delivery_radius?: number;
+  is_urgent: boolean;
+  is_cleaned: boolean;
+  donation_receipt_available: boolean;
+}
+
+export interface TrainingDetails {
+  id: number;
+  cause_id: number;
+  training_type: 'workshop' | 'course' | 'mentoring' | 'seminar' | 'bootcamp' | 'certification' | 'skills' | 'academic';
+  skill_level: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'all-levels';
+  topics: string[];
+  max_participants: number;
+  current_participants: number;
+  duration_hours: number;
+  number_of_sessions: number;
+  prerequisites?: string;
+  learning_objectives?: string[];
+  curriculum?: string;
+  start_date: string;
+  end_date: string;
+  registration_deadline?: string;
+  schedule: Record<string, any>;
+  delivery_method: 'in-person' | 'online' | 'hybrid' | 'self-paced';
+  location_details?: string;
+  meeting_platform?: string;
+  meeting_link?: string;
+  meeting_id?: string;
+  meeting_password?: string;
+  instructor_name: string;
+  instructor_email?: string;
+  instructor_phone?: string;
+  instructor_bio?: string;
+  instructor_qualifications?: string;
+  certification_provided: boolean;
+  certification_body?: string;
+  materials_provided?: string[];
+  materials_required?: string[];
+  software_required?: string[];
+  price: number;
+  is_free: boolean;
+  course_language: string;
+  subtitles_available?: string[];
+  difficulty_rating: number;
+  course_materials_url?: string;
+  enrollment_status: 'open' | 'closed' | 'waitlist' | 'full';
+}
+
+export interface FoodCause extends CauseBase {
+  food_details?: FoodDetails;
+}
+
+export interface ClothesCause extends CauseBase {
+  clothes_details?: ClothesDetails;
+}
+
+export interface TrainingCause extends CauseBase {
+  training_details?: TrainingDetails;
+}
+
+export type Cause = FoodCause | ClothesCause | TrainingCause;
+
+export interface CauseFilters {
+  category?: string;
+  cause_type?: 'wanted' | 'offered';
+  location?: string;
+  search?: string;
+  status?: string;
+  priority?: string;
+  is_featured?: boolean;
+  is_urgent?: boolean;
+  page?: number;
+  limit?: number;
+  sort_by?: 'created_at' | 'updated_at' | 'view_count' | 'like_count' | 'priority';
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface CausesState {
+  // Data
   causes: Cause[];
   featuredCauses: Cause[];
   currentCause: Cause | null;
-  filters: FilterParams;
-  searchQuery: string;
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  isCreating: boolean;
-  isUpdating: boolean;
-  error: string | null;
+  userCauses: Cause[];
+  
+  // Pagination
   pagination: {
     page: number;
     limit: number;
     total: number;
-    totalPages: number;
-  };
-  categories: string[];
-  locations: string[];
-  sortBy: string;
-  sortOrder: "asc" | "desc";
-  viewMode: "grid" | "list" | "map";
-  hasMore: boolean;
-  cache: {
-    [key: string]: {
-      data: Cause[];
-      timestamp: number;
-      expiry: number;
-    };
-  };
+    total_pages: number;
+  } | null;
+  
+  // Loading states
+  loading: boolean;
+  featuredLoading: boolean;
+  currentCauseLoading: boolean;
+  userCausesLoading: boolean;
+  creating: boolean;
+  updating: boolean;
+  deleting: boolean;
+  
+  // Error states
+  error: string | null;
+  featuredError: string | null;
+  currentCauseError: string | null;
+  userCausesError: string | null;
+  createError: string | null;
+  updateError: string | null;
+  deleteError: string | null;
+  
+  // UI state
+  filters: CauseFilters;
+  selectedCategory: string | null;
+  searchQuery: string;
 }
 
 const initialState: CausesState = {
   causes: [],
   featuredCauses: [],
   currentCause: null,
-  filters: {
-    page: 1,
-    limit: 12,
-    sort: "createdAt",
-    order: "desc",
-  },
-  searchQuery: "",
-  isLoading: false,
-  isLoadingMore: false,
-  isCreating: false,
-  isUpdating: false,
+  userCauses: [],
+  pagination: null,
+  loading: false,
+  featuredLoading: false,
+  currentCauseLoading: false,
+  userCausesLoading: false,
+  creating: false,
+  updating: false,
+  deleting: false,
   error: null,
-  pagination: {
-    page: 1,
-    limit: 12,
-    total: 0,
-    totalPages: 0,
-  },
-  categories: [],
-  locations: [],
-  sortBy: "createdAt",
-  sortOrder: "desc",
-  viewMode: "grid",
-  hasMore: true,
-  cache: {},
+  featuredError: null,
+  currentCauseError: null,
+  userCausesError: null,
+  createError: null,
+  updateError: null,
+  deleteError: null,
+  filters: {},
+  selectedCategory: null,
+  searchQuery: '',
 };
 
-// Async thunks
+// Async Thunks
 export const fetchCauses = createAsyncThunk(
-  "causes/fetchCauses",
-  async (filters: FilterParams = {}, { rejectWithValue }) => {
+  'causes/fetchCauses',
+  async (filters: CauseFilters = {}, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams();
-
+      
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          if (Array.isArray(value)) {
-            queryParams.append(key, value.join(","));
-          } else {
-            queryParams.append(key, value.toString());
-          }
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value.toString());
         }
       });
-
-      const response = await fetch(`/api/causes?${queryParams}`);
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to fetch causes");
+      
+      const response = await fetch(`/api/causes?${queryParams.toString()}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch causes');
       }
-
-      const data: ApiResponse<Cause[]> = await response.json();
-      return data;
+      
+      return data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 export const fetchFeaturedCauses = createAsyncThunk(
-  "causes/fetchFeaturedCauses",
-  async (_, { rejectWithValue }) => {
+  'causes/fetchFeaturedCauses',
+  async (limit: number = 6, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/causes/featured");
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(
-          error.message || "Failed to fetch featured causes",
-        );
+      const response = await fetch(`/api/causes/featured?limit=${limit}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch featured causes');
       }
-
-      const data: ApiResponse<Cause[]> = await response.json();
-      return data;
+      
+      return data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 export const fetchCauseById = createAsyncThunk(
-  "causes/fetchCauseById",
+  'causes/fetchCauseById',
   async (id: number, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/causes/${id}`);
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to fetch cause");
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch cause');
       }
-
-      const data: ApiResponse<Cause> = await response.json();
-      return data;
+      
+      return data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
+);
+
+export const fetchUserCauses = createAsyncThunk(
+  'causes/fetchUserCauses',
+  async (userId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/user/causes?user_id=${userId}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch user causes');
+      }
+      
+      return data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
 );
 
 export const createCause = createAsyncThunk(
-  "causes/createCause",
-  async (causeData: FormData, { rejectWithValue }) => {
+  'causes/createCause',
+  async (causeData: Partial<Cause>, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("/api/causes", {
-        method: "POST",
+      const response = await fetch('/api/causes', {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: causeData,
+        body: JSON.stringify(causeData),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to create cause");
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to create cause');
       }
-
-      const data: ApiResponse<Cause> = await response.json();
-      return data;
+      
+      return data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 export const updateCause = createAsyncThunk(
-  "causes/updateCause",
-  async (
-    { id, causeData }: { id: number; causeData: FormData },
-    { rejectWithValue },
-  ) => {
+  'causes/updateCause',
+  async ({ id, causeData }: { id: number; causeData: Partial<Cause> }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-
       const response = await fetch(`/api/causes/${id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: causeData,
+        body: JSON.stringify(causeData),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to update cause");
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update cause');
       }
-
-      const data: ApiResponse<Cause> = await response.json();
-      return data;
+      
+      return data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 export const deleteCause = createAsyncThunk(
-  "causes/deleteCause",
+  'causes/deleteCause',
   async (id: number, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-
       const response = await fetch(`/api/causes/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        method: 'DELETE',
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to delete cause");
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to delete cause');
       }
-
+      
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
 export const likeCause = createAsyncThunk(
-  "causes/likeCause",
+  'causes/likeCause',
   async (id: number, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
-
       const response = await fetch(`/api/causes/${id}/like`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        method: 'POST',
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to like cause");
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to like cause');
       }
-
-      const data: ApiResponse<{ liked: boolean; likeCount: number }> =
-        await response.json();
-      return { id, ...data.data };
+      
+      return { id, liked: data.data.liked, likeCount: data.data.like_count };
     } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
+      return rejectWithValue(error.message);
     }
-  },
+  }
 );
 
-export const shareCause = createAsyncThunk(
-  "causes/shareCause",
-  async (id: number, { rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`/api/causes/${id}/share`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to share cause");
-      }
-
-      const data: ApiResponse<{ shareCount: number }> = await response.json();
-      return { id, shareCount: data.data!.shareCount };
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
-    }
-  },
-);
-
-export const searchCauses = createAsyncThunk(
-  "causes/searchCauses",
-  async (query: string, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `/api/causes/search?q=${encodeURIComponent(query)}`,
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to search causes");
-      }
-
-      const data: ApiResponse<Cause[]> = await response.json();
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
-    }
-  },
-);
-
-export const loadMoreCauses = createAsyncThunk(
-  "causes/loadMoreCauses",
-  async (filters: FilterParams = {}, { rejectWithValue }) => {
-    try {
-      const queryParams = new URLSearchParams();
-
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          if (Array.isArray(value)) {
-            queryParams.append(key, value.join(","));
-          } else {
-            queryParams.append(key, value.toString());
-          }
-        }
-      });
-
-      const response = await fetch(`/api/causes?${queryParams}`);
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message || "Failed to load more causes");
-      }
-
-      const data: ApiResponse<Cause[]> = await response.json();
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Network error");
-    }
-  },
-);
-
-// Causes slice
+// Slice
 const causesSlice = createSlice({
-  name: "causes",
+  name: 'causes',
   initialState,
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
-    setCurrentCause: (state, action: PayloadAction<Cause | null>) => {
-      state.currentCause = action.payload;
-    },
-    setFilters: (state, action: PayloadAction<Partial<FilterParams>>) => {
+    // Filter actions
+    setFilters: (state, action: PayloadAction<CauseFilters>) => {
       state.filters = { ...state.filters, ...action.payload };
     },
+    
     clearFilters: (state) => {
-      state.filters = {
-        page: 1,
-        limit: 12,
-        sort: "createdAt",
-        order: "desc",
-      };
+      state.filters = {};
+      state.selectedCategory = null;
+      state.searchQuery = '';
     },
+    
+    setSelectedCategory: (state, action: PayloadAction<string | null>) => {
+      state.selectedCategory = action.payload;
+      state.filters = { ...state.filters, category: action.payload || undefined };
+    },
+    
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
+      state.filters = { ...state.filters, search: action.payload || undefined };
     },
-    setSortBy: (state, action: PayloadAction<string>) => {
-      state.sortBy = action.payload;
-      state.filters.sort = action.payload;
+    
+    // UI actions
+    clearCurrentCause: (state) => {
+      state.currentCause = null;
+      state.currentCauseError = null;
     },
-    setSortOrder: (state, action: PayloadAction<"asc" | "desc">) => {
-      state.sortOrder = action.payload;
-      state.filters.order = action.payload;
+    
+    clearErrors: (state) => {
+      state.error = null;
+      state.featuredError = null;
+      state.currentCauseError = null;
+      state.userCausesError = null;
+      state.createError = null;
+      state.updateError = null;
+      state.deleteError = null;
     },
-    setViewMode: (state, action: PayloadAction<"grid" | "list" | "map">) => {
-      state.viewMode = action.payload;
-    },
-    setPage: (state, action: PayloadAction<number>) => {
-      state.pagination.page = action.payload;
-      state.filters.page = action.payload;
-    },
-    setLimit: (state, action: PayloadAction<number>) => {
-      state.pagination.limit = action.payload;
-      state.filters.limit = action.payload;
-    },
-    addToCache: (
-      state,
-      action: PayloadAction<{ key: string; data: Cause[]; expiry?: number }>,
-    ) => {
-      const { key, data, expiry = 5 * 60 * 1000 } = action.payload; // 5 minutes default
-      state.cache[key] = {
-        data,
-        timestamp: Date.now(),
-        expiry,
-      };
-    },
-    clearCache: (state, action: PayloadAction<string | undefined>) => {
-      if (action.payload) {
-        delete state.cache[action.payload];
-      } else {
-        state.cache = {};
-      }
-    },
-    updateCauseInList: (state, action: PayloadAction<Cause>) => {
-      const updatedCause = action.payload;
-
-      // Update in main causes list
-      const mainIndex = state.causes.findIndex(
-        (cause) => cause.id === updatedCause.id,
-      );
-      if (mainIndex !== -1) {
-        state.causes[mainIndex] = updatedCause;
-      }
-
-      // Update in featured causes list
-      const featuredIndex = state.featuredCauses.findIndex(
-        (cause) => cause.id === updatedCause.id,
-      );
-      if (featuredIndex !== -1) {
-        state.featuredCauses[featuredIndex] = updatedCause;
-      }
-
-      // Update current cause if it matches
-      if (state.currentCause?.id === updatedCause.id) {
-        state.currentCause = updatedCause;
-      }
-    },
-    removeCauseFromList: (state, action: PayloadAction<number>) => {
-      const causeId = action.payload;
-
-      state.causes = state.causes.filter((cause) => cause.id !== causeId);
-      state.featuredCauses = state.featuredCauses.filter(
-        (cause) => cause.id !== causeId,
-      );
-
-      if (state.currentCause?.id === causeId) {
-        state.currentCause = null;
-      }
-    },
+    
+    // Optimistic updates
     incrementViewCount: (state, action: PayloadAction<number>) => {
-      const causeId = action.payload;
-
-      // Update in main causes list
-      const mainCause = state.causes.find((cause) => cause.id === causeId);
-      if (mainCause) {
-        mainCause.viewCount += 1;
+      const cause = state.causes.find(c => c.id === action.payload);
+      if (cause) {
+        cause.view_count += 1;
       }
-
-      // Update in featured causes list
-      const featuredCause = state.featuredCauses.find(
-        (cause) => cause.id === causeId,
-      );
-      if (featuredCause) {
-        featuredCause.viewCount += 1;
-      }
-
-      // Update current cause
-      if (state.currentCause?.id === causeId) {
-        state.currentCause.viewCount += 1;
+      if (state.currentCause?.id === action.payload) {
+        state.currentCause.view_count += 1;
       }
     },
   },
+  
   extraReducers: (builder) => {
-    // Fetch causes
+    // Fetch Causes
     builder
       .addCase(fetchCauses.pending, (state) => {
-        state.isLoading = true;
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchCauses.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.causes = action.payload.data?.causes || [];
-        if (action.payload.data?.pagination) {
-          state.pagination = action.payload.data.pagination;
-          state.hasMore = state.pagination.page < state.pagination.totalPages;
-        }
+        state.loading = false;
+        state.causes = action.payload.causes || [];
+        state.pagination = action.payload.pagination || null;
         state.error = null;
       })
       .addCase(fetchCauses.rejected, (state, action) => {
-        state.isLoading = false;
+        state.loading = false;
         state.error = action.payload as string;
+        state.causes = [];
       });
-
-    // Fetch featured causes
+    
+    // Fetch Featured Causes
     builder
       .addCase(fetchFeaturedCauses.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+        state.featuredLoading = true;
+        state.featuredError = null;
       })
       .addCase(fetchFeaturedCauses.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.featuredCauses = action.payload.data || [];
-        state.error = null;
+        state.featuredLoading = false;
+        state.featuredCauses = action.payload || [];
+        state.featuredError = null;
       })
       .addCase(fetchFeaturedCauses.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
+        state.featuredLoading = false;
+        state.featuredError = action.payload as string;
+        state.featuredCauses = [];
       });
-
-    // Fetch cause by ID
+    
+    // Fetch Cause By ID
     builder
       .addCase(fetchCauseById.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+        state.currentCauseLoading = true;
+        state.currentCauseError = null;
       })
       .addCase(fetchCauseById.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.currentCause = action.payload.data || null;
-        state.error = null;
+        state.currentCauseLoading = false;
+        state.currentCause = action.payload;
+        state.currentCauseError = null;
       })
       .addCase(fetchCauseById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
+        state.currentCauseLoading = false;
+        state.currentCauseError = action.payload as string;
+        state.currentCause = null;
       });
-
-    // Create cause
+    
+    // Fetch User Causes
+    builder
+      .addCase(fetchUserCauses.pending, (state) => {
+        state.userCausesLoading = true;
+        state.userCausesError = null;
+      })
+      .addCase(fetchUserCauses.fulfilled, (state, action) => {
+        state.userCausesLoading = false;
+        state.userCauses = action.payload || [];
+        state.userCausesError = null;
+      })
+      .addCase(fetchUserCauses.rejected, (state, action) => {
+        state.userCausesLoading = false;
+        state.userCausesError = action.payload as string;
+        state.userCauses = [];
+      });
+    
+    // Create Cause
     builder
       .addCase(createCause.pending, (state) => {
-        state.isCreating = true;
-        state.error = null;
+        state.creating = true;
+        state.createError = null;
       })
       .addCase(createCause.fulfilled, (state, action) => {
-        state.isCreating = false;
-        if (action.payload.data) {
-          state.causes.unshift(action.payload.data);
-        }
-        state.error = null;
+        state.creating = false;
+        state.causes.unshift(action.payload);
+        state.userCauses.unshift(action.payload);
+        state.createError = null;
       })
       .addCase(createCause.rejected, (state, action) => {
-        state.isCreating = false;
-        state.error = action.payload as string;
+        state.creating = false;
+        state.createError = action.payload as string;
       });
-
-    // Update cause
+    
+    // Update Cause
     builder
       .addCase(updateCause.pending, (state) => {
-        state.isUpdating = true;
-        state.error = null;
+        state.updating = true;
+        state.updateError = null;
       })
       .addCase(updateCause.fulfilled, (state, action) => {
-        state.isUpdating = false;
-        if (action.payload.data) {
-          causesSlice.caseReducers.updateCauseInList(state, {
-            payload: action.payload.data,
-            type: "causes/updateCauseInList",
-          });
+        state.updating = false;
+        const updatedCause = action.payload;
+        
+        // Update in causes array
+        const causeIndex = state.causes.findIndex(c => c.id === updatedCause.id);
+        if (causeIndex !== -1) {
+          state.causes[causeIndex] = updatedCause;
         }
-        state.error = null;
+        
+        // Update in user causes array
+        const userCauseIndex = state.userCauses.findIndex(c => c.id === updatedCause.id);
+        if (userCauseIndex !== -1) {
+          state.userCauses[userCauseIndex] = updatedCause;
+        }
+        
+        // Update current cause if it matches
+        if (state.currentCause?.id === updatedCause.id) {
+          state.currentCause = updatedCause;
+        }
+        
+        state.updateError = null;
       })
       .addCase(updateCause.rejected, (state, action) => {
-        state.isUpdating = false;
-        state.error = action.payload as string;
+        state.updating = false;
+        state.updateError = action.payload as string;
       });
-
-    // Delete cause
-    builder.addCase(deleteCause.fulfilled, (state, action) => {
-      causesSlice.caseReducers.removeCauseFromList(state, {
-        payload: action.payload,
-        type: "causes/removeCauseFromList",
-      });
-    });
-
-    // Like cause
-    builder.addCase(likeCause.fulfilled, (state, action) => {
-      const { id, liked, likeCount } = action.payload;
-
-      // Update in main causes list
-      const mainCause = state.causes.find((cause) => cause.id === id);
-      if (mainCause) {
-        mainCause.likeCount = likeCount;
-      }
-
-      // Update in featured causes list
-      const featuredCause = state.featuredCauses.find(
-        (cause) => cause.id === id,
-      );
-      if (featuredCause) {
-        featuredCause.likeCount = likeCount;
-      }
-
-      // Update current cause
-      if (state.currentCause?.id === id) {
-        state.currentCause.likeCount = likeCount;
-      }
-    });
-
-    // Share cause
-    builder.addCase(shareCause.fulfilled, (state, action) => {
-      const { id, shareCount } = action.payload;
-
-      // Update in main causes list
-      const mainCause = state.causes.find((cause) => cause.id === id);
-      if (mainCause) {
-        mainCause.shareCount = shareCount;
-      }
-
-      // Update in featured causes list
-      const featuredCause = state.featuredCauses.find(
-        (cause) => cause.id === id,
-      );
-      if (featuredCause) {
-        featuredCause.shareCount = shareCount;
-      }
-
-      // Update current cause
-      if (state.currentCause?.id === id) {
-        state.currentCause.shareCount = shareCount;
-      }
-    });
-
-    // Search causes
+    
+    // Delete Cause
     builder
-      .addCase(searchCauses.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(deleteCause.pending, (state) => {
+        state.deleting = true;
+        state.deleteError = null;
       })
-      .addCase(searchCauses.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.causes = action.payload.data || [];
-        state.error = null;
-      })
-      .addCase(searchCauses.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      });
-
-    // Load more causes (infinite scroll)
-    builder
-      .addCase(loadMoreCauses.pending, (state) => {
-        state.isLoadingMore = true;
-        state.error = null;
-      })
-      .addCase(loadMoreCauses.fulfilled, (state, action) => {
-        state.isLoadingMore = false;
-        const newCauses = action.payload.data?.causes || [];
-
-        // Append new causes to existing ones (avoiding duplicates)
-        const existingIds = new Set(state.causes.map((cause) => cause.id));
-        const uniqueNewCauses = newCauses.filter(
-          (cause) => !existingIds.has(cause.id),
-        );
-        state.causes = [...state.causes, ...uniqueNewCauses];
-
-        // Update pagination info
-        if (action.payload.data?.pagination) {
-          state.pagination = action.payload.data.pagination;
-          state.hasMore = state.pagination.page < state.pagination.totalPages;
+      .addCase(deleteCause.fulfilled, (state, action) => {
+        state.deleting = false;
+        const deletedId = action.payload;
+        
+        // Remove from causes array
+        state.causes = state.causes.filter(c => c.id !== deletedId);
+        
+        // Remove from user causes array
+        state.userCauses = state.userCauses.filter(c => c.id !== deletedId);
+        
+        // Clear current cause if it matches
+        if (state.currentCause?.id === deletedId) {
+          state.currentCause = null;
         }
-        state.error = null;
+        
+        state.deleteError = null;
       })
-      .addCase(loadMoreCauses.rejected, (state, action) => {
-        state.isLoadingMore = false;
-        state.error = action.payload as string;
+      .addCase(deleteCause.rejected, (state, action) => {
+        state.deleting = false;
+        state.deleteError = action.payload as string;
+      });
+    
+    // Like Cause
+    builder
+      .addCase(likeCause.fulfilled, (state, action) => {
+        const { id, likeCount } = action.payload;
+        
+        // Update in causes array
+        const cause = state.causes.find(c => c.id === id);
+        if (cause) {
+          cause.like_count = likeCount;
+        }
+        
+        // Update current cause if it matches
+        if (state.currentCause?.id === id) {
+          state.currentCause.like_count = likeCount;
+        }
       });
   },
 });
 
 export const {
-  clearError,
-  setCurrentCause,
   setFilters,
   clearFilters,
+  setSelectedCategory,
   setSearchQuery,
-  setSortBy,
-  setSortOrder,
-  setViewMode,
-  setPage,
-  setLimit,
-  addToCache,
-  clearCache,
-  updateCauseInList,
-  removeCauseFromList,
+  clearCurrentCause,
+  clearErrors,
   incrementViewCount,
 } = causesSlice.actions;
 
-export default causesSlice.reducer;
-
 // Selectors
-export const selectCauses = (state: { causes: CausesState }) => state.causes;
-export const selectCausesList = (state: { causes: CausesState }) =>
-  state.causes.causes;
-export const selectFeaturedCauses = (state: { causes: CausesState }) =>
-  state.causes.featuredCauses;
-export const selectCurrentCause = (state: { causes: CausesState }) =>
-  state.causes.currentCause;
-export const selectCausesLoading = (state: { causes: CausesState }) =>
-  state.causes.isLoading;
-export const selectCausesLoadingMore = (state: { causes: CausesState }) =>
-  state.causes.isLoadingMore;
-export const selectCausesError = (state: { causes: CausesState }) =>
-  state.causes.error;
-export const selectCausesFilters = (state: { causes: CausesState }) =>
-  state.causes.filters;
-export const selectCausesPagination = (state: { causes: CausesState }) =>
-  state.causes.pagination;
-export const selectCausesViewMode = (state: { causes: CausesState }) =>
-  state.causes.viewMode;
-export const selectCausesHasMore = (state: { causes: CausesState }) =>
-  state.causes.hasMore;
+export const selectCauses = (state: { causes: CausesState }) => state.causes.causes || [];
+export const selectFeaturedCauses = (state: { causes: CausesState }) => state.causes.featuredCauses || [];
+export const selectCurrentCause = (state: { causes: CausesState }) => state.causes.currentCause;
+export const selectUserCauses = (state: { causes: CausesState }) => state.causes.userCauses || [];
+export const selectCausesLoading = (state: { causes: CausesState }) => state.causes.loading;
+export const selectFeaturedLoading = (state: { causes: CausesState }) => state.causes.featuredLoading;
+export const selectCurrentCauseLoading = (state: { causes: CausesState }) => state.causes.currentCauseLoading;
+export const selectPagination = (state: { causes: CausesState }) => state.causes.pagination;
+export const selectFilters = (state: { causes: CausesState }) => state.causes.filters;
+export const selectSelectedCategory = (state: { causes: CausesState }) => state.causes.selectedCategory;
+export const selectSearchQuery = (state: { causes: CausesState }) => state.causes.searchQuery;
+export const selectCausesError = (state: { causes: CausesState }) => state.causes.error;
+export const selectCreating = (state: { causes: CausesState }) => state.causes.creating;
+export const selectUpdating = (state: { causes: CausesState }) => state.causes.updating;
+export const selectDeleting = (state: { causes: CausesState }) => state.causes.deleting;
+
+export default causesSlice.reducer;

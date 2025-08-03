@@ -43,16 +43,40 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     setLoading(true);
 
     try {
-      // Simulate API call - replace with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          preferences: {
+            causes: true,
+            updates: true,
+            weekly_digest: true,
+          },
+        }),
+      });
 
-      // TODO: Implement actual newsletter subscription API
-      console.log("Subscribing email:", email);
+      const result = await response.json();
 
-      setSubscribed(true);
-      message.success("Successfully subscribed to our newsletter!");
-      setEmail("");
+      if (result.success) {
+        setSubscribed(true);
+        if (result.data.status === "already_subscribed") {
+          message.info("You're already subscribed to our newsletter!");
+        } else if (result.data.status === "reactivated") {
+          message.success(
+            "Welcome back! Your subscription has been reactivated.",
+          );
+        } else {
+          message.success("Successfully subscribed to our newsletter!");
+        }
+        setEmail("");
+      } else {
+        message.error(result.error || "Failed to subscribe. Please try again.");
+      }
     } catch (error) {
+      console.error("Newsletter subscription error:", error);
       message.error("Failed to subscribe. Please try again.");
     } finally {
       setLoading(false);

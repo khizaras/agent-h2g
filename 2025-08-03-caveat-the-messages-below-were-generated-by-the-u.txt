@@ -1,0 +1,1220 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: C:\develop\ai-agents\hands2gether          │
+╰───────────────────────────────────────────────────╯
+
+> /clear 
+  ⎿  (no content)
+
+> Role: You are an expert Senior UI/UX Developer.
+
+  Primary Objective: Redesign my existing community help website to emulate the clean, professional, and trustworthy aesthetic of Microsoft.com. The goal is to create a unique, 
+  top-tier community platform, avoiding the typical look of crowdfunding sites.
+
+  Design System & Principles:
+
+  Primary Inspiration: Use Microsoft.com as the single source of truth for design inspiration. Analyze its layout, spacing, component design, and overall user experience.
+
+  Visual Style:
+
+  Color Palette: Strictly adopt the color palette used on Microsoft.com.
+
+  Typography: Use fonts that are visually identical or very similar to those on Microsoft.com (e.g., Segoe UI). Ensure consistent font weights and sizes.
+
+  Hero Section: Replicate the style and impact of the hero sections on Microsoft.com for the Home page.
+
+  Assets & Imagery:
+
+  Photography: Use high-quality, professional, and relevant images from Unsplash.
+
+  Illustrations: Integrate clean, modern vector illustrations where appropriate to explain concepts or add visual appeal, matching the Microsoft design language.
+
+  Interactivity: Enhance the user experience by incorporating subtle interactive elements like hover effects, smooth transitions, and micro-animations, similar to those on 
+  Microsoft.com.
+
+  Content: Generate professional and empathetic placeholder content that aligns with the website's mission: providing the community with food, clothing, education, and training.
+
+  Scope of Work (Pages to Redesign):
+
+  Apply the new design system consistently across the following pages:
+
+  Home Page
+
+  Login Page
+
+  Causes Page (List of all causes)
+
+  Cause Details Page (Individual cause view)
+
+  Create Cause Page (The form to create a new cause)
+
+  User Profile Page
+
+  Instructions:
+
+  Analyze the attached file @reference.png, which shows the current site's design that needs to be replaced.
+
+  For each page listed in the scope, generate the new UI code (e.g., React components with CSS/Tailwind or HTML/CSS).
+
+  Ensure the final output is 100% visually aligned with the Microsoft.com aesthetic, adapted for a community help platform.
+  ⎿  Read reference.png (4.9MB)
+
+● I'll help you redesign your community help website using Microsoft.com's design principles. Let me start by examining your current codebase structure and then create a
+  comprehensive plan.
+
+● Update Todos
+  ⎿  ☐ Analyze current codebase structure and existing pages                      
+     ☐ Study Microsoft.com design system and create color palette/typography guide
+     ☐ Redesign Home Page with Microsoft-inspired hero section
+     ☐ Redesign Login/Signup Page with clean Microsoft aesthetics
+     ☐ Redesign Causes List Page with professional card layouts
+     ☐ Redesign Cause Details Page with structured content layout
+     ☐ Redesign Create Cause Page with clean form design
+     ☐ Redesign User Profile Page with professional layout
+     ☐ Update global theme configuration and CSS
+
+● Update Todos
+  ⎿  ☐ Analyze current codebase structure and existing pages                      
+     ☐ Study Microsoft.com design system and create color palette/typography guide
+     ☐ Redesign Home Page with Microsoft-inspired hero section
+     ☐ Redesign Login/Signup Page with clean Microsoft aesthetics
+     ☐ Redesign Causes List Page with professional card layouts
+     ☐ Redesign Cause Details Page with structured content layout
+     ☐ Redesign Create Cause Page with clean form design
+     ☐ Redesign User Profile Page with professional layout
+     ☐ Update global theme configuration and CSS
+
+● Let me first examine the current codebase structure to understand what pages exist and how they're structured:
+
+● Read(src\app\page.tsx)
+  ⎿  Read 713 lines (ctrl+r to expand)
+
+● Read(src\app\layout.tsx)
+  ⎿  Read 134 lines (ctrl+r to expand)
+
+● Read(src\config\theme.ts)
+  ⎿  Read 380 lines (ctrl+r to expand)
+
+● Now let me examine some of the other key pages to understand the current structure better:
+
+● Search(pattern: "src/app/**/page.tsx")
+  ⎿  Found 17 files (ctrl+r to expand)
+
+● Update Todos
+  ⎿  ☒ Analyze current codebase structure and existing pages                      
+     ☐ Study Microsoft.com design system and create color palette/typography guide
+     ☐ Redesign Home Page with Microsoft-inspired hero section
+     ☐ Redesign Login/Signup Page with clean Microsoft aesthetics
+     ☐ Redesign Causes List Page with professional card layouts
+     ☐ Redesign Cause Details Page with structured content layout
+     ☐ Redesign Create Cause Page with clean form design
+     ☐ Redesign User Profile Page with professional layout
+     ☐ Update global theme configuration and CSS
+
+● Let me now research Microsoft.com's design system to create the proper color palette and typography guide:
+
+● senior-ui-architect(Microsoft design system analysis)
+  ⎿  Done (19 tool uses · 44.0k tokens · 20m 50.5s)                                                                                                                                   
+
+● Update Todos
+  ⎿  ☒ Analyze current codebase structure and existing pages                      
+     ☒ Study Microsoft.com design system and create color palette/typography guide
+     ☐ Redesign Home Page with Microsoft-inspired hero section
+     ☐ Redesign Login/Signup Page with clean Microsoft aesthetics
+     ☐ Redesign Causes List Page with professional card layouts
+     ☐ Redesign Cause Details Page with structured content layout
+     ☐ Redesign Create Cause Page with clean form design
+     ☐ Redesign User Profile Page with professional layout
+     ☐ Update global theme configuration and CSS
+
+● Now let me update the theme configuration to align with Microsoft's design system:
+
+● Update(src\config\theme.ts)
+  ⎿  Error: String to replace not found in file.
+     String: // Revamped Theme Configuration for Hands2gether
+     // Based on Google Meet design reference
+     // Clean, modern, professional styling
+
+     export const revampedTheme = {
+       token: {
+         // Primary Colors - Google Meet inspired blue palette
+         colorPrimary: '#1a73e8', // Google Meet blue
+         colorPrimaryHover: '#1557b0',
+     … +30 lines (ctrl+r to see all)
+
+● Let me read the exact content and update it properly:
+
+● Update(src\config\theme.ts)
+  ⎿  Error: String to replace not found in file.
+     String: export const revampedTheme = {
+       token: {
+         // Primary Colors - Google Meet inspired blue palette
+         colorPrimary: '#1a73e8', // Google Meet blue
+         colorPrimaryHover: '#1557b0',
+         colorPrimaryActive: '#0d47a1',
+         colorPrimaryBg: '#e3f2fd',
+         colorPrimaryBorder: '#90caf9',
+         colorPrimaryText: '#1a73e8',
+     … +26 lines (ctrl+r to see all)
+
+● Let me write a new Microsoft-inspired theme file:
+
+● Write(src\config\theme.ts)
+  ⎿  Updated src\config\theme.ts with 367 additions and 380 removals                                                    
+         1 -  // Microsoft Fluent Design System Theme Configuration for Hands2gether
+         2 -  // Based on Microsoft's official Fluent Design System
+         3 -  // Professional, trustworthy, and accessible styling
+         4 -  
+         5 -  export const revampedTheme = {
+         6 -    token: {
+         7 -      // Primary Colors - Microsoft Communication Blue
+         8 -      colorPrimary: '#0078d4', // Microsoft Communication Blue
+         9 -      colorPrimaryHover: '#106ebe',
+        10 -      colorPrimaryActive: '#005a9e',
+        11 -      colorPrimaryBg: '#deecf9',
+        12 -      colorPrimaryBorder: '#0078d4',
+        13 -      colorPrimaryText: '#0078d4',
+        14 -  
+        15 -      // Secondary Colors - Microsoft Semantic Palette
+        16 -      colorSuccess: '#107c10', // Microsoft Green
+        17 -      colorWarning: '#797775', // Microsoft Warning Gray
+        18 -      colorError: '#d13438',   // Microsoft Red
+        19 -      colorInfo: '#004578',    // Microsoft Dark Blue
+        20 -  
+        21 -      // Neutral Colors - Fluent System
+        22 -      colorBgBase: '#ffffff',
+        23 -      colorBgContainer: '#ffffff',
+        24 -      colorBgElevated: '#ffffff',
+        25 -      colorBgLayout: '#faf9f8',
+        26 -      colorBgSpotlight: '#f3f2f1',
+        27 -      
+        28 -      // Text Colors - Fluent Typography
+        29 -      colorText: '#323130',        // Fluent primary text
+        30 -      colorTextSecondary: '#605e5c', // Fluent secondary text
+        31 -      colorTextTertiary: '#8a8886',  // Fluent tertiary text
+        32 -      colorTextQuaternary: '#a19f9d', // Fluent disabled text
+        33 -      
+        34 -      // Border Colors - Fluent System
+        35 -      colorBorder: '#edebe9',
+        36 -      colorBorderSecondary: '#e1dfdd',
+        37 -      
+        38 -      // Typography - Segoe UI (Microsoft's primary typeface)
+        39 -      fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif",
+        40 -      // Fluent Typography Scale
+        41 -      fontSize: 14, // Body 1
+        42 -      fontSizeHeading1: 32, // Title 1
+        43 -      fontSizeHeading2: 28, // Title 2
+        44 -      fontSizeHeading3: 24, // Title 3
+        45 -      fontSizeHeading4: 20, // Subtitle 1
+        46 -      fontSizeHeading5: 16, // Subtitle 2
+        47 -      fontSizeLG: 16, // Subtitle 2
+        48 -      fontSizeSM: 12, // Caption 1
+        49 -      fontSizeXL: 20, // Subtitle 1
+        50 -      
+        51 -      // Line Heights - Fluent Specifications
+        52 -      lineHeight: 1.43, // 20px / 14px (Body 1)
+        53 -      lineHeightHeading1: 1.25, // 40px / 32px (Title 1)
+        54 -      lineHeightHeading2: 1.29, // 36px / 28px (Title 2)
+        55 -      lineHeightHeading3: 1.33, // 32px / 24px (Title 3)
+        56 -      
+        57 -      // Spacing - Fluent Global Spacing Ramp
+        58 -      padding: 16, // size160
+        59 -      paddingXS: 4, // size40
+        60 -      paddingSM: 8, // size80
+        61 -      paddingLG: 24, // size240
+        62 -      paddingXL: 32, // size320
+        63 -      
+        64 -      margin: 16, // size160
+        65 -      marginXS: 4, // size40
+        66 -      marginSM: 8, // size80
+        67 -      marginLG: 24, // size240
+        68 -      marginXL: 32, // size320
+        69 -      
+        70 -      // Border Radius - Fluent Style (subtle, not overly rounded)
+        71 -      borderRadius: 4, // Standard Fluent radius
+        72 -      borderRadiusXS: 2,
+        73 -      borderRadiusSM: 4,
+        74 -      borderRadiusLG: 8,
+        75 -      borderRadiusXL: 12,
+        76 -      
+        77 -      // Shadows - Microsoft Fluent elevation system
+        78 -      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.14), 0 0px 2px rgba(0, 0, 0, 0.12)',
+        79 -      boxShadowSecondary: '0 4px 8px rgba(0, 0, 0, 0.14), 0 0px 2px rgba(0, 0, 0, 0.12)',
+        80 -      
+        81 -      // Motion - Fluent Animation Values
+        82 -      motionDurationFast: '0.1s',
+        83 -      motionDurationMid: '0.2s',
+        84 -      motionDurationSlow: '0.3s',
+        85 -      
+        86 -      // Z-index
+        87 -      zIndexBase: 0,
+        88 -      zIndexPopupBase: 1000,
+        89 -    },
+        90 -    
+        91 -    // Component specific styling - Microsoft Fluent Components
+        92 -    components: {
+        93 -      Button: {
+        94 -        borderRadius: 4, // Fluent standard radius
+        95 -        controlHeight: 32, // Fluent standard height
+        96 -        controlHeightSM: 24,
+        97 -        controlHeightLG: 40,
+        98 -        fontWeight: 600, // Semibold (Fluent standard)
+        99 -        primaryShadow: 'none',
+       100 -        defaultBorderColor: '#edebe9',
+       101 -        defaultColor: '#323130',
+       102 -        defaultHoverBorderColor: '#0078d4',
+       103 -        defaultHoverColor: '#0078d4',
+       104 -        primaryColor: '#ffffff',
+       105 -        primaryBg: '#0078d4',
+       106 -      },
+       107 -      
+       108 -      Card: {
+       109 -        borderRadius: 8, // Fluent card radius
+       110 -        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.14), 0 0px 2px rgba(0, 0, 0, 0.12)',
+       111 -        headerBg: '#ffffff',
+       112 -        bodyPadding: 24,
+       113 -      },
+       114 -      
+       115 -      Input: {
+       116 -        borderRadius: 4, // Fluent input radius
+       117 -        controlHeight: 32, // Standard Fluent input height
+       118 -        paddingInline: 12, // Fluent spacing
+       119 -        fontSize: 14,
+       120 -        borderColor: '#edebe9',
+       121 -        hoverBorderColor: '#0078d4',
+       122 -        activeBorderColor: '#0078d4',
+       123 -      },
+       124 -      
+       125 -      Layout: {
+       126 -        headerBg: '#ffffff',
+       127 -        headerPadding: '0 24px',
+       128 -        headerHeight: 48, // Fluent header height
+       129 -        siderBg: '#faf9f8',
+       130 -        bodyBg: '#faf9f8',
+       131 -      },
+       132 -      
+       133 -      Menu: {
+       134 -        itemBg: 'transparent',
+       135 -        itemSelectedBg: '#deecf9', // Fluent primary background
+       136 -        itemSelectedColor: '#0078d4',
+       137 -        itemHoverBg: '#f3f2f1',
+       138 -        borderRadius: 4,
+       139 -      },
+       140 -      
+       141 -      Typography: {
+       142 -        titleMarginTop: 0,
+       143 -        titleMarginBottom: 16,
+       144 -      },
+       145 -      
+       146 -      Form: {
+       147 -        labelColor: '#323130', // Fluent primary text
+       148 -        itemMarginBottom: 24,
+       149 -        verticalLabelPadding: '0 0 8px',
+       150 -      },
+       151 -      
+       152 -      Select: {
+       153 -        borderRadius: 4,
+       154 -        controlHeight: 32,
+       155 -        optionSelectedBg: '#deecf9',
+       156 -      },
+       157 -      
+       158 -      Tabs: {
+       159 -        itemSelectedColor: '#0078d4',
+       160 -        itemHoverColor: '#0078d4',
+       161 -        inkBarColor: '#0078d4',
+       162 -        titleFontSize: 14,
+       163 -      },
+       164 -      
+       165 -      Tag: {
+       166 -        borderRadius: 16,
+       167 -        fontSizeSM: 12,
+       168 -        lineHeightSM: 1.5,
+       169 -      },
+       170 -      
+       171 -      Modal: {
+       172 -        borderRadius: 8, // Fluent modal radius
+       173 -        headerBg: '#ffffff',
+       174 -        contentBg: '#ffffff',
+       175 -      },
+       176 -      
+       177 -      Avatar: {
+       178 -        borderRadius: 50,
+       179 -      },
+       180 -      
+       181 -      Badge: {
+       182 -        borderRadius: 10,
+       183 -      },
+       184 -      
+       185 -      Alert: {
+       186 -        borderRadius: 8,
+       187 -        withDescriptionIconSize: 20,
+       188 -      },
+       189 -      
+       190 -      Drawer: {
+       191 -        borderRadius: 0,
+       192 -        headerHeight: 64,
+       193 -      },
+       194 -      
+       195 -      Steps: {
+       196 -        titleLineHeight: 1.5,
+       197 -        descriptionMaxWidth: 200,
+       198 -      },
+       199 -    },
+       200 -  };
+       201 -  
+       202 -  // Microsoft Fluent inspired color palette for categories
+       203 -  export const categoryColors = {
+       204 -    food: {
+       205 -      primary: '#d13438', // Microsoft Red variation
+       206 -      light: '#fde7e9',
+       207 -      dark: '#a4262c',
+       208 -      gradient: 'linear-gradient(135deg, #d13438 0%, #e74856 100%)',
+       209 -    },
+       210 -    clothes: {
+       211 -      primary: '#0078d4', // Microsoft Primary Blue
+       212 -      light: '#deecf9',
+       213 -      dark: '#005a9e',
+       214 -      gradient: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
+       215 -    },
+       216 -    training: {
+       217 -      primary: '#107c10', // Microsoft Green
+       218 -      light: '#dff6dd',
+       219 -      dark: '#0e5a0e',
+       220 -      gradient: 'linear-gradient(135deg, #107c10 0%, #13a10e 100%)',
+       221 -    },
+       222 -  };
+       223 -  
+       224 -  // Unsplash image configuration
+       225 -  export const unsplashConfig = {
+       226 -    baseUrl: 'https://images.unsplash.com',
+       227 -    defaultParams: {
+       228 -      w: 1200,
+       229 -      h: 600,
+       230 -      fit: 'crop',
+       231 -      q: 80,
+       232 -      fm: 'webp',
+       233 -    },
+       234 -    
+       235 -    // Category-specific image collections
+       236 -    collections: {
+       237 -      food: [
+       238 -        'photo-1504674900247-0877df9cc836', // Food spread
+       239 -        'photo-1555939594-58d7cb561ad1',   // Food prep
+       240 -        'photo-1567620905732-2d1ec7ab7445', // Pancakes
+       241 -        'photo-1546554137-f86b9593a222',   // Cooking
+       242 -        'photo-1504113888839-1c8eb50233d3', // Community meal
+       243 -      ],
+       244 -      clothes: [
+       245 -        'photo-1441986300917-64674bd600d8', // Clothing rack
+       246 -        'photo-1523381210434-271e8be1f52b', // Closet
+       247 -        'photo-1434389677669-e08b4cac3105', // Clothing donation
+       248 -        'photo-1445205170230-053b83016050', // Fashion
+       249 -        'photo-1515372039744-b8f02a3ae446', // Wardrobe
+       250 -      ],
+       251 -      training: [
+       252 -        'photo-1522202176988-66273c2fd55f', // Learning/studying
+       253 -        'photo-1571019613454-1cb2f99b2d8b', // Online learning
+       254 -        'photo-1513475382585-d06e58bcb0e0', // Workshop
+       255 -        'photo-1517486808906-6ca8b3f04846', // Training session
+       256 -        'photo-1507003211169-0a1dd7228f2d', // Education
+       257 -      ],
+       258 -      hero: [
+       259 -        'photo-1559027615-cd4628902d4a', // Community hands
+       260 -        'photo-1582213782179-e0d53f98f2ca', // Helping hands
+       261 -        'photo-1600298881974-6be191ceeda1', // Community support
+       262 -        'photo-1571019613454-1cb2f99b2d8b', // People helping
+       263 -        'photo-1593113598332-cd288d649433', // Community gathering
+       264 -      ],
+       265 -      about: [
+       266 -        'photo-1517486808906-6ca8b3f04846', // Team meeting
+       267 -        'photo-1522071820081-009f0129c71c', // Collaboration
+       268 -        'photo-1600298881974-6be191ceeda1', // Community
+       269 -        'photo-1556761175-4b46a572b786', // Team work
+       270 -        'photo-1519389950473-47ba0277781c', // Group discussion
+       271 -      ],
+       272 -      contact: [
+       273 -        'photo-1423666639041-f56000c27a9a', // Communication
+       274 -        'photo-1516321318423-f06f85e504b3', // Contact/support
+       275 -        'photo-1560472354-b33ff0c44a43', // Customer service
+       276 -        'photo-1551434678-e076c223a692', // Office/contact
+       277 -        'photo-1600298881974-6be191ceeda1', // Community help
+       278 -      ],
+       279 -    },
+       280 -    
+       281 -    // Helper function to get random image from collection
+       282 -    getRandomImage: (collection: keyof typeof unsplashConfig.collections, params?: Record<string, any>) => {
+       283 -      const images = unsplashConfig.collections[collection];
+       284 -      const randomImage = images[Math.floor(Math.random() * images.length)];
+       285 -      const queryParams = new URLSearchParams({
+       286 -        ...unsplashConfig.defaultParams,
+       287 -        ...params,
+       288 -      });
+       289 -      return `${unsplashConfig.baseUrl}/${randomImage}?${queryParams.toString()}`;
+       290 -    },
+       291 -    
+       292 -    // Helper function to get specific image with custom dimensions
+       293 -    getImage: (imageId: string, params?: Record<string, any>) => {
+       294 -      const queryParams = new URLSearchParams({
+       295 -        ...unsplashConfig.defaultParams,
+       296 -        ...params,
+       297 -      });
+       298 -      return `${unsplashConfig.baseUrl}/${imageId}?${queryParams.toString()}`;
+       299 -    },
+       300 -  };
+       301 -  
+       302 -  // Layout configurations - Microsoft Fluent Layout System
+       303 -  export const layoutConfig = {
+       304 -    header: {
+       305 -      height: 48, // Fluent header height
+       306 -      padding: '0 24px',
+       307 -      background: '#ffffff',
+       308 -      borderBottom: '1px solid #edebe9', // Fluent border
+       309 -      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.14), 0 0px 2px rgba(0, 0, 0, 0.12)',
+       310 -    },
+       311 -    
+       312 -    main: {
+       313 -      padding: '24px',
+       314 -      background: '#faf9f8', // Fluent background
+       315 -      minHeight: 'calc(100vh - 48px)',
+       316 -    },
+       317 -    
+       318 -    footer: {
+       319 -      background: '#f3f2f1', // Fluent tertiary background
+       320 -      borderTop: '1px solid #edebe9',
+       321 -      padding: '40px 24px 24px',
+       322 -    },
+       323 -    
+       324 -    container: {
+       325 -      maxWidth: 1200,
+       326 -      margin: '0 auto',
+       327 -      padding: '0 24px',
+       328 -    },
+       329 -    
+       330 -    section: {
+       331 -      padding: '60px 0',
+       332 -      marginBottom: 0,
+       333 -    },
+       334 -  };
+       335 -  
+       336 -  // Animation configurations - Microsoft Fluent Motion System
+       337 -  export const animations = {
+       338 -    fadeIn: {
+       339 -      initial: { opacity: 0 },
+       340 -      animate: { opacity: 1 },
+       341 -      transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] }, // Fluent standard easing
+       342 -    },
+       343 -    
+       344 -    slideUp: {
+       345 -      initial: { opacity: 0, y: 20 },
+       346 -      animate: { opacity: 1, y: 0 },
+       347 -      transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+       348 -    },
+       349 -    
+       350 -    slideDown: {
+       351 -      initial: { opacity: 0, y: -20 },
+       352 -      animate: { opacity: 1, y: 0 },
+       353 -      transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+       354 -    },
+       355 -    
+       356 -    scaleIn: {
+       357 -      initial: { opacity: 0, scale: 0.95 }, // Subtle scale, more Fluent-like
+       358 -      animate: { opacity: 1, scale: 1 },
+       359 -      transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+       360 -    },
+       361 -    
+       362 -    stagger: {
+       363 -      animate: {
+       364 -        transition: {
+       365 -          staggerChildren: 0.05, // Faster stagger for Fluent feel
+       366 -        },
+       367 -      },
+       368 -    },
+       369 -  };
+       370 -  
+       371 -  // Responsive breakpoints - Microsoft Fluent Breakpoints
+       372 -  export const breakpoints = {
+       373 -    xs: 320, // Small mobile
+       374 -    sm: 480, // Mobile
+       375 -    md: 640, // Tablet
+       376 -    lg: 1024, // Desktop
+       377 -    xl: 1366, // Large desktop
+       378 -    xxl: 1920, // Extra large desktop
+       379 -  };
+       380 -  
+         1 +  // Microsoft Fluent Design System for Hands2gether
+         2 +  // Based on Microsoft.com design principles
+         3 +  // Professional, clean, and trustworthy styling
+         4 +  
+         5 +  export const revampedTheme = {
+         6 +    token: {
+         7 +      // Primary Colors - Microsoft Fluent blue palette
+         8 +      colorPrimary: '#0078d4', // Microsoft Communication Blue
+         9 +      colorPrimaryHover: '#106ebe',
+        10 +      colorPrimaryActive: '#005a9e',
+        11 +      colorPrimaryBg: '#deecf9',
+        12 +      colorPrimaryBorder: '#92c5f7',
+        13 +      colorPrimaryText: '#0078d4',
+        14 +  
+        15 +      // Secondary Colors - Microsoft Fluent semantic colors
+        16 +      colorSuccess: '#107c10', // Microsoft Green
+        17 +      colorWarning: '#797775', // Microsoft Warning Gray
+        18 +      colorError: '#d13438',   // Microsoft Red
+        19 +      colorInfo: '#0078d4',    // Microsoft Blue
+        20 +  
+        21 +      // Neutral Colors - Microsoft Fluent gray scale
+        22 +      colorBgBase: '#ffffff',
+        23 +      colorBgContainer: '#ffffff',
+        24 +      colorBgElevated: '#faf9f8',
+        25 +      colorBgLayout: '#f3f2f1',
+        26 +      colorBgSpotlight: '#fefefe',
+        27 +      
+        28 +      // Text Colors - Microsoft Fluent text hierarchy
+        29 +      colorText: '#323130',        // Fluent primary text
+        30 +      colorTextSecondary: '#605e5c', // Fluent secondary text
+        31 +      colorTextTertiary: '#8a8886',  // Fluent tertiary text
+        32 +      colorTextQuaternary: '#c8c6c4',
+        33 +      
+        34 +      // Border Colors - Microsoft Fluent neutrals
+        35 +      colorBorder: '#edebe9',
+        36 +      colorBorderSecondary: '#f3f2f1',
+        37 +      
+        38 +      // Typography - Using Segoe UI for authentic Microsoft appearance
+        39 +      fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif",
+        40 +      fontSize: 14,
+        41 +      fontSizeHeading1: 32,
+        42 +      fontSizeHeading2: 28,
+        43 +      fontSizeHeading3: 24,
+        44 +      fontSizeHeading4: 20,
+        45 +      fontSizeHeading5: 16,
+        46 +      fontSizeLG: 16,
+        47 +      fontSizeSM: 12,
+        48 +      fontSizeXL: 20,
+        49 +      
+        50 +      // Line Heights - Microsoft Fluent specifications
+        51 +      lineHeight: 1.43,
+        52 +      lineHeightHeading1: 1.25,
+        53 +      lineHeightHeading2: 1.29,
+        54 +      lineHeightHeading3: 1.33,
+        55 +      
+        56 +      // Spacing - Microsoft 4px base unit system
+        57 +      padding: 16,
+        58 +      paddingXS: 8,
+        59 +      paddingSM: 12,
+        60 +      paddingLG: 24,
+        61 +      paddingXL: 32,
+        62 +      
+        63 +      margin: 16,
+        64 +      marginXS: 8,
+        65 +      marginSM: 12,
+        66 +      marginLG: 24,
+        67 +      marginXL: 32,
+        68 +      
+        69 +      // Border Radius - Microsoft Fluent specifications
+        70 +      borderRadius: 4,
+        71 +      borderRadiusXS: 2,
+        72 +      borderRadiusSM: 4,
+        73 +      borderRadiusLG: 8,
+        74 +      borderRadiusXL: 12,
+        75 +      
+        76 +      // Shadows - Microsoft Fluent elevation
+        77 +      boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+        78 +      boxShadowSecondary: '0 6.4px 14.4px 0 rgba(0,0,0,.132), 0 1.2px 3.6px 0 rgba(0,0,0,.108)',
+        79 +      
+        80 +      // Motion - Microsoft Fluent easing
+        81 +      motionDurationFast: '0.1s',
+        82 +      motionDurationMid: '0.2s',
+        83 +      motionDurationSlow: '0.3s',
+        84 +      
+        85 +      // Z-index
+        86 +      zIndexBase: 0,
+        87 +      zIndexPopupBase: 1000,
+        88 +    },
+        89 +    
+        90 +    // Component specific styling - Microsoft Fluent components
+        91 +    components: {
+        92 +      Button: {
+        93 +        borderRadius: 4,
+        94 +        controlHeight: 32,
+        95 +        controlHeightSM: 24,
+        96 +        controlHeightLG: 40,
+        97 +        fontWeight: 600, // Semibold - Microsoft standard
+        98 +        primaryShadow: 'none',
+        99 +        defaultBorderColor: '#8a8886',
+       100 +        defaultColor: '#323130',
+       101 +        defaultHoverBorderColor: '#0078d4',
+       102 +        defaultHoverColor: '#0078d4',
+       103 +        primaryColor: '#ffffff',
+       104 +        primaryBg: '#0078d4',
+       105 +      },
+       106 +      
+       107 +      Card: {
+       108 +        borderRadius: 8,
+       109 +        boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)',
+       110 +        headerBg: '#ffffff',
+       111 +        bodyPadding: 24,
+       112 +      },
+       113 +      
+       114 +      Input: {
+       115 +        borderRadius: 4,
+       116 +        controlHeight: 32,
+       117 +        paddingInline: 12,
+       118 +        fontSize: 14,
+       119 +        borderColor: '#8a8886',
+       120 +        hoverBorderColor: '#0078d4',
+       121 +        activeBorderColor: '#0078d4',
+       122 +      },
+       123 +      
+       124 +      Layout: {
+       125 +        headerBg: '#ffffff',
+       126 +        headerPadding: '0 24px',
+       127 +        headerHeight: 48,
+       128 +        siderBg: '#faf9f8',
+       129 +        bodyBg: '#f3f2f1',
+       130 +      },
+       131 +      
+       132 +      Menu: {
+       133 +        itemBg: 'transparent',
+       134 +        itemSelectedBg: '#deecf9',
+       135 +        itemSelectedColor: '#0078d4',
+       136 +        itemHoverBg: '#f3f2f1',
+       137 +        borderRadius: 4,
+       138 +      },
+       139 +      
+       140 +      Typography: {
+       141 +        titleMarginTop: 0,
+       142 +        titleMarginBottom: 16,
+       143 +      },
+       144 +      
+       145 +      Form: {
+       146 +        labelColor: '#323130',
+       147 +        itemMarginBottom: 24,
+       148 +        verticalLabelPadding: '0 0 8px',
+       149 +      },
+       150 +      
+       151 +      Select: {
+       152 +        borderRadius: 4,
+       153 +        controlHeight: 32,
+       154 +        optionSelectedBg: '#deecf9',
+       155 +      },
+       156 +      
+       157 +      Tabs: {
+       158 +        itemSelectedColor: '#0078d4',
+       159 +        itemHoverColor: '#0078d4',
+       160 +        inkBarColor: '#0078d4',
+       161 +        titleFontSize: 14,
+       162 +      },
+       163 +      
+       164 +      Tag: {
+       165 +        borderRadius: 4,
+       166 +        fontSizeSM: 12,
+       167 +        lineHeightSM: 1.43,
+       168 +      },
+       169 +      
+       170 +      Modal: {
+       171 +        borderRadius: 8,
+       172 +        headerBg: '#ffffff',
+       173 +        contentBg: '#ffffff',
+       174 +      },
+       175 +      
+       176 +      Avatar: {
+       177 +        borderRadius: 50,
+       178 +      },
+       179 +      
+       180 +      Badge: {
+       181 +        borderRadius: 10,
+       182 +      },
+       183 +      
+       184 +      Alert: {
+       185 +        borderRadius: 4,
+       186 +        withDescriptionIconSize: 20,
+       187 +      },
+       188 +      
+       189 +      Drawer: {
+       190 +        borderRadius: 0,
+       191 +        headerHeight: 48,
+       192 +      },
+       193 +      
+       194 +      Steps: {
+       195 +        titleLineHeight: 1.43,
+       196 +        descriptionMaxWidth: 200,
+       197 +      },
+       198 +    },
+       199 +  };
+       200 +  
+       201 +  // Microsoft Fluent inspired color palette for categories
+       202 +  export const categoryColors = {
+       203 +    food: {
+       204 +      primary: '#d13438',
+       205 +      light: '#fdf4f4',
+       206 +      dark: '#a4262c',
+       207 +      gradient: 'linear-gradient(135deg, #d13438 0%, #ff8080 100%)',
+       208 +    },
+       209 +    clothes: {
+       210 +      primary: '#8764b8',
+       211 +      light: '#f7f4fb',
+       212 +      dark: '#6b4d94',
+       213 +      gradient: 'linear-gradient(135deg, #8764b8 0%, #c3a6d6 100%)',
+       214 +    },
+       215 +    training: {
+       216 +      primary: '#0078d4',
+       217 +      light: '#deecf9',
+       218 +      dark: '#005a9e',
+       219 +      gradient: 'linear-gradient(135deg, #0078d4 0%, #40e0d0 100%)',
+       220 +    },
+       221 +    education: {
+       222 +      primary: '#107c10',
+       223 +      light: '#e8f5e8',
+       224 +      dark: '#0d5f0d',
+       225 +      gradient: 'linear-gradient(135deg, #107c10 0%, #52c41a 100%)',
+       226 +    },
+       227 +  };
+       228 +  
+       229 +  // Microsoft-inspired image configuration with Unsplash
+       230 +  export const imageConfig = {
+       231 +    baseUrl: 'https://images.unsplash.com',
+       232 +    defaultParams: {
+       233 +      w: 1200,
+       234 +      h: 600,
+       235 +      fit: 'crop',
+       236 +      q: 80,
+       237 +      fm: 'webp',
+       238 +    },
+       239 +    
+       240 +    // Category-specific professional image collections
+       241 +    collections: {
+       242 +      hero: [
+       243 +        'photo-1582213782179-e0d53f98f2ca', // Community support
+       244 +        'photo-1559027615-cd4628902d4a', // People helping
+       245 +        'photo-1600298881974-6be191ceeda1', // Community gathering
+       246 +        'photo-1593113598332-cd288d649433', // Group collaboration
+       247 +        'photo-1517486808906-6ca8b3f04846', // Professional meeting
+       248 +      ],
+       249 +      food: [
+       250 +        'photo-1504674900247-0877df9cc836', // Professional food spread
+       251 +        'photo-1504113888839-1c8eb50233d3', // Community meal
+       252 +        'photo-1567620905732-2d1ec7ab7445', // Food preparation
+       253 +        'photo-1546554137-f86b9593a222',   // Cooking together
+       254 +        'photo-1555939594-58d7cb561ad1',   // Professional kitchen
+       255 +      ],
+       256 +      clothes: [
+       257 +        'photo-1441986300917-64674bd600d8', // Professional clothing display
+       258 +        'photo-1434389677669-e08b4cac3105', // Clothing donation
+       259 +        'photo-1523381210434-271e8be1f52b', // Organized wardrobe
+       260 +        'photo-1445205170230-053b83016050', // Fashion arrangement
+       261 +        'photo-1515372039744-b8f02a3ae446', // Clothing collection
+       262 +      ],
+       263 +      training: [
+       264 +        'photo-1522202176988-66273c2fd55f', // Professional learning
+       265 +        'photo-1571019613454-1cb2f99b2d8b', // Online education
+       266 +        'photo-1513475382585-d06e58bcb0e0', // Workshop setting
+       267 +        'photo-1517486808906-6ca8b3f04846', // Training session
+       268 +        'photo-1507003211169-0a1dd7228f2d', // Professional development
+       269 +      ],
+       270 +    },
+       271 +    
+       272 +    // Helper function to get image with Microsoft-style parameters
+       273 +    getImage: (imageId: string, params?: Record<string, any>) => {
+       274 +      const queryParams = new URLSearchParams({
+       275 +        ...imageConfig.defaultParams,
+       276 +        ...params,
+       277 +      });
+       278 +      return `${imageConfig.baseUrl}/${imageId}?${queryParams.toString()}`;
+       279 +    },
+       280 +    
+       281 +    // Helper function to get random image from collection
+       282 +    getRandomImage: (collection: keyof typeof imageConfig.collections, params?: Record<string, any>) => {
+       283 +      const images = imageConfig.collections[collection];
+       284 +      const randomImage = images[Math.floor(Math.random() * images.length)];
+       285 +      return imageConfig.getImage(randomImage, params);
+       286 +    },
+       287 +  };
+       288 +  
+       289 +  // Microsoft Fluent layout configurations
+       290 +  export const layoutConfig = {
+       291 +    header: {
+       292 +      height: 48,
+       293 +      padding: '0 24px',
+       294 +      background: '#ffffff',
+       295 +      borderBottom: '1px solid #edebe9',
+       296 +      boxShadow: '0 1.6px 3.6px 0 rgba(0,0,0,.132)',
+       297 +    },
+       298 +    
+       299 +    main: {
+       300 +      padding: '24px',
+       301 +      background: '#f3f2f1',
+       302 +      minHeight: 'calc(100vh - 48px)',
+       303 +    },
+       304 +    
+       305 +    footer: {
+       306 +      background: '#faf9f8',
+       307 +      borderTop: '1px solid #edebe9',
+       308 +      padding: '32px 24px 24px',
+       309 +    },
+       310 +    
+       311 +    container: {
+       312 +      maxWidth: 1200,
+       313 +      margin: '0 auto',
+       314 +      padding: '0 24px',
+       315 +    },
+       316 +    
+       317 +    section: {
+       318 +      padding: '56px 0',
+       319 +      marginBottom: 0,
+       320 +    },
+       321 +  };
+       322 +  
+       323 +  // Microsoft Fluent animation configurations
+       324 +  export const animations = {
+       325 +    fadeIn: {
+       326 +      initial: { opacity: 0 },
+       327 +      animate: { opacity: 1 },
+       328 +      transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+       329 +    },
+       330 +    
+       331 +    slideUp: {
+       332 +      initial: { opacity: 0, y: 16 },
+       333 +      animate: { opacity: 1, y: 0 },
+       334 +      transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+       335 +    },
+       336 +    
+       337 +    slideDown: {
+       338 +      initial: { opacity: 0, y: -16 },
+       339 +      animate: { opacity: 1, y: 0 },
+       340 +      transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+       341 +    },
+       342 +    
+       343 +    scaleIn: {
+       344 +      initial: { opacity: 0, scale: 0.95 },
+       345 +      animate: { opacity: 1, scale: 1 },
+       346 +      transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+       347 +    },
+       348 +    
+       349 +    stagger: {
+       350 +      animate: {
+       351 +        transition: {
+       352 +          staggerChildren: 0.1,
+       353 +        },
+       354 +      },
+       355 +    },
+       356 +  };
+       357 +  
+       358 +  // Microsoft Fluent responsive breakpoints
+       359 +  export const breakpoints = {
+       360 +    xs: 320,
+       361 +    sm: 480,
+       362 +    md: 640,
+       363 +    lg: 1024,
+       364 +    xl: 1366,
+       365 +    xxl: 1920,
+       366 +  };
+       367 +  
+       368    export default revampedTheme;
+       369   \ No newline at end of file
+
+● Now let me redesign the Home Page with Microsoft's design aesthetic:
+
+● Update(src\app\page.tsx)
+  ⎿  Updated src\app\page.tsx with 7 additions and 9 removals            
+       1    "use client";
+       2    
+       3 -  import React, { useState } from 'react';
+       3 +  import React from 'react';
+       4    import {
+       5      Row,
+       6      Col,
+     ...
+       14      Tag,
+       15    } from 'antd';
+       16    import {
+       17 -    FiVideo,
+       18 -    FiPlus,
+       17      FiUsers,
+       18 -    FiPlay,
+       19 -    FiShield,
+       20 -    FiCheck,
+       18 +    FiPlus,
+       19      FiArrowRight,
+       20      FiHeart,
+       21      FiMapPin,
+       22      FiTrendingUp,
+       23 -    FiGlobe,
+       24 -    FiStar,
+       23 +    FiTarget,
+       24 +    FiShield,
+       25 +    FiCheck,
+       26      FiBookOpen,
+       27      FiMessageCircle,
+       28 -    FiTarget,
+       28 +    FiChevronRight,
+       29    } from 'react-icons/fi';
+       30    import { motion } from 'framer-motion';
+       31    import { useRouter } from 'next/navigation';
+       32    import { MainLayout } from '@/components/layout/MainLayout';
+       33 +  import { imageConfig, animations } from '@/config/theme';
+       34    
+       35    const { Title, Text, Paragraph } = Typography;
+       36    
+
+● Now let me redesign the entire HomePage with Microsoft's aesthetic:
+
+● Update(src\app\page.tsx)
+  ⎿  Updated src\app\page.tsx with 40 additions and 37 removals                                                                  
+        37    export default function HomePage() {
+        38      const router = useRouter();
+        39    
+        40 -    // Community impact stats
+        41 -    const stats = [
+        42 -      { title: "Active Communities", value: "2,847", icon: <FiUsers /> },
+        43 -      { title: "Lives Impacted", value: "156K+", icon: <FiHeart /> },
+        44 -      { title: "Causes Supported", value: "9,234", icon: <FiTarget /> },
+        45 -      { title: "Success Stories", value: "4,521", icon: <FiStar /> }
+        40 +    // Microsoft-style impact metrics
+        41 +    const impactMetrics = [
+        42 +      { title: "Communities served", value: "2,847", icon: <FiUsers />, description: "Active local communities" },
+        43 +      { title: "People helped", value: "156K+", icon: <FiHeart />, description: "Lives positively impacted" },
+        44 +      { title: "Causes supported", value: "9,234", icon: <FiTarget />, description: "Community initiatives funded" },
+        45 +      { title: "Success rate", value: "94%", icon: <FiCheck />, description: "Goals achieved together" }
+        46      ];
+        47    
+        48 -    // Featured community stories
+        49 -    const communityStories = [
+        48 +    // Featured community initiatives - Microsoft card style
+        49 +    const featuredInitiatives = [
+        50        {
+        51 -        image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&h=400&fit=crop&crop=center&q=80',
+        52 -        title: 'Food Recovery Network',
+        53 -        description: 'Local restaurants partnering to reduce food waste and feed families in need',
+        54 -        impact: '12,000 meals saved',
+        55 -        location: 'San Francisco, CA',
+        56 -        supporters: 247
+        51 +        image: imageConfig.getImage('photo-1504113888839-1c8eb50233d3', { w: 600, h: 300 }),
+        52 +        title: 'Community Food Network',
+        53 +        description: 'Connecting local restaurants with families in need to reduce waste and hunger',
+        54 +        impact: '12,000 meals delivered',
+        55 +        location: 'Seattle, WA',
+        56 +        participants: 247,
+        57 +        category: 'Food Security'
+        58        },
+        59        {
+        60 -        image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&h=400&fit=crop&crop=center&q=80',
+        61 -        title: 'Digital Skills for Seniors',
+        62 -        description: 'Teaching technology skills to elderly community members',
+        63 -        impact: '500+ seniors trained',
+        64 -        location: 'Austin, TX',
+        65 -        supporters: 189
+        60 +        image: imageConfig.getImage('photo-1571019613454-1cb2f99b2d8b', { w: 600, h: 300 }),
+        61 +        title: 'Digital Literacy Program',
+        62 +        description: 'Empowering seniors with essential technology skills for modern life',
+        63 +        impact: '500+ people trained',
+        64 +        location: 'Portland, OR',
+        65 +        participants: 189,
+        66 +        category: 'Education'
+        67        },
+        68        {
+        69 -        image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=600&h=400&fit=crop&crop=center&q=80',
+        70 -        title: 'Clean Water Initiative',
+        71 -        description: 'Building sustainable water systems in underserved neighborhoods',
+        72 -        impact: '15 communities served',
+        73 -        location: 'Phoenix, AZ',
+        74 -        supporters: 342
+        69 +        image: imageConfig.getImage('photo-1441986300917-64674bd600d8', { w: 600, h: 300 }),
+        70 +        title: 'Clothing Exchange Network',
+        71 +        description: 'Sustainable fashion sharing that helps families and reduces waste',
+        72 +        impact: '2,000+ items shared',
+        73 +        location: 'Denver, CO',
+        74 +        participants: 342,
+        75 +        category: 'Sustainability'
+        76        }
+        77      ];
+        78    
+        79 -    // How it works steps
+        80 -    const howItWorks = [
+        79 +    // Microsoft-style process steps
+        80 +    const processSteps = [
+        81        {
+        82          icon: <FiPlus />,
+        83 -        title: 'Create a Cause',
+        84 -        description: 'Share what your community needs or what you can offer to help others',
+        85 -        color: '#1a73e8'
+        83 +        title: 'Start your initiative',
+        84 +        description: 'Share your community need or offer to help others in your area',
+        85 +        color: '#0078d4'
+        86        },
+        87        {
+        88          icon: <FiUsers />,
+        89 -        title: 'Connect & Collaborate',
+        90 -        description: 'Find like-minded community members ready to make a difference',
+        91 -        color: '#34a853'
+        89 +        title: 'Build your network',
+        90 +        description: 'Connect with neighbors and organizations ready to collaborate',
+        91 +        color: '#107c10'
+        92        },
+        93        {
+        94          icon: <FiTarget />,
+        95 -        title: 'Make Impact',
+        96 -        description: 'Work together to create meaningful change in your neighborhood',
+        97 -        color: '#ea4335'
+        95 +        title: 'Create lasting impact',
+        96 +        description: 'Work together to solve real problems and strengthen your community',
+        97 +        color: '#d13438'
+        98        }
+        99      ];
+       100    
+
+● Now let me redesign the testimonials section and main return JSX with Microsoft's design:
+
+● Update(src\app\page.tsx)
+  ⎿  Updated src\app\page.tsx with 47 additions and 69 removals                                                                                                                  
+        98        }
+        99      ];
+       100    
+       101 -    // Testimonials
+       101 +    // Community testimonials - Microsoft style
+       102      const testimonials = [
+       103        {
+       104          name: 'Sarah Chen',
+       105 -        role: 'Community Organizer',
+       106 -        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face&q=80',
+       107 -        quote: 'Hands2gether helped us organize a neighborhood cleanup that brought together 200+ volunteers. The platform made coordination effortless.',
+       108 -        cause: 'Green Streets Initiative'
+       105 +        role: 'Community Coordinator',
+       106 +        avatar: imageConfig.getImage('photo-1494790108755-2616b612b786', { w: 80, h: 80, fit: 'crop', crop: 'face' }),
+       107 +        quote: 'This platform transformed how we organize community events. We coordinated our largest neighborhood cleanup with 300+ volunteers seamlessly.',
+       108 +        initiative: 'Green Neighborhoods',
+       109 +        impact: '12 blocks cleaned'
+       110        },
+       111        {
+       112          name: 'Marcus Johnson',
+       113 -        role: 'Local Business Owner',
+       114 -        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&q=80',
+       115 -        quote: 'Through this platform, I connected my restaurant with local food banks. We\'ve donated over 5,000 meals to families in need.',
+       116 -        cause: 'Restaurant Food Rescue'
+       113 +        role: 'Local Business Leader',
+       114 +        avatar: imageConfig.getImage('photo-1507003211169-0a1dd7228f2d', { w: 80, h: 80, fit: 'crop', crop: 'face' }),
+       115 +        quote: 'Connecting our restaurant surplus with families in need has never been easier. We\'ve built lasting partnerships that benefit everyone.',
+       116 +        initiative: 'Food Recovery Network',
+       117 +        impact: '8,500 meals donated'
+       118        },
+       119        {
+       120          name: 'Dr. Emily Rodriguez',
+       121 -        role: 'Healthcare Professional',
+       122 -        avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=80&h=80&fit=crop&crop=face&q=80',
+       123 -        quote: 'I offer free health screenings to underserved communities. The platform helps me reach those who need care most.',
+       124 -        cause: 'Community Health Outreach'
+       121 +        role: 'Healthcare Provider',
+       122 +        avatar: imageConfig.getImage('photo-1559839734-2b71ea197ec2', { w: 80, h: 80, fit: 'crop', crop: 'face' }),
+       123 +        quote: 'Reaching underserved communities with health screenings is now efficient and impactful. The platform helps us deliver care where it\'s needed most.',
+       124 +        initiative: 'Community Wellness',
+       125 +        impact: '1,200 people screened'
+       126        }
+       127      ];
+       128    
+       129      return (
+       130        <MainLayout>
+       131          <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+       132 -          {/* Hero Section - Google Meet Style */}
+       132 +          {/* Hero Section - Microsoft Style */}
+       133            <section style={{
+       134 -            padding: '80px 0 60px',
+       134 +            padding: '80px 0 56px',
+       135              backgroundColor: '#ffffff',
+       136            }}>
+       137              <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+       138                <Row gutter={[48, 48]} align="middle">
+       139                  <Col xs={24} lg={12} style={{ textAlign: 'left' }}>
+       140 -                  <motion.div
+       141 -                    initial={{ opacity: 0, x: -30 }}
+       142 -                    animate={{ opacity: 1, x: 0 }}
+       143 -                    transition={{ duration: 0.6 }}
+       144 -                  >
+       145 -                    <motion.div
+       146 -                      initial={{ opacity: 0, y: 20 }}
+       147 -                      animate={{ opacity: 1, y: 0 }}
+       148 -                      transition={{ duration: 0.8, delay: 0.2 }}
+       140 +                  <motion.div {...animations.slideUp}>
+       141 +                    <Title 
+       142 +                      level={1} 
+       143 +                      style={{ 
+       144 +                        fontSize: '40px',
+       145 +                        fontWeight: 600,
+       146 +                        color: '#323130',
+       147 +                        marginBottom: 24,
+       148 +                        lineHeight: 1.25,
+       149 +                        fontFamily: "'Segoe UI', system-ui, sans-serif",
+       150 +                      }}
+       151                      >
+       152 -                      <Title 
+       153 -                        level={1} 
+       154 -                        style={{ 
+       155 -                          fontSize: '48px',
+       156 -                          fontWeight: 500,
+       157 -                          color: '#202124',
+       158 -                          marginBottom: 24,
+       159 -                          lineHeight: 1.25,
+       160 -                          letterSpacing: '-0.02em',
+       161 -                        }}
+       162 -                      >
+       163 -                        Premium community support with
+       164 -                        <br />
+       165 -                        <motion.span 
+       166 -                          style={{ color: '#1a73e8' }}
+       167 -                          animate={{ 
+       168 -                            textShadow: [
+       169 -                              '0 0 0px rgba(26,115,232,0)',
+       170 -                              '0 0 10px rgba(26,115,232,0.3)',
+       171 -                              '0 0 0px rgba(26,115,232,0)',
+       172 -                            ]
+       173 -                          }}
+       174 -                          transition={{ duration: 2, repeat: Infinity }}
+       175 -                        >
+       176 -                          anyone, anywhere
+       177 -                        </motion.span>
+       178 -                      </Title>
+       179 -                    </motion.div>
+       152 +                      Empower your community with
+       153 +                      <br />
+       154 +                      <span style={{ color: '#0078d4' }}>
+       155 +                        collaborative solutions
+       156 +                      </span>
+       157 +                    </Title>
+       158                      
+       159 -                    <motion.div
+       160 -                      initial={{ opacity: 0, y: 20 }}
+       161 -                      animate={{ opacity: 1, y: 0 }}
+       162 -                      transition={{ duration: 0.8, delay: 0.4 }}
+       159 +                    <Paragraph 
+       160 +                      style={{ 
+       161 +                        fontSize: '18px',
+       162 +                        color: '#605e5c',
+       163 +                        marginBottom: 32,
+       164 +                        lineHeight: 1.43,
+       165 +                        maxWidth: '500px',
+       166 +                        fontFamily: "'Segoe UI', system-ui, sans-serif",
+       167 +                      }}
+       168                      >
+       169 -                      <Paragraph 
+       170 -                        style={{ 
+       171 -                          fontSize: '18px',
+       172 -                          color: '#5f6368',
+       173 -                          marginBottom: 32,
+       174 -                          lineHeight: 1.6,
+       175 -                          maxWidth: '500px',
+       176 -                        }}
+       177 -                      >
+       178 -                        Connect with your community through one simple, secure platform.
+       179 -                        Share food, clothes, and knowledge with neighbors who care.
+       180 -                      </Paragraph>
+       181 -                    </motion.div>
+       169 +                      Connect, share, and strengthen your neighborhood. From food security to education, 
+       170 +                      build lasting solutions together on our trusted platform.
+       171 +                    </Paragraph>
+       172                      
+       173                      <motion.div
+       174                        initial={{ opacity: 0, y: 20 }}
+  ⎿  Claude usage limit reached. Your limit will reset at 3:30am (Asia/Calcutta).
+
+      • /upgrade to increase your usage limit.
+

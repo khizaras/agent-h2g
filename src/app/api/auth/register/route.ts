@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { UserService } from "@/lib/database";
+import { EmailService } from "@/lib/email";
 import bcrypt from "bcryptjs";
 
 const registerSchema = z
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
       email: validatedData.email,
       password: hashedPassword,
       isVerified: false,
+    });
+
+    // Send welcome email (don't block the response if email fails)
+    EmailService.sendWelcomeEmail({
+      name: validatedData.name,
+      email: validatedData.email,
+    }).catch((error) => {
+      console.error("Welcome email failed (non-blocking):", error);
     });
 
     // TODO: Add analytics logging when analytics service is implemented
