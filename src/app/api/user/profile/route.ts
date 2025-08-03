@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, bio, phone } = body;
+    const { name, email, bio, phone, location, website } = body;
 
     // Validate required fields
     if (!name || !email) {
@@ -32,6 +32,7 @@ export async function PUT(request: NextRequest) {
         email = ?,
         bio = ?,
         phone = ?,
+        address = ?,
         updated_at = NOW()
       WHERE id = ?
     `;
@@ -41,6 +42,7 @@ export async function PUT(request: NextRequest) {
       email,
       bio || null,
       phone || null,
+      location || null, // using address field for location
       session.user.id,
     ]);
 

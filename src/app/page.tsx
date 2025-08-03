@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Row,
   Col,
@@ -36,6 +36,29 @@ const { Title, Text, Paragraph } = Typography;
 
 export default function HomePage() {
   const router = useRouter();
+  const [featuredCauses, setFeaturedCauses] = useState<any[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
+  // Fetch featured causes on component mount
+  useEffect(() => {
+    const fetchFeaturedCauses = async () => {
+      try {
+        setLoadingFeatured(true);
+        const response = await fetch('/api/causes/featured?limit=3');
+        const data = await response.json();
+        
+        if (data.success) {
+          setFeaturedCauses(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching featured causes:', error);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+
+    fetchFeaturedCauses();
+  }, []);
 
   // Microsoft-style impact metrics
   const impactMetrics = [
@@ -436,15 +459,23 @@ export default function HomePage() {
             </motion.div>
 
             <Row gutter={[24, 24]}>
-              {featuredInitiatives.map((initiative, index) => (
-                <Col xs={24} md={8} key={index}>
+              {loadingFeatured ? (
+                // Loading skeleton
+                Array(3).fill(0).map((_, index) => (
+                  <Col xs={24} md={8} key={index}>
+                    <Card loading={true} style={{ height: 350 }} />
+                  </Col>
+                ))
+              ) : (
+                featuredCauses.map((cause, index) => (
+                <Col xs={24} md={8} key={cause.id}>
                   <motion.div {...animations.slideUp} style={{ transitionDelay: `${index * 0.1}s` }}>
                     <Card
                       cover={
                         <div style={{ position: 'relative', overflow: 'hidden' }}>
                           <Image
-                            src={initiative.image}
-                            alt={initiative.title}
+                            src={cause.image || imageConfig.getImage('photo-1559027615-cd4628902d4a', { w: 600, h: 300 })}
+                            alt={cause.title}
                             width="100%"
                             height={200}
                             style={{ objectFit: 'cover' }}
@@ -462,7 +493,7 @@ export default function HomePage() {
                             fontWeight: 600,
                             fontFamily: "'Segoe UI', system-ui, sans-serif",
                           }}>
-                            {initiative.category}
+                            {cause.category_display_name || cause.category_name}
                           </div>
                         </div>
                       }
@@ -480,14 +511,14 @@ export default function HomePage() {
                         fontFamily: "'Segoe UI', system-ui, sans-serif",
                         fontWeight: 600
                       }}>
-                        {initiative.title}
+                        {cause.title}
                       </Title>
                       <Paragraph style={{ 
                         color: '#605e5c', 
                         marginBottom: 16,
                         fontFamily: "'Segoe UI', system-ui, sans-serif"
                       }}>
-                        {initiative.description}
+                        {cause.short_description || cause.description?.substring(0, 120) + '...'}
                       </Paragraph>
                       
                       <div style={{ 
@@ -505,7 +536,7 @@ export default function HomePage() {
                             display: 'block',
                             fontFamily: "'Segoe UI', system-ui, sans-serif"
                           }}>
-                            {initiative.impact}
+                            {cause.status === 'completed' ? 'Completed' : 'Active'}
                           </Text>
                           <Space size={4} style={{ marginTop: 4 }}>
                             <FiMapPin style={{ color: '#8a8886', fontSize: 12 }} />
@@ -514,25 +545,34 @@ export default function HomePage() {
                               fontSize: 12,
                               fontFamily: "'Segoe UI', system-ui, sans-serif"
                             }}>
-                              {initiative.location}
+                              {cause.location || 'Community'}
                             </Text>
                           </Space>
                         </div>
                         <Space size={4}>
-                          <FiUsers style={{ color: '#8a8886', fontSize: 12 }} />
+                          <FiHeart style={{ color: '#8a8886', fontSize: 12 }} />
                           <Text style={{ 
                             color: '#8a8886', 
                             fontSize: 12,
                             fontFamily: "'Segoe UI', system-ui, sans-serif"
                           }}>
-                            {initiative.participants}
+                            {cause.like_count || 0}
                           </Text>
                         </Space>
                       </div>
                     </Card>
                   </motion.div>
                 </Col>
-              ))}
+                ))
+              )}
+              
+              {!loadingFeatured && featuredCauses.length === 0 && (
+                <Col span={24} style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <Text style={{ color: '#8a8886', fontSize: 16 }}>
+                    No featured causes available at the moment. Check back soon!
+                  </Text>
+                </Col>
+              )}
             </Row>
           </div>
         </section>

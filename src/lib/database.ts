@@ -143,7 +143,7 @@ export class UserService {
     } = userData;
 
     const result = (await Database.query(
-      `INSERT INTO users (name, email, password, avatar, is_verified, created_at, updated_at) 
+      `INSERT INTO users (name, email, password, avatar, email_verified, created_at, updated_at) 
        VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
       [name, email, password, avatar, isVerified],
     )) as any;

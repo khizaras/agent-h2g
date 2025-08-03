@@ -379,6 +379,71 @@ const EMAIL_TEMPLATES = {
       </html>
     `,
   },
+
+  passwordReset: {
+    subject: "Reset your Hands2gether password 🔐",
+    html: (data: { name: string; resetUrl: string }) => `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Reset Your Password</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px; text-align: center; color: white; }
+            .header-icon { font-size: 48px; margin-bottom: 16px; }
+            .header-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+            .content { padding: 40px 30px; }
+            .warning-box { background: #fef3c7; border: 1px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 24px 0; }
+            .button { display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 24px 0; }
+            .security-note { background: #f1f5f9; padding: 16px; border-radius: 8px; margin: 24px 0; font-size: 12px; color: #64748b; }
+            .footer { background: #f8fafc; padding: 24px; text-align: center; color: #64748b; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="header-icon">🔐</div>
+              <div class="header-title">Password Reset Request</div>
+              <p>Someone requested to reset your password</p>
+            </div>
+            <div class="content">
+              <h1>Hi ${data.name},</h1>
+              <p>We received a request to reset your password for your Hands2gether account. If this was you, click the button below to create a new password.</p>
+              
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${data.resetUrl}" class="button">Reset Your Password</a>
+              </div>
+
+              <div class="warning-box">
+                <strong>⚠️ Important Security Information:</strong>
+                <ul style="margin: 8px 0 0 16px; padding: 0;">
+                  <li>This link will expire in 1 hour for your security</li>
+                  <li>You can only use this link once</li>
+                  <li>If you didn't request this reset, please ignore this email</li>
+                </ul>
+              </div>
+
+              <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; background: #f8fafc; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                ${data.resetUrl}
+              </p>
+
+              <div class="security-note">
+                <strong>🛡️ Security Tip:</strong> Always make sure you're on the official Hands2gether website before entering your new password. Our official domain is hands2gether.com
+              </div>
+            </div>
+            <div class="footer">
+              <p>If you have any concerns about this email, please contact our support team.</p>
+              <p>&copy; 2025 Hands2gether. Keeping your account secure.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  },
 };
 
 // Email service functions
@@ -549,6 +614,35 @@ export class EmailService {
         "❌ Failed to send new enrollment notification email:",
         error,
       );
+      return { success: false, error };
+    }
+  }
+
+  // Send password reset email
+  static async sendPasswordResetEmail(userData: { 
+    name: string; 
+    email: string; 
+    resetToken: string;
+    resetUrl: string;
+  }) {
+    try {
+      const template = EMAIL_TEMPLATES.passwordReset;
+
+      const mailOptions = {
+        from: `"Hands2gether Security" <${process.env.SMTP_USER}>`,
+        to: userData.email,
+        subject: template.subject,
+        html: template.html({
+          name: userData.name,
+          resetUrl: userData.resetUrl,
+        }),
+      };
+
+      const result = await transporter.sendMail(mailOptions);
+      console.log("✅ Password reset email sent:", result.messageId);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("❌ Failed to send password reset email:", error);
       return { success: false, error };
     }
   }
