@@ -55,3 +55,4 @@ tsconfig.tsbuildinfo
 .env.example
 .env.prod
 public/debug.html
+reference2.png

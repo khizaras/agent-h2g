@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
 
     if (status && status !== "all") {
       if (status === "banned") {
-        whereClause += " AND is_active = FALSE";
+        whereClause += " AND is_admin = FALSE";
       } else if (status === "active") {
-        whereClause += " AND email_verified = TRUE AND is_active = TRUE";
+        whereClause += " AND is_verified = TRUE";
       } else if (status === "inactive") {
-        whereClause += " AND (email_verified = FALSE OR is_active = FALSE)";
+        whereClause += " AND is_verified = FALSE";
       }
     }
 
@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
         COUNT(DISTINCT c.id) as causesCreated,
         COALESCE(SUM(c.like_count), 0) as totalRaised,
         CASE 
-          WHEN is_active = FALSE THEN 'banned'
-          WHEN email_verified = TRUE AND is_active = TRUE THEN 'active'
+          WHEN is_admin = TRUE THEN 'admin'
+          WHEN is_verified = TRUE THEN 'active'
           ELSE 'inactive'
         END as status
       FROM users u

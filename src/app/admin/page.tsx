@@ -91,8 +91,8 @@ interface AdminUser {
   name: string;
   email: string;
   avatar?: string;
-  role: string;
-  email_verified: boolean;
+  is_admin: boolean;
+  is_verified: boolean;
   created_at: string;
   last_login?: string;
   causesCreated: number;
@@ -152,6 +152,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [causes, setCauses] = useState<AdminCause[]>([]);
   const [comments, setComments] = useState<AdminComment[]>([]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
 
   // UI states
   const [userModalVisible, setUserModalVisible] = useState(false);
@@ -161,6 +162,72 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [userForm] = Form.useForm();
   const [causeForm] = Form.useForm();
+
+  // Table columns and filtered data will be defined below with proper TypeScript types
+
+  const enrollmentColumns = [
+    {
+      title: 'Student',
+      dataIndex: 'user_name',
+      key: 'user_name',
+    },
+    {
+      title: 'Course',
+      dataIndex: 'cause_title',
+      key: 'cause_title',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const colors: Record<string, string> = {
+          pending: 'orange',
+          accepted: 'green',
+          rejected: 'red',
+          completed: 'blue',
+          cancelled: 'gray'
+        };
+        return (
+          <Tag color={colors[status] || 'default'}>
+            {status ? status.toUpperCase() : 'UNKNOWN'}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Enrolled',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date: string) => new Date(date).toLocaleDateString(),
+    },
+    {
+      title: 'Training Type',
+      dataIndex: 'training_type',
+      key: 'training_type',
+    },
+  ];
+
+
+  // Filtered data
+  const filteredUsers = users.filter(user => 
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredCauses = causes.filter(cause => 
+    cause.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredComments = comments.filter(comment => 
+    comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    comment.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredEnrollments = enrollments.filter(enrollment => 
+    enrollment.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    enrollment.cause_title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Check admin access
   useEffect(() => {
@@ -188,14 +255,27 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      // Fetch real data from API endpoints
-      const [statsResponse, usersResponse, causesResponse, commentsResponse] =
-        await Promise.all([
-          fetch("/api/admin/stats"),
-          fetch("/api/admin/users?limit=50"),
-          fetch("/api/admin/causes?limit=50"),
-          fetch("/api/admin/comments?limit=50"),
+      // Add timeout to fetch requests
+      const fetchWithTimeout = (url: string, timeout = 5000) => {
+        return Promise.race([
+          fetch(url),
+          new Promise<Response>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timeout')), timeout)
+          )
         ]);
+      };
+
+      // Fetch real data from API endpoints with timeout
+      const requests = [
+        fetchWithTimeout("/api/admin/stats").catch(e => ({ ok: false, error: e.message })),
+        fetchWithTimeout("/api/admin/users?limit=50").catch(e => ({ ok: false, error: e.message })),
+        fetchWithTimeout("/api/admin/causes?limit=50").catch(e => ({ ok: false, error: e.message })),
+        fetchWithTimeout("/api/admin/comments?limit=50").catch(e => ({ ok: false, error: e.message })),
+        fetchWithTimeout("/api/admin/enrollments?limit=50").catch(e => ({ ok: false, error: e.message })),
+      ];
+
+      const [statsResponse, usersResponse, causesResponse, commentsResponse, enrollmentsResponse] =
+        await Promise.all(requests);
 
       // Handle stats
       if (statsResponse.ok) {
@@ -228,9 +308,30 @@ export default function AdminDashboard() {
           setComments(commentsData.data.comments || []);
         }
       }
+
+      // Handle enrollments
+      if (enrollmentsResponse.ok) {
+        const enrollmentsData = await enrollmentsResponse.json();
+        if (enrollmentsData.success) {
+          setEnrollments(enrollmentsData.data.enrollments || []);
+        }
+      }
     } catch (error) {
       console.error("Error fetching admin data:", error);
-      message.error("Failed to load admin data");
+      message.warning("Database connection issue. Showing offline mode.");
+      
+      // Set fallback data for offline mode
+      setStats({
+        totalUsers: 0,
+        totalCauses: 0,
+        totalEnrollments: 0,
+        totalComments: 0,
+        pendingApprovals: 0
+      });
+      setUsers([]);
+      setCauses([]);
+      setComments([]);
+      setEnrollments([]);
     } finally {
       setLoading(false);
     }
@@ -519,9 +620,7 @@ export default function AdminDashboard() {
       case "food":
         return <BookOutlined />;
       case "clothes":
-      case "clothes":
         return <HeartOutlined />;
-        return <BookOutlined />;
       case "healthcare":
         return <MedicineBoxOutlined />;
       case "housing":
@@ -531,26 +630,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filter data based on search
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const filteredCauses = causes.filter(
-    (cause) =>
-      cause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cause.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cause.status.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const filteredComments = comments.filter(
-    (comment) =>
-      comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      comment.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      comment.cause_title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
 
   const userColumns: ColumnsType<AdminUser> = [
     {
@@ -574,7 +653,7 @@ export default function AdminDashboard() {
       render: (record: AdminUser) => (
         <Space direction="vertical" size="small">
           <Tag color={getStatusColor(record.status)}>
-            {record.status.toUpperCase()}
+            {record.status ? record.status.toUpperCase() : 'UNKNOWN'}
           </Tag>
           {record.is_admin && (
             <Tag color="red" icon={<CrownOutlined />}>
@@ -676,7 +755,7 @@ export default function AdminDashboard() {
       key: "category_name",
       render: (category: string) => (
         <Tag color="blue" icon={getCategoryIcon(category)}>
-          {category.toUpperCase()}
+          {category ? category.toUpperCase() : 'UNKNOWN'}
         </Tag>
       ),
     },
@@ -685,7 +764,7 @@ export default function AdminDashboard() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+        <Tag color={getStatusColor(status)}>{status ? status.toUpperCase() : 'UNKNOWN'}</Tag>
       ),
     },
     {
@@ -819,7 +898,7 @@ export default function AdminDashboard() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+        <Tag color={getStatusColor(status)}>{status ? status.toUpperCase() : 'UNKNOWN'}</Tag>
       ),
     },
     {
@@ -954,6 +1033,11 @@ export default function AdminDashboard() {
       key: "comments",
       icon: <MessageOutlined />,
       label: "Comments",
+    },
+    {
+      key: "enrollments",
+      icon: <BookOutlined />,
+      label: "Enrollments",
     },
     {
       key: "analytics",
@@ -1561,6 +1645,91 @@ export default function AdminDashboard() {
                                   <WarningOutlined /> {record.reports_count}{" "}
                                   reports
                                 </Tag>
+                              </div>
+                            )}
+                          </div>
+                        ),
+                      }}
+                    />
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Enrollments Management */}
+              {activeTab === "enrollments" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <Title level={2} style={{ margin: 0 }}>
+                      Enrollment Management
+                    </Title>
+                    <Space>
+                      <Search
+                        placeholder="Search enrollments..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: 250 }}
+                      />
+                      <Button icon={<FilterOutlined />}>Filter</Button>
+                      <Button icon={<CheckCircleOutlined />} type="primary">
+                        Bulk Accept
+                      </Button>
+                      <Button icon={<CloseCircleOutlined />} danger>
+                        Bulk Reject
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <Card bordered={false}>
+                    <Table
+                      columns={enrollmentColumns}
+                      dataSource={filteredEnrollments}
+                      rowKey="id"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) =>
+                          `${range[0]}-${range[1]} of ${total} enrollments`,
+                      }}
+                      scroll={{ x: 1200 }}
+                      expandable={{
+                        expandedRowRender: (record) => (
+                          <div
+                            style={{
+                              margin: 0,
+                              padding: "16px",
+                              background: "#fafafa",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            <Row gutter={16}>
+                              <Col span={12}>
+                                <strong>User Details:</strong>
+                                <p>Email: {record.user_email}</p>
+                                <p>Phone: {record.user_phone || 'N/A'}</p>
+                              </Col>
+                              <Col span={12}>
+                                <strong>Course Details:</strong>
+                                <p>Instructor: {record.instructor_name}</p>
+                                <p>Start Date: {record.start_date ? new Date(record.start_date).toLocaleDateString() : 'TBD'}</p>
+                                <p>Participants: {record.current_participants}/{record.max_participants}</p>
+                              </Col>
+                            </Row>
+                            {record.admin_notes && (
+                              <div style={{ marginTop: "12px" }}>
+                                <strong>Admin Notes:</strong>
+                                <p>{record.admin_notes}</p>
                               </div>
                             )}
                           </div>
