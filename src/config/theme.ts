@@ -198,32 +198,63 @@ export const revampedTheme = {
   },
 };
 
-// Microsoft Fluent inspired color palette for categories
-export const categoryColors = {
+// Premium sophisticated color palette
+export const premiumColors = {
+  // Primary brand colors
+  brand: {
+    primary: '#0f172a',    // Sophisticated dark
+    secondary: '#1e293b',  // Elegant secondary
+    accent: '#3b82f6',     // Premium blue
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  },
+  
+  // Category colors with premium feel
   food: {
-    primary: '#d13438',
-    light: '#fdf4f4',
-    dark: '#a4262c',
-    gradient: 'linear-gradient(135deg, #d13438 0%, #ff8080 100%)',
+    primary: '#dc2626',    // Rich red
+    secondary: '#fef2f2',  // Soft background
+    accent: '#991b1b',     // Deep accent
+    gradient: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
   },
-  clothes: {
-    primary: '#8764b8',
-    light: '#f7f4fb',
-    dark: '#6b4d94',
-    gradient: 'linear-gradient(135deg, #8764b8 0%, #c3a6d6 100%)',
-  },
-  training: {
-    primary: '#0078d4',
-    light: '#deecf9',
-    dark: '#005a9e',
-    gradient: 'linear-gradient(135deg, #0078d4 0%, #40e0d0 100%)',
+  clothing: {
+    primary: '#7c3aed',    // Sophisticated purple
+    secondary: '#faf5ff',  // Elegant background  
+    accent: '#5b21b6',     // Deep purple
+    gradient: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
   },
   education: {
-    primary: '#0078d4',
-    light: '#deecf9',
-    dark: '#005a9e',
-    gradient: 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)',
+    primary: '#0d9488',    // Premium teal
+    secondary: '#f0fdfa',  // Fresh background
+    accent: '#0f766e',     // Deep teal
+    gradient: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
   },
+  
+  // Neutral palette for premium feel
+  neutral: {
+    50: '#f8fafc',
+    100: '#f1f5f9', 
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
+  },
+  
+  // Status colors
+  success: '#059669',
+  warning: '#d97706', 
+  error: '#dc2626',
+  info: '#0284c7',
+};
+
+// Legacy support - map to new system
+export const categoryColors = {
+  food: premiumColors.food,
+  clothes: premiumColors.clothing,
+  training: premiumColors.education,
+  education: premiumColors.education,
 };
 
 // Microsoft-inspired image configuration with Unsplash
@@ -320,39 +351,70 @@ export const layoutConfig = {
   },
 };
 
-// Microsoft Fluent animation configurations
+// Premium animation system
 export const animations = {
+  // Basic animations with premium easing
   fadeIn: {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
-    transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   
   slideUp: {
-    initial: { opacity: 0, y: 16 },
+    initial: { opacity: 0, y: 24 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   
   slideDown: {
-    initial: { opacity: 0, y: -16 },
+    initial: { opacity: 0, y: -24 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3, ease: [0.33, 0.00, 0.67, 1.00] },
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   
   scaleIn: {
-    initial: { opacity: 0, scale: 0.95 },
+    initial: { opacity: 0, scale: 0.9 },
     animate: { opacity: 1, scale: 1 },
-    transition: { duration: 0.2, ease: [0.33, 0.00, 0.67, 1.00] },
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   
+  // Premium interactions
+  hover: {
+    scale: 1.02,
+    transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
+  },
+  
+  tap: {
+    scale: 0.98,
+    transition: { duration: 0.1 }
+  },
+  
+  // Stagger animations
   stagger: {
     animate: {
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.12,
+        delayChildren: 0.2
       },
     },
   },
+  
+  staggerFast: {
+    animate: {
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1
+      },
+    },
+  },
+  
+  // Premium page transitions
+  pageTransition: {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }
+  }
 };
 
 // Microsoft Fluent responsive breakpoints
