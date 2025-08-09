@@ -1,69 +1,59 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import "@/styles/cause-details.css";
 import {
-  Card,
-  Row,
-  Col,
-  Typography,
-  Button,
-  Space,
-  Tag,
-  Avatar,
-  Divider,
-  Spin,
-  Alert,
-  Modal,
-  Form,
-  Input,
-  Progress,
-  Image,
-  message,
-  Breadcrumb,
-  Statistic,
+  Row, Col, Card, Button, Avatar, Typography, Space, Progress, Tag, 
+  Input, Form, Modal, Carousel, Image, Divider, Tooltip, message,
+  Skeleton, Empty, Alert, Badge, Descriptions
 } from "antd";
 import {
-  FiHeart,
-  FiShare2,
-  FiEye,
-  FiMapPin,
-  FiClock,
-  FiUser,
-  FiMessageCircle,
-  FiEdit3,
-  FiPhone,
-  FiMail,
-  FiCalendar,
-  FiUsers,
-  FiTarget,
-  FiBookOpen,
-  FiAward,
-  FiPackage,
-  FiThermometer,
-  FiTruck,
-  FiInfo,
-  FiAlertCircle,
-  FiDollarSign,
-  FiMonitor,
-  FiChevronRight,
-  FiArrowLeft,
-  FiFlag,
-  FiImage,
+  FiHeart, FiShare2, FiMapPin, FiClock, FiUser, FiEye, FiMessageCircle,
+  FiCalendar, FiPhone, FiMail, FiEdit, FiTrash2, FiFlag, FiBookmark,
+  FiArrowLeft, FiChevronRight, FiStar, FiUsers, FiTrendingUp, FiTarget,
+  FiCheckCircle, FiAlertCircle, FiCamera, FiSend, FiMoreHorizontal,
+  FiPackage, FiThermometer, FiTruck, FiInfo, FiDollarSign, FiMonitor,
+  FiBookOpen, FiAward
 } from "react-icons/fi";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 import SocialShare from "@/components/ui/SocialShare";
-import { animations } from "@/config/theme";
 import EnrollmentButton from "@/components/enrollment/EnrollmentButton";
 import EnrollmentStatus from "@/components/enrollment/EnrollmentStatus";
 import CommentsSection from "@/components/comments/CommentsSection";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+
+// Helper functions for categories and priorities
+const getCategoryIcon = (categoryName: string) => {
+  const icons = {
+    training: <FiBookOpen />,
+    education: <FiBookOpen />,
+    clothes: <FiPackage />,
+    food: <FiPackage />,
+    health: <FiHeart />,
+    transport: <FiTruck />,
+    housing: <FiMapPin />,
+    technology: <FiMonitor />,
+    default: <FiInfo />
+  };
+  return icons[categoryName as keyof typeof icons] || icons.default;
+};
+
+const getPriorityColor = (priority: string) => {
+  const colors = {
+    low: '#6b7280',
+    medium: '#f59e0b', 
+    high: '#ef4444',
+    urgent: '#dc2626'
+  };
+  return colors[priority as keyof typeof colors] || colors.medium;
+};
 
 interface CauseDetails {
   id: number;
@@ -98,6 +88,864 @@ interface CauseDetails {
   activities?: any[];
 }
 
+// Premium animation variants with improved easing
+const premiumAnimations = {
+  containerVariants: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      },
+    },
+  },
+  itemVariants: {
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      scale: 0.95 
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.23, 1, 0.32, 1],
+      },
+    },
+  },
+  floatingVariants: {
+    animate: {
+      y: [0, -8, 0],
+      transition: {
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    },
+  },
+  glowVariants: {
+    animate: {
+      boxShadow: [
+        "0 0 20px rgba(102, 126, 234, 0.3)",
+        "0 0 40px rgba(102, 126, 234, 0.5)",
+        "0 0 20px rgba(102, 126, 234, 0.3)",
+      ],
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    },
+  },
+  cardHover: {
+    y: -6,
+    scale: 1.02,
+    boxShadow: "0 20px 40px rgba(102, 126, 234, 0.15)",
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
+
+// Premium statistics component with enhanced animations
+const PremiumStats = ({ cause }: { cause: any }) => {
+  const [animatedValues, setAnimatedValues] = useState({
+    views: 0,
+    supporters: 0,
+    comments: 0,
+  });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedValues({
+        views: cause.view_count || 0,
+        supporters: cause.like_count || 0,
+        comments: cause.comments?.length || 0,
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [cause]);
+
+  const stats = [
+    {
+      title: "Views",
+      value: animatedValues.views,
+      icon: <FiEye />,
+      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    },
+    {
+      title: "Supporters",
+      value: animatedValues.supporters,
+      icon: <FiHeart />,
+      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    },
+    {
+      title: "Comments",
+      value: animatedValues.comments,
+      icon: <FiMessageCircle />,
+      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    },
+    {
+      title: "Rating",
+      value: "4.8",
+      icon: <FiStar />,
+      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    },
+  ];
+
+  return (
+    <motion.div
+      variants={premiumAnimations.itemVariants}
+      className="premium-stats-container"
+    >
+      <Row gutter={[16, 16]}>
+        {stats.map((stat, index) => (
+          <Col xs={12} sm={6} key={index}>
+            <motion.div
+              whileHover={premiumAnimations.cardHover}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+            >
+              <Card
+                style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: "16px",
+                  textAlign: "center",
+                  height: "100px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+                }}
+                bodyStyle={{ padding: "12px" }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 5, 0, -5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: index * 0.2 }}
+                  style={{
+                    background: stat.gradient,
+                    borderRadius: "50%",
+                    width: "32px",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 8px",
+                    color: "white",
+                    fontSize: "14px",
+                  }}
+                >
+                  {stat.icon}
+                </motion.div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: index * 0.1 + 0.3, type: "spring", stiffness: 200 }}
+                >
+                  <Text
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "700",
+                      background: stat.gradient,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      display: "block",
+                      fontFamily: "Inter, system-ui, sans-serif",
+                    }}
+                  >
+                    {stat.value}
+                  </Text>
+                </motion.div>
+                <Text
+                  style={{
+                    fontSize: "11px",
+                    color: "#64748b",
+                    fontWeight: "500",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  {stat.title}
+                </Text>
+              </Card>
+            </motion.div>
+          </Col>
+        ))}
+      </Row>
+    </motion.div>
+  );
+};
+
+// Premium gallery component with enhanced carousel
+const PremiumGallery = ({ images }: { images: string[] }) => {
+  const [currentImage, setCurrentImage] = useState(0);
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <motion.div
+      variants={premiumAnimations.itemVariants}
+      className="premium-gallery"
+    >
+      <Card
+        style={{
+          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "20px",
+          overflow: "hidden",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={{ position: "relative" }}>
+          <Carousel
+            autoplay
+            autoplaySpeed={4000}
+            effect="fade"
+            beforeChange={(_, next) => setCurrentImage(next)}
+            dots={{
+              className: "premium-carousel-dots"
+            }}
+          >
+            {images.map((image, index) => (
+              <div key={index} style={{ position: "relative" }}>
+                <Image
+                  src={image}
+                  alt={`Gallery image ${index + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "300px",
+                    objectFit: "cover",
+                  }}
+                  preview={{
+                    mask: (
+                      <div
+                        style={{
+                          background: "rgba(0,0,0,0.6)",
+                          color: "white",
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          backdropFilter: "blur(10px)",
+                          fontFamily: "Inter, system-ui, sans-serif",
+                        }}
+                      >
+                        <FiCamera style={{ marginRight: "8px" }} />
+                        View Full Size
+                      </div>
+                    ),
+                  }}
+                />
+              </div>
+            ))}
+          </Carousel>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            style={{
+              position: "absolute",
+              bottom: "16px",
+              right: "16px",
+              background: "rgba(0,0,0,0.7)",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "20px",
+              fontSize: "12px",
+              backdropFilter: "blur(10px)",
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}
+          >
+            {currentImage + 1} / {images.length}
+          </motion.div>
+        </div>
+      </Card>
+
+      <style jsx global>{`
+        .premium-carousel-dots .slick-dots {
+          bottom: 20px;
+        }
+        .premium-carousel-dots .slick-dots li button {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+        }
+        .premium-carousel-dots .slick-dots li.slick-active button {
+          background: white;
+        }
+      `}</style>
+    </motion.div>
+  );
+};
+
+// Premium comment system with enhanced interactions
+const PremiumComments = ({ comments = [], causeId }: { comments: any[], causeId: string }) => {
+  const [newComment, setNewComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { data: session } = useSession();
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) return;
+    
+    setSubmitting(true);
+    try {
+      // API call would go here
+      message.success("Comment posted successfully!");
+      setNewComment("");
+    } catch (error) {
+      message.error("Failed to post comment");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <motion.div
+      variants={premiumAnimations.itemVariants}
+      className="premium-comments"
+    >
+      <Card
+        style={{
+          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "20px",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Title
+          level={4}
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: "24px",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontWeight: "700",
+          }}
+        >
+          Comments ({comments.length})
+        </Title>
+
+        {/* Comment input */}
+        {session && (
+          <motion.div 
+            style={{ marginBottom: "32px" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Space align="start" style={{ width: "100%" }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Avatar
+                  src={session.user?.image}
+                  icon={<FiUser />}
+                  size={40}
+                  style={{
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  }}
+                />
+              </motion.div>
+              <div style={{ flex: 1, width: "calc(100% - 56px)" }}>
+                <TextArea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Share your thoughts..."
+                  rows={3}
+                  style={{
+                    background: "rgba(255,255,255,0.5)",
+                    border: "1px solid rgba(102,126,234,0.2)",
+                    borderRadius: "12px",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                />
+                <div style={{ marginTop: "12px", textAlign: "right" }}>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      type="primary"
+                      icon={<FiSend />}
+                      loading={submitting}
+                      onClick={handleSubmitComment}
+                      disabled={!newComment.trim()}
+                      style={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        border: "none",
+                        borderRadius: "10px",
+                        fontFamily: "Inter, system-ui, sans-serif",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Post Comment
+                    </Button>
+                  </motion.div>
+                </div>
+              </div>
+            </Space>
+          </motion.div>
+        )}
+
+        {/* Comments list */}
+        <div className="comments-list">
+          {comments.length === 0 ? (
+            <Empty
+              description={
+                <Text style={{ color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                  No comments yet. Be the first to share your thoughts!
+                </Text>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              {comments.map((comment, index) => (
+                <motion.div
+                  key={comment.id || index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ x: 5 }}
+                >
+                  <div
+                    style={{
+                      background: "rgba(255,255,255,0.6)",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      border: "1px solid rgba(102,126,234,0.1)",
+                    }}
+                  >
+                    <Space align="start" style={{ width: "100%" }}>
+                      <Avatar
+                        src={comment.user_avatar}
+                        icon={<FiUser />}
+                        size={36}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <Space direction="vertical" size={4} style={{ width: "100%" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Text
+                              strong
+                              style={{
+                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontWeight: "600",
+                                color: "#1e293b",
+                              }}
+                            >
+                              {comment.user_name || "Anonymous"}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: "12px",
+                                color: "#64748b",
+                                fontFamily: "Inter, system-ui, sans-serif",
+                              }}
+                            >
+                              {comment.created_at && new Date(comment.created_at).toLocaleDateString()}
+                            </Text>
+                          </div>
+                          <Text
+                            style={{
+                              color: "#334155",
+                              lineHeight: "1.6",
+                              fontFamily: "Inter, system-ui, sans-serif",
+                            }}
+                          >
+                            {comment.content}
+                          </Text>
+                        </Space>
+                      </div>
+                    </Space>
+                  </div>
+                </motion.div>
+              ))}
+            </Space>
+          )}
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Premium enrollment component with enhanced interactions
+const PremiumEnrollment = ({ cause, onEnroll }: { cause: any, onEnroll: () => void }) => {
+  const [enrolling, setEnrolling] = useState(false);
+  const { data: session } = useSession();
+
+  const handleEnroll = async () => {
+    if (!session) {
+      message.warning("Please log in to enroll");
+      return;
+    }
+
+    setEnrolling(true);
+    try {
+      await onEnroll();
+      message.success("Successfully enrolled!");
+    } catch (error) {
+      message.error("Failed to enroll");
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  return (
+    <motion.div
+      variants={premiumAnimations.itemVariants}
+      whileHover={premiumAnimations.cardHover}
+    >
+      <Card
+        style={{
+          background: `linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)`,
+          backdropFilter: "blur(20px)",
+          border: "2px solid rgba(102,126,234,0.2)",
+          borderRadius: "20px",
+          textAlign: "center",
+          boxShadow: "0 20px 40px rgba(102,126,234,0.15)",
+        }}
+      >
+        <motion.div
+          variants={premiumAnimations.floatingVariants}
+          animate="animate"
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              borderRadius: "50%",
+              width: "60px",
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+              boxShadow: "0 10px 30px rgba(102,126,234,0.3)",
+            }}
+          >
+            <FiUsers style={{ color: "white", fontSize: "24px" }} />
+          </div>
+        </motion.div>
+
+        <Title
+          level={4}
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: "12px",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontWeight: "700",
+          }}
+        >
+          Join This Initiative
+        </Title>
+
+        <Paragraph
+          style={{
+            color: "#64748b",
+            marginBottom: "20px",
+            fontFamily: "Inter, system-ui, sans-serif",
+          }}
+        >
+          Be part of making a difference in your community
+        </Paragraph>
+
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            type="primary"
+            size="large"
+            icon={<FiCheckCircle />}
+            loading={enrolling}
+            onClick={handleEnroll}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: "12px",
+              height: "48px",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontWeight: "600",
+              fontSize: "16px",
+              padding: "0 32px",
+              boxShadow: "0 8px 20px rgba(102,126,234,0.3)",
+            }}
+          >
+            Enroll Now
+          </Button>
+        </motion.div>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Category-specific details component with premium styling
+const CategoryDetails = ({ cause }: { cause: any }) => {
+  const renderCategorySpecificInfo = () => {
+    if (!cause?.categoryDetails) return null;
+
+    const details = cause.categoryDetails;
+    const category = cause.category_name;
+
+    switch (category) {
+      case 'food':
+        return (
+          <Descriptions
+            column={2}
+            size="small"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              borderRadius: "12px",
+              padding: "16px",
+            }}
+          >
+            {details.food_type && (
+              <Descriptions.Item label="Food Type" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.food_type}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.serving_size && (
+              <Descriptions.Item label="Serving Size" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  Serves {details.serving_size}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.expiration_date && (
+              <Descriptions.Item label="Expiration" span={2}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {new Date(details.expiration_date).toLocaleDateString()}
+                </Tag>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        );
+
+      case 'clothes':
+        return (
+          <Descriptions
+            column={2}
+            size="small"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              borderRadius: "12px",
+              padding: "16px",
+            }}
+          >
+            {details.clothes_type && (
+              <Descriptions.Item label="Type" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.clothes_type.replace('-', ' ')}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.gender && (
+              <Descriptions.Item label="Gender" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.gender}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.condition && (
+              <Descriptions.Item label="Condition" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.condition}
+                </Tag>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        );
+
+      case 'training':
+        return (
+          <Descriptions
+            column={2}
+            size="small"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              borderRadius: "12px",
+              padding: "16px",
+            }}
+          >
+            {details.training_type && (
+              <Descriptions.Item label="Training Type" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.training_type.charAt(0).toUpperCase() + details.training_type.slice(1).replace(/-/g, ' ')}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.skill_level && (
+              <Descriptions.Item label="Skill Level" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.skill_level.charAt(0).toUpperCase() + details.skill_level.slice(1).replace(/-/g, ' ')}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.duration_hours && (
+              <Descriptions.Item label="Duration" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.duration_hours} hours
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.max_participants && (
+              <Descriptions.Item label="Max Participants" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.max_participants} people
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.is_free !== undefined && (
+              <Descriptions.Item label="Cost" span={1}>
+                <Tag 
+                  style={{
+                    background: details.is_free 
+                      ? "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+                      : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.is_free ? "Free" : `₹${details.price || 'Paid'}`}
+                </Tag>
+              </Descriptions.Item>
+            )}
+            {details.delivery_method && (
+              <Descriptions.Item label="Delivery Method" span={1}>
+                <Tag 
+                  style={{
+                    background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {details.delivery_method.charAt(0).toUpperCase() + details.delivery_method.slice(1).replace(/-/g, ' ')}
+                </Tag>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <motion.div variants={premiumAnimations.itemVariants}>
+      <Card
+        style={{
+          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: "20px",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Title
+          level={4}
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: "16px",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontWeight: "700",
+          }}
+        >
+          Details
+        </Title>
+        {renderCategorySpecificInfo()}
+      </Card>
+    </motion.div>
+  );
+};
+
+// Parse gallery helper function
 const parseGallery = (gallery: string | string[]) => {
   try {
     if (Array.isArray(gallery)) return gallery;
@@ -111,6 +959,7 @@ const parseGallery = (gallery: string | string[]) => {
   }
 };
 
+// Main cause details page component
 export default function CauseDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -118,12 +967,14 @@ export default function CauseDetailsPage() {
   const [cause, setCause] = useState<CauseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [liked, setLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [enrolled, setEnrolled] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [commentForm] = Form.useForm();
   const [enrollmentRefresh, setEnrollmentRefresh] = useState(0);
 
+  // Fetch cause data
   useEffect(() => {
     if (params?.id) {
       fetchCauseDetails(params.id as string);
@@ -139,16 +990,14 @@ export default function CauseDetailsPage() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("API Response:", data);
-        console.log("Category Details:", data.data.categoryDetails);
-        console.log("Cause category:", data.data.cause.category_name);
-
         const causeData = {
           ...data.data.cause,
           categoryDetails: data.data.categoryDetails,
         };
         setCause(causeData);
         setLikeCount(data.data.cause.like_count || 0);
+        setIsLiked(data.data.cause.user_liked || false);
+        setEnrolled(data.data.cause.user_enrolled || false);
       } else {
         setError(data.error || "Failed to fetch cause details");
       }
@@ -161,23 +1010,63 @@ export default function CauseDetailsPage() {
   };
 
   const handleLike = async () => {
-    // TODO: Implement like functionality
-    setLiked(!liked);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
-    message.success(liked ? "Removed from favorites" : "Added to favorites");
+    if (!cause) return;
+    
+    if (!session) {
+      message.warning("Please log in to like this cause");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/causes/${cause.id}/like`, {
+        method: isLiked ? "DELETE" : "POST",
+      });
+
+      if (response.ok) {
+        setIsLiked(!isLiked);
+        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+        message.success(isLiked ? "Removed from favorites" : "Added to favorites");
+      }
+    } catch (error) {
+      message.error("Failed to update like status");
+    }
+  };
+
+  const handleEnroll = async () => {
+    if (!cause) return;
+    
+    if (!session) {
+      message.warning("Please log in to enroll");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/causes/${cause.id}/enroll`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        setEnrolled(true);
+        message.success("Successfully enrolled!");
+      }
+    } catch (error) {
+      message.error("Failed to enroll");
+    }
   };
 
   const handleShare = async () => {
+    if (!cause) return;
+
     try {
       await navigator.share({
-        title: cause?.title,
-        text: cause?.short_description || cause?.description,
+        title: cause.title,
+        text: cause.short_description || cause.description,
         url: window.location.href,
       });
-    } catch (err) {
-      // Fallback to copy URL
+    } catch (error) {
+      // Fallback to copying URL
       navigator.clipboard.writeText(window.location.href);
-      message.success("Link copied to clipboard");
+      message.success("Link copied to clipboard!");
     }
   };
 
@@ -192,840 +1081,37 @@ export default function CauseDetailsPage() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "#d13438";
-      case "high":
-        return "#f7630c";
-      case "medium":
-        return "#0078d4";
-      case "low":
-        return "#0078d4";
-      default:
-        return "#0078d4";
-    }
-  };
-
-  const getCauseTypeColor = (type: string) => {
-    return type === "offered" ? "#0078d4" : "#0078d4";
-  };
-
-  const renderCategorySpecificDetails = () => {
-    console.log("renderCategorySpecificDetails called");
-    console.log("cause:", cause);
-    console.log("cause?.categoryDetails:", cause?.categoryDetails);
-
-    if (!cause?.categoryDetails) {
-      console.log("No category details found");
-      return null;
-    }
-
-    const details = cause.categoryDetails;
-    const category = cause.category_name;
-
-    console.log("Rendering details for category:", category);
-    console.log("Details object:", details);
-
-    switch (category) {
-      case "food":
-        return renderFoodDetails(details);
-      case "clothes":
-        return renderClothesDetails(details);
-      case "training":
-        return renderTrainingDetails(details);
-      default:
-        console.log("Unknown category:", category);
-        return null;
-    }
-  };
-
-  const renderFoodDetails = (details: any) => (
-    <div style={{ marginBottom: 32 }}>
-      <Title
-        level={4}
-        style={{
-          marginBottom: 20,
-          color: "#323130",
-          fontFamily: "'Segoe UI', system-ui, sans-serif",
-          fontWeight: 600,
-        }}
-      >
-        <FiTarget style={{ marginRight: 8, color: "#0078d4" }} />
-        Food Details
-      </Title>
-
-      <Card
-        style={{
-          borderRadius: 8,
-          border: "1px solid #edebe9",
-          backgroundColor: "#ffffff",
-        }}
-        bodyStyle={{ padding: "24px" }}
-      >
-        <Row gutter={[24, 16]}>
-          {details.food_type && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#605e5c",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                    fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  }}
-                >
-                  Food Type
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Tag
-                    style={{
-                      textTransform: "capitalize",
-                      backgroundColor: "#0078d4",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 4,
-                      fontFamily: "'Segoe UI', system-ui, sans-serif",
-                    }}
-                  >
-                    {details.food_type}
-                  </Tag>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.cuisine_type && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Cuisine
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                    {details.cuisine_type}
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {(details.quantity || details.unit) && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Quantity
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                    {details.quantity} {details.unit}
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.serving_size && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Serves
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                    {details.serving_size} people
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.temperature_requirements && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <FiThermometer style={{ marginRight: 4 }} />
-                  Storage
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Tag color="orange" style={{ textTransform: "capitalize" }}>
-                    {details.temperature_requirements.replace("-", " ")}
-                  </Tag>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.expiration_date && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <FiAlertCircle style={{ marginRight: 4 }} />
-                  Expires
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#ea4335" }}>
-                    {new Date(details.expiration_date).toLocaleDateString()}
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-        </Row>
-
-        {/* Dietary Information */}
-        {(details.vegan ||
-          details.vegetarian ||
-          details.halal ||
-          details.kosher) && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Text
-              strong
-              style={{
-                color: "#5f6368",
-                fontSize: 12,
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: 8,
-              }}
-            >
-              Dietary Information
-            </Text>
-            <Space wrap>
-              {details.vegan && (
-                <Tag
-                  style={{
-                    backgroundColor: "#0078d4",
-                    color: "white",
-                    border: "none",
-                  }}
-                >
-                  Vegan
-                </Tag>
-              )}
-              {details.vegetarian && (
-                <Tag
-                  style={{
-                    backgroundColor: "#0078d4",
-                    color: "white",
-                    border: "none",
-                  }}
-                >
-                  Vegetarian
-                </Tag>
-              )}
-              {details.halal && <Tag color="blue">Halal</Tag>}
-              {details.kosher && <Tag color="blue">Kosher</Tag>}
-              {details.organic && <Tag color="orange">Organic</Tag>}
-            </Space>
-          </div>
-        )}
-
-        {details.delivery_available && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Space>
-              <FiTruck style={{ color: "#34a853" }} />
-              <Text style={{ color: "#34a853", fontWeight: 500 }}>
-                Delivery available
-                {details.delivery_radius &&
-                  ` within ${details.delivery_radius}km`}
-              </Text>
-            </Space>
-          </div>
-        )}
-      </Card>
-    </div>
-  );
-
-  const renderClothesDetails = (details: any) => (
-    <div style={{ marginBottom: 32 }}>
-      <Title level={4} style={{ marginBottom: 20, color: "#3c4043" }}>
-        <FiPackage style={{ marginRight: 8 }} />
-        Clothing Details
-      </Title>
-
-      <Card
-        style={{
-          borderRadius: 12,
-          border: "1px solid #e8eaed",
-          backgroundColor: "#fafbfc",
-        }}
-        bodyStyle={{ padding: "20px" }}
-      >
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                Type
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Tag color="purple" style={{ textTransform: "capitalize" }}>
-                  {details.clothes_type?.replace("-", " ")}
-                </Tag>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                Condition
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Tag
-                  color={
-                    details.condition === "new"
-                      ? "blue"
-                      : details.condition === "like-new"
-                        ? "blue"
-                        : "orange"
-                  }
-                >
-                  {details.condition?.replace("-", " ")}
-                </Tag>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                Gender & Age
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Space>
-                  <Tag color="cyan">{details.gender}</Tag>
-                  <Tag color="geekblue">{details.age_group}</Tag>
-                </Space>
-              </div>
-            </div>
-          </Col>
-
-          {details.size_range && Array.isArray(details.size_range) && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Sizes Available
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Space wrap>
-                    {details.size_range.map((size: string, index: number) => (
-                      <Tag key={index} color="volcano">
-                        {size}
-                      </Tag>
-                    ))}
-                  </Space>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.season && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Season
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Tag color="magenta" style={{ textTransform: "capitalize" }}>
-                    {details.season?.replace("-", " ")}
-                  </Tag>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          {details.quantity && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <FiPackage style={{ marginRight: 4 }} />
-                  Quantity
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                    {details.quantity} items
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-        </Row>
-
-        {details.delivery_available && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Space>
-              <FiTruck style={{ color: "#34a853" }} />
-              <Text style={{ color: "#34a853", fontWeight: 500 }}>
-                Delivery available
-                {details.delivery_radius &&
-                  ` within ${details.delivery_radius}km`}
-              </Text>
-            </Space>
-          </div>
-        )}
-      </Card>
-    </div>
-  );
-
-  const renderTrainingDetails = (details: any) => (
-    <div style={{ marginBottom: 32 }}>
-      <Title level={4} style={{ marginBottom: 20, color: "#3c4043" }}>
-        <FiBookOpen style={{ marginRight: 8 }} />
-        Training Details
-      </Title>
-
-      <Card
-        style={{
-          borderRadius: 12,
-          border: "1px solid #e8eaed",
-          backgroundColor: "#fafbfc",
-        }}
-        bodyStyle={{ padding: "20px" }}
-      >
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                Training Type
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Tag color="blue" style={{ textTransform: "capitalize" }}>
-                  {details.training_type}
-                </Tag>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                Skill Level
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Tag
-                  style={{
-                    backgroundColor: "#0078d4",
-                    color: "white",
-                    border: "none",
-                  }}
-                >
-                  {details.skill_level?.replace("-", " ")}
-                </Tag>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                <FiClock style={{ marginRight: 4 }} />
-                Duration
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                  {details.duration_hours} hours
-                  {details.number_of_sessions > 1 &&
-                    ` (${details.number_of_sessions} sessions)`}
-                </Text>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                <FiUsers style={{ marginRight: 4 }} />
-                Participants
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                  {details.current_participants || 0} /{" "}
-                  {details.max_participants} enrolled
-                </Text>
-                <Progress
-                  percent={Math.round(
-                    ((details.current_participants || 0) /
-                      details.max_participants) *
-                      100,
-                  )}
-                  size="small"
-                  style={{ marginTop: 4 }}
-                />
-              </div>
-            </div>
-          </Col>
-
-          {(details.start_date || details.end_date) && (
-            <Col xs={24} md={12}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    color: "#5f6368",
-                    fontSize: 12,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <FiCalendar style={{ marginRight: 4 }} />
-                  Schedule
-                </Text>
-                <div style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 16, color: "#3c4043" }}>
-                    {details.start_date &&
-                      new Date(details.start_date).toLocaleDateString()}
-                    {details.start_date && details.end_date && " - "}
-                    {details.end_date &&
-                      new Date(details.end_date).toLocaleDateString()}
-                  </Text>
-                </div>
-              </div>
-            </Col>
-          )}
-
-          <Col xs={24} md={12}>
-            <div>
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                }}
-              >
-                <FiMonitor style={{ marginRight: 4 }} />
-                Delivery Method
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Tag color="cyan" style={{ textTransform: "capitalize" }}>
-                  {details.delivery_method?.replace("-", " ")}
-                </Tag>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        {/* Topics */}
-        {details.topics &&
-          Array.isArray(details.topics) &&
-          details.topics.length > 0 && (
-            <div
-              style={{
-                marginTop: 20,
-                paddingTop: 16,
-                borderTop: "1px solid #e8eaed",
-              }}
-            >
-              <Text
-                strong
-                style={{
-                  color: "#5f6368",
-                  fontSize: 12,
-                  textTransform: "uppercase",
-                  display: "block",
-                  marginBottom: 8,
-                }}
-              >
-                Topics Covered
-              </Text>
-              <Space wrap>
-                {details.topics.map((topic: string, index: number) => (
-                  <Tag key={index} color="processing">
-                    {topic}
-                  </Tag>
-                ))}
-              </Space>
-            </div>
-          )}
-
-        {/* Instructor */}
-        {details.instructor_name && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Text
-              strong
-              style={{
-                color: "#5f6368",
-                fontSize: 12,
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: 8,
-              }}
-            >
-              Instructor
-            </Text>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <Avatar icon={<FiUser />} size={40} />
-              <div>
-                <Text
-                  strong
-                  style={{ fontSize: 16, color: "#3c4043", display: "block" }}
-                >
-                  {details.instructor_name}
-                </Text>
-                {details.instructor_email && (
-                  <Text style={{ fontSize: 14, color: "#5f6368" }}>
-                    {details.instructor_email}
-                  </Text>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Prerequisites */}
-        {details.prerequisites && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Text
-              strong
-              style={{
-                color: "#5f6368",
-                fontSize: 12,
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: 8,
-              }}
-            >
-              Prerequisites
-            </Text>
-            <div
-              style={{
-                backgroundColor: "#fff3cd",
-                padding: 12,
-                borderRadius: 6,
-                border: "1px solid #ffeaa7",
-              }}
-            >
-              <MarkdownRenderer content={details.prerequisites} />
-            </div>
-          </div>
-        )}
-
-        {/* Curriculum */}
-        {details.curriculum && (
-          <div
-            style={{
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid #e8eaed",
-            }}
-          >
-            <Text
-              strong
-              style={{
-                color: "#5f6368",
-                fontSize: 12,
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: 8,
-              }}
-            >
-              <FiBookOpen style={{ marginRight: 4 }} />
-              Curriculum
-            </Text>
-            <div
-              style={{
-                backgroundColor: "#f0f8ff",
-                padding: 16,
-                borderRadius: 8,
-                border: "1px solid #b3d9ff",
-              }}
-            >
-              <MarkdownRenderer content={details.curriculum} />
-            </div>
-          </div>
-        )}
-
-        {/* Price & Certification */}
-        <div
-          style={{
-            marginTop: 20,
-            paddingTop: 16,
-            borderTop: "1px solid #e8eaed",
-          }}
-        >
-          <Row gutter={24}>
-            <Col xs={24} md={12}>
-              <Space>
-                <FiDollarSign
-                  style={{ color: details.is_free ? "#34a853" : "#1a73e8" }}
-                />
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    color: details.is_free ? "#34a853" : "#1a73e8",
-                  }}
-                >
-                  {details.is_free ? "Free" : `$${details.price}`}
-                </Text>
-              </Space>
-            </Col>
-            {details.certification_provided && (
-              <Col xs={24} md={12}>
-                <Space>
-                  <FiAward style={{ color: "#ea4335" }} />
-                  <Text
-                    style={{ fontSize: 16, fontWeight: 500, color: "#ea4335" }}
-                  >
-                    Certificate Provided
-                  </Text>
-                </Space>
-              </Col>
-            )}
-          </Row>
-        </div>
-      </Card>
-    </div>
-  );
-
   if (loading) {
     return (
       <MainLayout>
         <div
           style={{
+            minHeight: "100vh",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
-            minHeight: "50vh",
+            justifyContent: "center",
           }}
         >
-          <Spin size="large" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card
+              style={{
+                background: "rgba(255,255,255,0.9)",
+                backdropFilter: "blur(20px)",
+                borderRadius: "20px",
+                padding: "40px",
+                textAlign: "center",
+                border: "none",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Skeleton active paragraph={{ rows: 8 }} />
+            </Card>
+          </motion.div>
         </div>
       </MainLayout>
     );
@@ -1034,18 +1120,53 @@ export default function CauseDetailsPage() {
   if (error || !cause) {
     return (
       <MainLayout>
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
-          <Alert
-            message="Error"
-            description={error || "Cause not found"}
-            type="error"
-            showIcon
-            action={
-              <Button onClick={() => router.push("/causes")}>
-                Back to Causes
-              </Button>
-            }
-          />
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Empty
+              description={
+                <div>
+                  <Text 
+                    style={{ 
+                      color: "white", 
+                      fontSize: "18px",
+                      fontFamily: "Inter, system-ui, sans-serif" 
+                    }}
+                  >
+                    {error || "Cause not found"}
+                  </Text>
+                  <div style={{ marginTop: "20px" }}>
+                    <Button
+                      type="primary"
+                      onClick={() => router.push("/causes")}
+                      style={{
+                        background: "rgba(255,255,255,0.2)",
+                        backdropFilter: "blur(10px)",
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        borderRadius: "10px",
+                        color: "white",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Back to Causes
+                    </Button>
+                  </div>
+                </div>
+              }
+              image={Empty.PRESENTED_IMAGE_404}
+            />
+          </motion.div>
         </div>
       </MainLayout>
     );
@@ -1056,1041 +1177,933 @@ export default function CauseDetailsPage() {
 
   return (
     <MainLayout>
-      <div style={{ minHeight: "100vh", backgroundColor: "#faf9f8" }}>
-        {/* Microsoft-style breadcrumb navigation */}
-        <div
-          style={{
-            backgroundColor: "white",
-            borderBottom: "1px solid #edebe9",
-            padding: "16px 0",
-          }}
-        >
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="cause-details-page"
+        style={{
+          minHeight: "100vh",
+          background: "#ffffff",
+          fontFamily: "Inter, system-ui, sans-serif",
+        }}
+      >
+        {/* Modern Premium Header */}
+        <div className="cause-header">
+          <div className="cause-header-container">
+            {/* Navigation */}
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <Button
-                type="text"
                 icon={<FiArrowLeft />}
                 onClick={() => router.back()}
-                style={{
-                  marginRight: 16,
-                  color: "#0078d4",
-                  fontSize: 14,
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                }}
+                className="cause-nav-back"
               >
                 Back
               </Button>
-              <Breadcrumb
-                separator={
-                  <FiChevronRight style={{ color: "#8a8886", fontSize: 12 }} />
-                }
-                items={[
-                  {
-                    title: (
-                      <Link
-                        href="/"
-                        style={{
-                          color: "#0078d4",
-                          textDecoration: "none",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        Home
-                      </Link>
-                    ),
-                  },
-                  {
-                    title: (
-                      <Link
-                        href="/causes"
-                        style={{
-                          color: "#0078d4",
-                          textDecoration: "none",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        Initiatives
-                      </Link>
-                    ),
-                  },
-                  {
-                    title: (
-                      <span
-                        style={{
-                          color: "#323130",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        {cause.title}
-                      </span>
-                    ),
-                  },
-                ]}
-                style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}
-              />
-            </div>
+            </motion.div>
+
+            {/* Badges */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="cause-badges-container"
+            >
+              <div className="cause-category-badge">
+                {getCategoryIcon(cause.category_name)}
+                {cause.category_display_name}
+              </div>
+              {cause.cause_type && (
+                <div className={`cause-type-badge cause-type-${cause.cause_type}`}>
+                  {cause.cause_type === "offered" ? "OFFERING" : "REQUESTING"}
+                </div>
+              )}
+              {cause.priority !== 'medium' && (
+                <div className={`cause-priority-badge priority-${cause.priority}`}>
+                  {cause.priority.toUpperCase()}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Title */}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h1 className="cause-title">{cause.title}</h1>
+            </motion.div>
+
+            {/* Meta Information */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="cause-meta-info"
+            >
+              <div className="cause-meta-item">
+                <FiMapPin className="cause-meta-icon" />
+                <span className="cause-meta-text">{cause.location}</span>
+              </div>
+              <div className="cause-meta-item">
+                <FiClock className="cause-meta-icon" />
+                <span className="cause-meta-text">
+                  {new Date(cause.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="cause-meta-item">
+                <FiEye className="cause-meta-icon" />
+                <span className="cause-meta-text">
+                  {cause.view_count} views
+                </span>
+              </div>
+              <div className="cause-meta-item">
+                <FiHeart className="cause-meta-icon" />
+                <span className="cause-meta-text">
+                  {cause.like_count} likes
+                </span>
+              </div>
+            </motion.div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 24px" }}>
-          <Row gutter={[32, 32]}>
-            {/* Left Column - Main Content */}
-            <Col xs={24} lg={16}>
-              <motion.div {...animations.slideUp}>
-                {/* Microsoft-style hero image */}
-                {cause.image && (
-                  <Card
-                    style={{
-                      marginBottom: 32,
-                      borderRadius: 8,
-                      overflow: "hidden",
-                      border: "1px solid #edebe9",
-                      boxShadow:
-                        "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                    }}
-                    bodyStyle={{ padding: 0 }}
-                  >
-                    <div style={{ position: "relative" }}>
-                      <Image
-                        src={cause.image}
-                        alt={cause.title}
-                        width="100%"
-                        height={320}
-                        style={{ objectFit: "cover" }}
-                        preview={false}
-                      />
+        <div className="cause-main-content">
+          <motion.div
+            variants={premiumAnimations.containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Statistics */}
+            <div style={{ marginBottom: "48px" }}>
+              <PremiumStats cause={cause} />
+            </div>
 
-                      {/* Microsoft-style overlay badges */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: 16,
-                          left: 16,
-                          display: "flex",
-                          gap: 8,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <Tag
-                          style={{
-                            backgroundColor: "#0078d4",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            padding: "4px 8px",
-                            fontSize: 11,
-                            fontWeight: 600,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {cause.category_display_name}
-                        </Tag>
-                        <Tag
-                          style={{
-                            backgroundColor: getCauseTypeColor(
-                              cause.cause_type,
-                            ),
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            padding: "4px 8px",
-                            fontSize: 11,
-                            fontWeight: 600,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {cause.cause_type === "offered"
-                            ? "OFFERING HELP"
-                            : "SEEKING HELP"}
-                        </Tag>
-                        {cause.priority !== "medium" && (
-                          <Tag
-                            style={{
-                              backgroundColor: getPriorityColor(cause.priority),
-                              color: "white",
-                              border: "none",
-                              borderRadius: 4,
-                              padding: "4px 8px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            {cause.priority.toUpperCase()}
-                          </Tag>
-                        )}
+            <div className="cause-content-grid">
+              {/* Left Column */}
+              <div className="main-content-column">
+                <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                  {/* Description */}
+                  <motion.div variants={premiumAnimations.itemVariants}>
+                    <div className="premium-card">
+                      <div className="premium-card-content">
+                        <h3 className="premium-card-title">About this initiative</h3>
+                        <div className="cause-description">
+                          <MarkdownRenderer content={cause.description} /> 
+                        </div>
                       </div>
                     </div>
-                  </Card>
-                )}
+                  </motion.div>
 
-                {/* Microsoft-style main content card */}
-                <Card
-                  style={{
-                    borderRadius: 8,
-                    border: "1px solid #edebe9",
-                    boxShadow:
-                      "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                  }}
-                  bodyStyle={{ padding: "32px" }}
-                >
-                  {/* Microsoft-style header */}
-                  <div style={{ marginBottom: 32 }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        marginBottom: 20,
-                      }}
-                    >
-                      <Title
-                        level={1}
-                        style={{
-                          margin: 0,
-                          fontSize: "32px",
-                          fontWeight: 600,
-                          color: "#323130",
-                          lineHeight: 1.25,
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        {cause.title}
-                      </Title>
+                  {/* Category-specific details */}
+                  <CategoryDetails cause={cause} />
 
-                      {/* Microsoft-style action buttons */}
-                      <Space size={8}>
-                        <Button
-                          type={liked ? "primary" : "default"}
-                          icon={<FiHeart />}
-                          onClick={handleLike}
-                          style={{
-                            borderRadius: 4,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                            height: 32,
-                            fontSize: 14,
-                            fontWeight: 600,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            backgroundColor: liked ? "#0078d4" : undefined,
-                            borderColor: liked ? "#0078d4" : "#8a8886",
-                          }}
-                        >
-                          {likeCount}
-                        </Button>
+                  {/* Gallery */}
+                  {gallery && gallery.length > 0 && (
+                    <PremiumGallery images={gallery} />
+                  )}
 
-                        <SocialShare
-                          url={`${typeof window !== "undefined" ? window.location.origin : ""}/causes/${cause.id}`}
-                          title={cause.title}
-                          description={
-                            cause.short_description ||
-                            cause.description.substring(0, 160) + "..."
-                          }
-                          image={cause.image}
-                          hashtags={[
-                            "Hands2gether",
-                            "Charity",
-                            "Community",
-                            cause.category_display_name || cause.category_name,
-                            cause.location.split(",")[0],
-                          ]}
-                        />
+                  {/* Training Details - Premium Design */}
+                  {cause.category_name === "training" && cause.categoryDetails && (
+                    <motion.div variants={premiumAnimations.itemVariants} className="training-details-card">
+                      <div className="premium-card-content">
+                        <h3 className="training-header">
+                          <FiBookOpen />
+                          Training Details
+                        </h3>
 
-                        {isOwner && (
-                          <Button
-                            icon={<FiEdit3 />}
-                            onClick={() =>
-                              router.push(`/causes/${cause.id}/edit`)
-                            }
-                            style={{
-                              borderRadius: 4,
-                              height: 32,
-                              borderColor: "#8a8886",
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            Edit
-                          </Button>
+                        {/* Training Overview */}
+                        <div className="training-overview-grid">
+                          {cause.categoryDetails.training_type && (
+                            <div className="training-overview-card training-card-primary">
+                              <div className="training-overview-value">
+                                {cause.categoryDetails.training_type.charAt(0).toUpperCase() + cause.categoryDetails.training_type.slice(1).replace(/-/g, ' ')}
+                              </div>
+                              <div className="training-overview-label">Type</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.skill_level && (
+                            <div className="training-overview-card training-card-success">
+                              <div className="training-overview-value">
+                                {cause.categoryDetails.skill_level.charAt(0).toUpperCase() + cause.categoryDetails.skill_level.slice(1).replace(/-/g, ' ')}
+                              </div>
+                              <div className="training-overview-label">Level</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.course_language && (
+                            <div className="training-overview-card training-card-purple">
+                              <div className="training-overview-value">
+                                {cause.categoryDetails.course_language.charAt(0).toUpperCase() + cause.categoryDetails.course_language.slice(1)}
+                              </div>
+                              <div className="training-overview-label">Language</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.delivery_method && (
+                            <div className="training-overview-card training-card-green">
+                              <div className="training-overview-value">
+                                {cause.categoryDetails.delivery_method.charAt(0).toUpperCase() + cause.categoryDetails.delivery_method.slice(1).replace(/-/g, ' ')}
+                              </div>
+                              <div className="training-overview-label">Method</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Key Metrics */}
+                        <div className="metrics-grid">
+                          {cause.categoryDetails.duration_hours && (
+                            <div className="metric-card training-card-primary">
+                              <div className="metric-value">{cause.categoryDetails.duration_hours}h</div>
+                              <div className="metric-label">Total Duration</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.number_of_sessions && (
+                            <div className="metric-card training-card-success">
+                              <div className="metric-value">{cause.categoryDetails.number_of_sessions}</div>
+                              <div className="metric-label">Sessions</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.session_duration && (
+                            <div className="metric-card training-card-purple">
+                              <div className="metric-value">{cause.categoryDetails.session_duration}h</div>
+                              <div className="metric-label">Per Session</div>
+                            </div>
+                          )}
+                          <div className="metric-card training-card-success">
+                            <div className="metric-value">
+                              {cause.categoryDetails.is_free ? "Free" : `₹${cause.categoryDetails.price || 'Paid'}`}
+                            </div>
+                            <div className="metric-label">Price</div>
+                          </div>
+                          {cause.categoryDetails.difficulty_rating && (
+                            <div className="metric-card training-card-primary">
+                              <div className="metric-value">{cause.categoryDetails.difficulty_rating}/5</div>
+                              <div className="metric-label">Difficulty</div>
+                            </div>
+                          )}
+                          {cause.categoryDetails.max_participants && (
+                            <div className="metric-card training-card-success">
+                              <div className="metric-value">{cause.categoryDetails.max_participants}</div>
+                              <div className="metric-label">Max Students</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Enrollment Progress */}
+                        {cause.categoryDetails.max_participants && (
+                          <div className="enrollment-progress">
+                            <div className="enrollment-header">
+                              <h4 className="enrollment-title">📊 Enrollment Status</h4>
+                              <div className="enrollment-stats">
+                                <div className="enrollment-count">
+                                  {cause.categoryDetails.current_participants || 0} / {cause.categoryDetails.max_participants}
+                                </div>
+                                <div className="enrollment-label">Students Enrolled</div>
+                              </div>
+                            </div>
+                            <Progress
+                              percent={Math.round(((cause.categoryDetails.current_participants || 0) / cause.categoryDetails.max_participants) * 100)}
+                              strokeColor={{ "0%": "#667eea", "100%": "#764ba2" }}
+                              strokeWidth={8}
+                              style={{ marginBottom: "12px" }}
+                            />
+                            <div className="enrollment-breakdown">
+                              <div className="enrollment-item enrolled-count">
+                                ✅ {cause.categoryDetails.current_participants || 0} enrolled
+                              </div>
+                              <div className="enrollment-item remaining-count">
+                                🎯 {cause.categoryDetails.max_participants - (cause.categoryDetails.current_participants || 0)} spots remaining
+                              </div>
+                            </div>
+                          </div>
                         )}
-                      </Space>
-                    </div>
 
-                    {/* Microsoft-style meta information */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 20,
-                        color: "#605e5c",
-                        fontSize: 14,
-                      }}
-                    >
-                      <Space size={6}>
-                        <FiMapPin size={14} style={{ color: "#8a8886" }} />
-                        <Text
-                          style={{
-                            color: "#605e5c",
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {cause.location}
-                        </Text>
-                      </Space>
+                        {/* Rest of training details... */}
+                        {/* Instructor Details */}
+                        {cause.categoryDetails.instructor_name && (
+                          <div className="instructor-card">
+                            <div className="instructor-header">
+                              <FiUser className="instructor-icon" />
+                              <h4 className="instructor-name">{cause.categoryDetails.instructor_name}</h4>
+                            </div>
+                            <div className="instructor-contact">
+                              {cause.categoryDetails.instructor_email && (
+                                <div className="instructor-contact-item">
+                                  <FiMail /> {cause.categoryDetails.instructor_email}
+                                </div>
+                              )}
+                              {cause.categoryDetails.instructor_phone && (
+                                <div className="instructor-contact-item">
+                                  <FiPhone /> {cause.categoryDetails.instructor_phone}
+                                </div>
+                              )}
+                            </div>
+                            {cause.categoryDetails.instructor_qualifications && (
+                              <div className="instructor-details">
+                                <span className="instructor-detail-label">Qualifications:</span> {cause.categoryDetails.instructor_qualifications}
+                              </div>
+                            )}
+                            {cause.categoryDetails.instructor_bio && (
+                              <div className="instructor-details">
+                                <span className="instructor-detail-label">Bio:</span> {cause.categoryDetails.instructor_bio}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                      <Space size={6}>
-                        <FiClock size={14} style={{ color: "#8a8886" }} />
-                        <Text
-                          style={{
-                            color: "#605e5c",
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {new Date(cause.created_at).toLocaleDateString()}
-                        </Text>
-                      </Space>
+                        {/* Learning Details */}
+                        <div className="content-grid">
+                          {cause.categoryDetails.learning_objectives && (
+                            <div className="content-card content-card-primary">
+                                <h5 className="content-card-title">📋 Learning Objectives</h5>
+                                <div className="content-card-text">
+                                  {cause.categoryDetails.learning_objectives}
+                                </div>
+                              </div>
+                          )}
+                          {cause.categoryDetails.curriculum && (
+                            <div className="content-card content-card-success">
+                              <h5 className="content-card-title">📚 Curriculum</h5>
+                              <div className="content-card-text">
+                                {cause.categoryDetails.curriculum}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Prerequisites */}
+                        {cause.categoryDetails.prerequisites && (
+                          <div className="content-card content-card-warning">
+                            <h5 className="content-card-title">⚡ Prerequisites</h5>
+                            <div className="content-card-text">
+                              {cause.categoryDetails.prerequisites}
+                            </div>
+                          </div>
+                        )}
 
-                      <Space size={6}>
-                        <FiEye size={14} style={{ color: "#8a8886" }} />
-                        <Text
-                          style={{
-                            color: "#605e5c",
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {cause.view_count} views
-                        </Text>
-                      </Space>
-                    </div>
-                  </div>
+                        {/* Schedule Details */}
+                        {cause.categoryDetails.schedule && (
+                          <div className="schedule-card">
+                            <div className="schedule-header">
+                              <FiCalendar className="schedule-icon" />
+                              <h5 className="schedule-title">Schedule Details</h5>
+                            </div>
+                            <div className="schedule-item">
+                              <span className="schedule-label">Schedule:</span> {cause.categoryDetails.schedule}
+                            </div>
+                          </div>
+                        )}
 
-                  {/* Microsoft-style description */}
-                  <div style={{ marginBottom: 32 }}>
-                    <MarkdownRenderer
-                      content={cause.description}
-                      style={{
-                        fontSize: 16,
-                        lineHeight: 1.43,
-                        color: "#323130",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                      }}
-                    />
-                  </div>
+                        {/* Topics & Materials */}
+                        <div className="tags-section">
+                          <div className="tags-grid">
+                            {/* Topics */}
+                            {cause.categoryDetails.topics && Array.isArray(cause.categoryDetails.topics) && cause.categoryDetails.topics.length > 0 && (
+                              <div>
+                                <h5 className="content-card-title">🎯 Topics Covered</h5>
+                                <div className="tags-container">
+                                  {cause.categoryDetails.topics.map((topic: string) => (
+                                    <span key={topic} className="tag-item tag-topic">
+                                      {topic.charAt(0).toUpperCase() + topic.slice(1).replace(/-/g, ' ')}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                  {/* Microsoft-style special instructions */}
-                  {cause.special_instructions && (
-                    <div style={{ marginBottom: 32 }}>
-                      <Title
-                        level={4}
-                        style={{
-                          marginBottom: 16,
-                          color: "#323130",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          fontWeight: 600,
-                        }}
-                      >
-                        <FiInfo style={{ marginRight: 8, color: "#0078d4" }} />
-                        Special Instructions
-                      </Title>
-                      <div
-                        style={{
-                          padding: 20,
-                          backgroundColor: "#f3f2f1",
-                          borderRadius: 8,
-                          border: "1px solid #edebe9",
-                        }}
-                      >
-                        <MarkdownRenderer
-                          content={cause.special_instructions}
-                          style={{
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        />
+                            {/* Materials */}
+                            {cause.categoryDetails.materials_provided && Array.isArray(cause.categoryDetails.materials_provided) && cause.categoryDetails.materials_provided.length > 0 && (
+                              <div>
+                                <h5 className="content-card-title">📦 Materials Provided</h5>
+                                <div className="tags-container">
+                                  {cause.categoryDetails.materials_provided.map((material: string, index: number) => (
+                                    <span key={material + index} className="tag-item tag-provided">
+                                      {material.charAt(0).toUpperCase() + material.slice(1).replace(/-/g, ' ')}
+                                    </span>
+                                  ))}
+                              </Space>
+                            </Col>
+                          )}
+
+                          {/* Materials Required */}
+                          {cause.categoryDetails.materials_required && (
+                            <Col xs={24} md={12}>
+                              <Title level={5} style={{ color: "#1e293b", fontFamily: "Inter, system-ui, sans-serif", fontSize: "16px", marginBottom: "12px" }}>
+                                📝 Required by Students:
+                              </Title>
+                              <Space wrap size="small">
+                                {(() => {
+                                  let required = cause.categoryDetails.materials_required;
+                                  if (typeof required === 'string') {
+                                    try { required = JSON.parse(required); } catch (e) { required = [required]; }
+                                  }
+                                  if (!Array.isArray(required)) required = [];
+                                  
+                                  return required.map((material: string, index: number) => (
+                                    <Tag key={material + index} style={{ 
+                                      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", 
+                                      color: "white", border: "none", borderRadius: "6px", fontSize: "12px", padding: "2px 8px"
+                                    }}>
+                                      {material.charAt(0).toUpperCase() + material.slice(1).replace(/-/g, ' ')}
+                                    </Tag>
+                                  ));
+                                })()}
+                              </Space>
+                            </Col>
+                          )}
+                        </Row>
+
+                        {/* Platform & Special Features */}
+                        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+                          {cause.categoryDetails.meeting_platform && (
+                            <Col xs={12} sm={8} md={6}>
+                              <div style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "12px", padding: "12px", textAlign: "center" }}>
+                                <FiMonitor style={{ color: "#3b82f6", fontSize: "16px", marginBottom: "4px" }} />
+                                <div style={{ fontSize: "12px", color: "#3b82f6", fontWeight: "600", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  {cause.categoryDetails.meeting_platform.charAt(0).toUpperCase() + cause.categoryDetails.meeting_platform.slice(1).replace(/-/g, ' ')}
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.certification_provided && (
+                            <Col xs={12} sm={8} md={6}>
+                              <div style={{ background: "rgba(240,185,11,0.1)", border: "1px solid rgba(240,185,11,0.3)", borderRadius: "12px", padding: "12px", textAlign: "center" }}>
+                                <FiAward style={{ color: "#f0b90b", fontSize: "16px", marginBottom: "4px" }} />
+                                <div style={{ fontSize: "12px", color: "#f0b90b", fontWeight: "600", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Certificate
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.location_details && (
+                            <Col xs={12} sm={8} md={6}>
+                              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "12px", padding: "12px", textAlign: "center" }}>
+                                <FiMapPin style={{ color: "#22c55e", fontSize: "16px", marginBottom: "4px" }} />
+                                <div style={{ fontSize: "12px", color: "#22c55e", fontWeight: "600", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  {cause.categoryDetails.location_details.slice(0, 30)}...
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                        </Row>
+
+                        {/* Schedule Information */}
+                        {(cause.categoryDetails.start_date || cause.categoryDetails.end_date || cause.categoryDetails.registration_deadline) && (
+                          <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "12px", padding: "16px" }}>
+                            <FiCalendar style={{ color: "#ef4444", marginRight: "8px", fontSize: "16px" }} />
+                            <Title level={5} style={{ display: "inline", color: "#ef4444", fontWeight: "600", fontFamily: "Inter, system-ui, sans-serif", fontSize: "16px" }}>
+                              Important Dates
+                            </Title>
+                            <div style={{ marginTop: "8px" }}>
+                              {cause.categoryDetails.start_date && (
+                                <div style={{ fontSize: "14px", color: "#ef4444", fontFamily: "Inter, system-ui, sans-serif", marginBottom: "4px" }}>
+                                  🚀 <strong>Starts:</strong> {new Date(cause.categoryDetails.start_date).toLocaleDateString()}
+                                </div>
+                              )}
+                              {cause.categoryDetails.end_date && (
+                                <div style={{ fontSize: "14px", color: "#ef4444", fontFamily: "Inter, system-ui, sans-serif", marginBottom: "4px" }}>
+                                  🏁 <strong>Ends:</strong> {new Date(cause.categoryDetails.end_date).toLocaleDateString()}
+                                </div>
+                              )}
+                              {cause.categoryDetails.registration_deadline && (
+                                <div style={{ fontSize: "14px", color: "#ef4444", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  📝 <strong>Registration Deadline:</strong> {new Date(cause.categoryDetails.registration_deadline).toLocaleDateString()}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
-                  {/* Category-Specific Details */}
-                  {renderCategorySpecificDetails()}
-
-                  {/* Enrollment Status - Only for Training */}
-                  {cause.category_name === "training" && (
-                    <EnrollmentStatus
-                      causeId={cause.id}
-                      refreshTrigger={enrollmentRefresh}
-                    />
-                  )}
-
-                  {/* Comments Section */}
+                  {/* Comments */}
                   <div style={{ marginTop: 32 }}>
                     <CommentsSection causeId={cause.id} allowComments={true} />
                   </div>
+                </Space>
+              </div>
 
-                  {/* Tags */}
-                  {cause.tags && cause.tags.length > 0 && (
-                    <div style={{ marginBottom: 32 }}>
-                      <Title
-                        level={4}
-                        style={{ marginBottom: 16, color: "#3c4043" }}
-                      >
-                        Tags
-                      </Title>
-                      <div
-                        style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
-                      >
-                        {cause.tags.map((tag, index) => (
-                          <Tag
-                            key={index}
+              {/* Right Column */}
+              <div className="sidebar-column">
+                <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                  {/* Creator Info */}
+                  <motion.div variants={premiumAnimations.itemVariants}>
+                    <div className="sidebar-card">
+                      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Avatar
+                            src={cause.creator?.avatar}
+                            icon={<FiUser />}
+                            size={80}
                             style={{
-                              borderRadius: 16,
-                              padding: "4px 12px",
-                              border: "1px solid #1a73e8",
-                              color: "#1a73e8",
-                              backgroundColor: "#f0f4ff",
+                              marginBottom: "16px",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
                             }}
-                          >
-                            {tag}
-                          </Tag>
-                        ))}
+                          />
+                        </motion.div>
+                        <h4 className="sidebar-title">
+                          {cause.creator?.name || 'Anonymous'}
+                        </h4>
+                        <p className="premium-card-subtitle">
+                          Initiative Creator
+                        </p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Gallery */}
-                  {gallery.length > 0 && (
-                    <div style={{ marginBottom: 32 }}>
-                      <Title
-                        level={4}
-                        style={{ marginBottom: 16, color: "#3c4043" }}
-                      >
-                        <FiImage style={{ marginRight: 8 }} />
-                        Gallery
-                      </Title>
-                      <Row gutter={[16, 16]}>
-                        {gallery.slice(0, 6).map((img, index) => (
-                          <Col xs={12} sm={8} md={6} key={index}>
-                            <Image
-                              src={img}
-                              alt={`Gallery ${index + 1}`}
-                              width="100%"
-                              height={120}
-                              style={{
-                                objectFit: "cover",
-                                borderRadius: 8,
-                              }}
-                            />
-                          </Col>
-                        ))}
-                      </Row>
-                    </div>
-                  )}
-
-                  {/* Microsoft-style involvement section with dynamic buttons */}
-                  <div style={{ marginBottom: 32 }}>
-                    <Title
-                      level={4}
-                      style={{
-                        marginBottom: 20,
-                        color: "#323130",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Get Involved
-                    </Title>
-                    <Space size="large" wrap>
-                      {/* Dynamic primary action button based on category */}
-                      {cause.category_name === "training" ? (
-                        <EnrollmentButton
-                          causeId={cause.id}
-                          courseName={cause.title}
-                          maxParticipants={
-                            cause.categoryDetails?.max_participants || 0
-                          }
-                          currentParticipants={
-                            cause.categoryDetails?.current_participants || 0
-                          }
-                          enrollmentStatus="available"
-                          onEnrollmentSuccess={() => {
-                            setEnrollmentRefresh((prev) => prev + 1);
-                            fetchCauseDetails(params.id as string);
-                          }}
-                        />
-                      ) : cause.category_name === "food" ||
-                        cause.category_name === "clothes" ? (
-                        <Button
-                          type="primary"
-                          size="large"
-                          icon={<FiMail />}
-                          onClick={() =>
-                            (window.location.href = `mailto:${cause.contact_email || cause.creator?.email}?subject=Interest in ${cause.title}`)
-                          }
-                          style={{
-                            borderRadius: 4,
-                            height: 40,
-                            padding: "0 24px",
-                            backgroundColor: "#0078d4",
-                            borderColor: "#0078d4",
-                            fontWeight: 600,
-                            fontSize: 14,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          Contact
-                        </Button>
-                      ) : (
-                        <Button
-                          type="primary"
-                          size="large"
-                          icon={<FiMessageCircle />}
-                          onClick={() => setShowCommentModal(true)}
-                          style={{
-                            borderRadius: 4,
-                            height: 40,
-                            padding: "0 24px",
-                            backgroundColor: "#0078d4",
-                            borderColor: "#0078d4",
-                            fontWeight: 600,
-                            fontSize: 14,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          Get Involved
-                        </Button>
-                      )}
-
-                      {/* Secondary action: Discussion for all categories */}
-                      <Button
-                        size="large"
-                        icon={<FiMessageCircle />}
-                        onClick={() => setShowCommentModal(true)}
-                        style={{
-                          borderRadius: 4,
-                          height: 40,
-                          padding: "0 24px",
-                          borderColor: "#8a8886",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        Join Discussion
-                      </Button>
-
-                      {/* Contact options for training category or when contact info available */}
-                      {cause.category_name === "training" &&
-                        (cause.contact_email || cause.creator?.email) && (
-                          <Button
-                            size="large"
-                            icon={<FiMail />}
-                            onClick={() =>
-                              (window.location.href = `mailto:${cause.contact_email || cause.creator?.email}?subject=Question about ${cause.title}`)
-                            }
-                            style={{
-                              borderRadius: 4,
-                              height: 40,
-                              padding: "0 24px",
-                              borderColor: "#8a8886",
-                              fontWeight: 600,
-                              fontSize: 14,
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            Contact Instructor
-                          </Button>
-                        )}
 
                       {cause.contact_phone && (
+                        <Space style={{ width: "100%", justifyContent: "center", marginBottom: "12px" }}>
+                          <FiPhone style={{ color: "#64748b" }} />
+                          <Text style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                            {cause.contact_phone}
+                          </Text>
+                        </Space>
+                      )}
+
+                      {(cause.contact_email || cause.creator?.email) && (
+                        <Space style={{ width: "100%", justifyContent: "center", marginBottom: "20px" }}>
+                          <FiMail style={{ color: "#64748b" }} />
+                          <Text style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+                            {cause.contact_email || cause.creator?.email}
+                          </Text>
+                        </Space>
+                      )}
+
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
                         <Button
-                          size="large"
-                          icon={<FiPhone />}
+                          type="primary"
+                          block
+                          icon={<FiMail />}
                           onClick={() =>
-                            (window.location.href = `tel:${cause.contact_phone}`)
+                            (window.location.href = `mailto:${cause.contact_email || cause.creator?.email}`)
                           }
                           style={{
-                            borderRadius: 4,
-                            height: 40,
-                            padding: "0 24px",
-                            borderColor: "#8a8886",
-                            color: "#0078d4",
-                            fontWeight: 600,
-                            fontSize: 14,
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            border: "none",
+                            borderRadius: "12px",
+                            height: "40px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            fontWeight: "600",
+                            fontSize: "14px",
                           }}
                         >
-                          Call Now
+                          Send Message
                         </Button>
-                      )}
-                    </Space>
-                  </div>
-                </Card>
-              </motion.div>
-            </Col>
+                      </motion.div>
+                    </div>
+                  </motion.div>
 
-            {/* Microsoft-style sidebar */}
-            <Col xs={24} lg={8}>
-              <motion.div
-                {...animations.slideUp}
-                style={{ transitionDelay: "0.2s" }}
-              >
-                {/* Microsoft-style creator card */}
-                <Card
-                  style={{
-                    marginBottom: 24,
-                    borderRadius: 8,
-                    border: "1px solid #edebe9",
-                    boxShadow:
-                      "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                  }}
-                  bodyStyle={{ padding: "24px" }}
-                >
-                  <div style={{ textAlign: "center" }}>
-                    <Avatar
-                      src={cause.creator?.avatar}
-                      icon={<FiUser />}
-                      size={64}
-                      style={{
-                        marginBottom: 16,
-                        border: "2px solid #edebe9",
-                      }}
-                    />
-                    <Title
-                      level={4}
-                      style={{
-                        marginBottom: 8,
-                        color: "#323130",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {cause.creator?.name || "Anonymous"}
-                    </Title>
-                    <Text
-                      style={{
-                        color: "#605e5c",
-                        display: "block",
-                        marginBottom: 16,
-                        fontSize: 14,
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                      }}
-                    >
-                      Initiative Creator
-                    </Text>
-                    {cause.creator?.bio && (
-                      <Paragraph
-                        style={{
-                          color: "#323130",
-                          fontSize: 14,
-                          textAlign: "center",
-                          marginBottom: 20,
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        {cause.creator.bio}
-                      </Paragraph>
-                    )}
-                    <Space
-                      direction="vertical"
-                      style={{ width: "100%" }}
-                      size={12}
-                    >
-                      <Button
-                        type="primary"
-                        block
-                        icon={<FiMail />}
-                        onClick={() =>
-                          (window.location.href = `mailto:${cause.creator?.email}`)
-                        }
-                        style={{
-                          borderRadius: 4,
-                          height: 40,
-                          backgroundColor: "#0078d4",
-                          borderColor: "#0078d4",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        }}
-                      >
-                        Send Message
-                      </Button>
-                    </Space>
-                  </div>
-                </Card>
-
-                {/* Microsoft-style stats card */}
-                <Card
-                  style={{
-                    marginBottom: 24,
-                    borderRadius: 8,
-                    border: "1px solid #edebe9",
-                    boxShadow:
-                      "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                  }}
-                  bodyStyle={{ padding: "24px" }}
-                >
-                  <Title
-                    level={4}
-                    style={{
-                      marginBottom: 20,
-                      color: "#323130",
-                      fontFamily: "'Segoe UI', system-ui, sans-serif",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Impact Metrics
-                  </Title>
-                  <Row gutter={[16, 16]}>
-                    <Col span={12}>
-                      <Statistic
-                        title="Views"
-                        value={cause.view_count}
-                        prefix={<FiEye style={{ color: "#0078d4" }} />}
-                        valueStyle={{
-                          color: "#323130",
-                          fontSize: "20px",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          fontWeight: 600,
-                        }}
-                        style={{
-                          textAlign: "center",
-                        }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Statistic
-                        title="Supporters"
-                        value={likeCount}
-                        prefix={<FiHeart style={{ color: "#d13438" }} />}
-                        valueStyle={{
-                          color: "#323130",
-                          fontSize: "20px",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          fontWeight: 600,
-                        }}
-                        style={{
-                          textAlign: "center",
-                        }}
-                      />
-                    </Col>
-                  </Row>
-                </Card>
-
-                {/* Enrollment Analytics Section - Only for Training Categories */}
-                {cause.category_name === "training" &&
-                  cause.categoryDetails && (
-                    <Card
-                      style={{
-                        marginBottom: 24,
-                        borderRadius: 8,
-                        border: "1px solid #edebe9",
-                        boxShadow:
-                          "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                      }}
-                      bodyStyle={{ padding: "24px" }}
-                    >
-                      <Title
-                        level={4}
-                        style={{
-                          marginBottom: 20,
-                          color: "#323130",
-                          fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          fontWeight: 600,
-                        }}
-                      >
-                        <FiUsers style={{ marginRight: 8, color: "#0078d4" }} />
-                        Enrollment Analytics
-                      </Title>
-
-                      {/* Enrollment Progress */}
-                      <div style={{ marginBottom: 24 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 8,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontWeight: 600,
-                              color: "#323130",
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            Enrollment Progress
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              color: "#605e5c",
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            {cause.categoryDetails.current_participants || 0} /{" "}
-                            {cause.categoryDetails.max_participants}
-                          </Text>
-                        </div>
-                        <Progress
-                          percent={Math.round(
-                            ((cause.categoryDetails.current_participants || 0) /
-                              cause.categoryDetails.max_participants) *
-                              100,
-                          )}
-                          strokeColor={{
-                            "0%": "#0078d4",
-                            "100%": "#40e0d0",
-                          }}
-                          style={{ marginBottom: 8 }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            color: "#8a8886",
-                            fontFamily: "'Segoe UI', system-ui, sans-serif",
-                          }}
-                        >
-                          {cause.categoryDetails.max_participants -
-                            (cause.categoryDetails.current_participants ||
-                              0)}{" "}
-                          spots remaining
-                        </Text>
-                      </div>
-
-                      {/* Key Metrics */}
-                      <Row gutter={[8, 8]} style={{ marginBottom: 20 }}>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              textAlign: "center",
-                              padding: "12px",
-                              backgroundColor: "#f3f2f1",
-                              borderRadius: 6,
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                fontWeight: 600,
-                                color: "#0078d4",
-                                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                              }}
-                            >
-                              {cause.categoryDetails.duration_hours}h
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#605e5c",
-                                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                              }}
-                            >
-                              Duration
-                            </div>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              textAlign: "center",
-                              padding: "12px",
-                              backgroundColor: "#f3f2f1",
-                              borderRadius: 6,
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                fontWeight: 600,
-                                color: cause.categoryDetails.is_free
-                                  ? "#107c10"
-                                  : "#f7630c",
-                                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                              }}
-                            >
-                              {cause.categoryDetails.is_free
-                                ? "Free"
-                                : `$${cause.categoryDetails.price}`}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#605e5c",
-                                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                              }}
-                            >
-                              Price
-                            </div>
-                          </div>
-                        </Col>
-                      </Row>
-
-                      {/* Enrolled Users Preview */}
-                      {cause.categoryDetails.current_participants > 0 && (
-                        <div style={{ marginBottom: 16 }}>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: "#605e5c",
-                              display: "block",
-                              marginBottom: 8,
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            RECENT ENROLLMENTS
-                          </Text>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                            }}
-                          >
-                            <Avatar.Group maxCount={3} size="small">
-                              {/* Mock enrolled users - in real implementation, these would come from API */}
-                              <Avatar style={{ backgroundColor: "#0078d4" }}>
-                                JD
-                              </Avatar>
-                              <Avatar style={{ backgroundColor: "#107c10" }}>
-                                AS
-                              </Avatar>
-                              <Avatar style={{ backgroundColor: "#d13438" }}>
-                                MK
-                              </Avatar>
-                            </Avatar.Group>
-                            <Text
-                              style={{
-                                fontSize: 11,
-                                color: "#8a8886",
-                                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                              }}
-                            >
-                              and{" "}
-                              {Math.max(
-                                0,
-                                (cause.categoryDetails.current_participants ||
-                                  0) - 3,
-                              )}{" "}
-                              others
-                            </Text>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Achievement Badge */}
-                      {cause.categoryDetails.certification_provided && (
-                        <div
-                          style={{
-                            backgroundColor: "#fff3cd",
-                            border: "1px solid #ffeaa7",
-                            borderRadius: 6,
-                            padding: "12px",
-                            textAlign: "center",
-                          }}
-                        >
-                          <FiAward
-                            style={{ color: "#f7630c", marginRight: 6 }}
-                          />
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: "#f7630c",
-                              fontWeight: 600,
-                              fontFamily: "'Segoe UI', system-ui, sans-serif",
-                            }}
-                          >
-                            Certificate Available
-                          </Text>
-                        </div>
-                      )}
-                    </Card>
+                  {/* Enrollment */}
+                  {!enrolled && (
+                    <PremiumEnrollment cause={cause} onEnroll={handleEnroll} />
                   )}
 
-                {/* Microsoft-style quick actions */}
-                <Card
-                  style={{
-                    borderRadius: 8,
-                    border: "1px solid #edebe9",
-                    boxShadow:
-                      "0 1.6px 3.6px 0 rgba(0,0,0,.132), 0 0.3px 0.9px 0 rgba(0,0,0,.108)",
-                  }}
-                  bodyStyle={{ padding: "24px" }}
-                >
-                  <Title
-                    level={4}
-                    style={{
-                      marginBottom: 20,
-                      color: "#323130",
-                      fontFamily: "'Segoe UI', system-ui, sans-serif",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Quick Actions
-                  </Title>
-                  <Space
-                    direction="vertical"
-                    style={{ width: "100%" }}
-                    size={12}
-                  >
-                    <Button
-                      block
-                      icon={<FiMessageCircle />}
-                      onClick={() => setShowCommentModal(true)}
-                      style={{
-                        borderRadius: 4,
-                        height: 40,
-                        borderColor: "#8a8886",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Join Discussion
-                    </Button>
-                    <Button
-                      block
-                      icon={<FiShare2 />}
-                      onClick={handleShare}
-                      style={{
-                        borderRadius: 4,
-                        height: 40,
-                        borderColor: "#8a8886",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Share Initiative
-                    </Button>
-                    <Button
-                      block
-                      icon={<FiFlag />}
-                      style={{
-                        borderRadius: 4,
-                        height: 40,
-                        borderColor: "#8a8886",
-                        color: "#d13438",
-                        fontFamily: "'Segoe UI', system-ui, sans-serif",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Report Issue
-                    </Button>
-                  </Space>
-                </Card>
-              </motion.div>
-            </Col>
-          </Row>
+                  {enrolled && (
+                    <motion.div variants={premiumAnimations.itemVariants}>
+                      <Alert
+                        message="You're enrolled!"
+                        description="You have successfully joined this initiative. The creator will contact you soon."
+                        type="success"
+                        showIcon
+                        style={{
+                          borderRadius: "16px",
+                          border: "1px solid #10b981",
+                          background: "rgba(16, 185, 129, 0.1)",
+                          fontFamily: "Inter, system-ui, sans-serif",
+                        }}
+                      />
+                    </motion.div>
+                  )}
+
+                  {/* Category-Specific Details */}
+                  
+                  {/* Food Category Details */}
+                  {cause.category_name === "food" && cause.categoryDetails && (
+                    <motion.div variants={premiumAnimations.itemVariants}>
+                      <Card
+                        style={{
+                          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+                          backdropFilter: "blur(20px)",
+                          border: "1px solid rgba(255,255,255,0.2)",  
+                          borderRadius: "20px",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <Title
+                          level={4}
+                          style={{
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            marginBottom: "20px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            fontWeight: "700",
+                          }}
+                        >
+                          <FiPackage style={{ marginRight: 8 }} />
+                          Food Details
+                        </Title>
+
+                        {/* Food Specifications */}
+                        <Row gutter={[16, 16]} style={{ marginBottom: "20px" }}>
+                          {cause.categoryDetails.foodType && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  {cause.categoryDetails.foodType.charAt(0).toUpperCase() + cause.categoryDetails.foodType.slice(1).replace(/-/g, ' ')}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Food Type
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.quantity && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(59, 130, 246, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  {cause.categoryDetails.quantity} {cause.categoryDetails.unit || 'servings'}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Quantity
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.temperatureRequirements && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(239, 68, 68, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  <FiThermometer style={{ marginRight: "4px" }} />
+                                  {cause.categoryDetails.temperatureRequirements.charAt(0).toUpperCase() + cause.categoryDetails.temperatureRequirements.slice(1).replace(/-/g, ' ')}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Storage
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                        </Row>
+
+                        {/* Dietary Information */}
+                        {(cause.categoryDetails.dietaryRestrictions || cause.categoryDetails.allergens) && (
+                          <div style={{ marginBottom: "20px" }}>
+                            {cause.categoryDetails.dietaryRestrictions && cause.categoryDetails.dietaryRestrictions.length > 0 && (
+                              <div style={{ marginBottom: "12px" }}>
+                                <Text strong style={{ color: "#1e293b", fontFamily: "Inter, system-ui, sans-serif", marginBottom: "8px", display: "block" }}>
+                                  Dietary Restrictions:
+                                </Text>
+                                <Space wrap>
+                                  {cause.categoryDetails.dietaryRestrictions.map((restriction: string) => (
+                                    <Tag key={restriction} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "white", border: "none", borderRadius: "12px" }}>
+                                      {restriction.charAt(0).toUpperCase() + restriction.slice(1).replace(/-/g, ' ')}
+                                    </Tag>
+                                  ))}
+                                </Space>
+                              </div>
+                            )}
+                            {cause.categoryDetails.allergens && cause.categoryDetails.allergens.length > 0 && (
+                              <div>
+                                <Text strong style={{ color: "#1e293b", fontFamily: "Inter, system-ui, sans-serif", marginBottom: "8px", display: "block" }}>
+                                  Contains Allergens:
+                                </Text>
+                                <Space wrap>
+                                  {cause.categoryDetails.allergens.map((allergen: string) => (
+                                    <Tag key={allergen} style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "white", border: "none", borderRadius: "12px" }}>
+                                      {allergen.charAt(0).toUpperCase() + allergen.slice(1)}
+                                    </Tag>
+                                  ))}
+                                </Space>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Delivery Information */}
+                        {cause.categoryDetails.deliveryAvailable && (
+                          <div style={{
+                            background: "rgba(34, 197, 94, 0.1)",
+                            border: "1px solid rgba(34, 197, 94, 0.3)",
+                            borderRadius: "12px",
+                            padding: "12px",
+                            textAlign: "center",
+                          }}>
+                            <FiTruck style={{ color: "#22c55e", marginRight: "6px" }} />
+                            <Text style={{
+                              fontSize: "12px",
+                              color: "#22c55e",
+                              fontWeight: "600",
+                              fontFamily: "Inter, system-ui, sans-serif",
+                            }}>
+                              Delivery Available {cause.categoryDetails.deliveryRadius && `(${cause.categoryDetails.deliveryRadius}km radius)`}
+                            </Text>
+                          </div>
+                        )}
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* Clothes Category Details */}
+                  {cause.category_name === "clothes" && cause.categoryDetails && (
+                    <motion.div variants={premiumAnimations.itemVariants}>
+                      <Card
+                        style={{
+                          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+                          backdropFilter: "blur(20px)",
+                          border: "1px solid rgba(255,255,255,0.2)",  
+                          borderRadius: "20px",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <Title
+                          level={4}
+                          style={{
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            marginBottom: "20px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            fontWeight: "700",
+                          }}
+                        >
+                          <FiPackage style={{ marginRight: 8 }} />
+                          Clothing Details
+                        </Title>
+
+                        {/* Clothing Specifications */}
+                        <Row gutter={[16, 16]} style={{ marginBottom: "20px" }}>
+                          {cause.categoryDetails.clothesType && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(139, 92, 246, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  {cause.categoryDetails.clothesType.charAt(0).toUpperCase() + cause.categoryDetails.clothesType.slice(1).replace(/-/g, ' ')}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Type
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.gender && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(236, 72, 153, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  {cause.categoryDetails.gender.charAt(0).toUpperCase() + cause.categoryDetails.gender.slice(1)}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Gender
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                          {cause.categoryDetails.condition && (
+                            <Col span={8}>
+                              <div style={{ textAlign: "center", padding: "12px", background: "rgba(34, 197, 94, 0.1)", borderRadius: "12px" }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: "700",
+                                  background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  {cause.categoryDetails.condition.charAt(0).toUpperCase() + cause.categoryDetails.condition.slice(1).replace(/-/g, ' ')}
+                                </div>
+                                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                  Condition
+                                </div>
+                              </div>
+                            </Col>
+                          )}
+                        </Row>
+
+                        {/* Size and Quantity Information */}
+                        {(cause.categoryDetails.sizeRange || cause.categoryDetails.quantity) && (
+                          <Row gutter={[16, 16]} style={{ marginBottom: "20px" }}>
+                            {cause.categoryDetails.sizeRange && cause.categoryDetails.sizeRange.length > 0 && (
+                              <Col span={16}>
+                                <div style={{ marginBottom: "12px" }}>
+                                  <Text strong style={{ color: "#1e293b", fontFamily: "Inter, system-ui, sans-serif", marginBottom: "8px", display: "block" }}>
+                                    Available Sizes:
+                                  </Text>
+                                  <Space wrap>
+                                    {cause.categoryDetails.sizeRange.map((size: string) => (
+                                      <Tag key={size} style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", color: "white", border: "none", borderRadius: "8px" }}>
+                                        {size}
+                                      </Tag>
+                                    ))}
+                                  </Space>
+                                </div>
+                              </Col>
+                            )}
+                            {cause.categoryDetails.quantity && (
+                              <Col span={8}>
+                                <div style={{ textAlign: "center", padding: "12px", background: "rgba(59, 130, 246, 0.1)", borderRadius: "12px" }}>
+                                  <div style={{
+                                    fontSize: "18px",
+                                    fontWeight: "700",
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                    fontFamily: "Inter, system-ui, sans-serif",
+                                  }}>
+                                    {cause.categoryDetails.quantity}
+                                  </div>
+                                  <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                    Items
+                                  </div>
+                                </div>
+                              </Col>
+                            )}
+                          </Row>
+                        )}
+
+                        {/* Age and Season Info */}
+                        {(cause.categoryDetails.ageGroup || cause.categoryDetails.season) && (
+                          <Row gutter={[16, 16]} style={{ marginBottom: "20px" }}>
+                            {cause.categoryDetails.ageGroup && (
+                              <Col span={12}>
+                                <div style={{ textAlign: "center", padding: "12px", background: "rgba(245, 158, 11, 0.1)", borderRadius: "12px" }}>
+                                  <div style={{
+                                    fontSize: "16px",
+                                    fontWeight: "700",
+                                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                    fontFamily: "Inter, system-ui, sans-serif",
+                                  }}>
+                                    {cause.categoryDetails.ageGroup.charAt(0).toUpperCase() + cause.categoryDetails.ageGroup.slice(1)}
+                                  </div>
+                                  <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                    Age Group
+                                  </div>
+                                </div>
+                              </Col>
+                            )}
+                            {cause.categoryDetails.season && (
+                              <Col span={12}>
+                                <div style={{ textAlign: "center", padding: "12px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "12px" }}>
+                                  <div style={{
+                                    fontSize: "16px",
+                                    fontWeight: "700",
+                                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                    fontFamily: "Inter, system-ui, sans-serif",
+                                  }}>
+                                    {cause.categoryDetails.season.charAt(0).toUpperCase() + cause.categoryDetails.season.slice(1).replace(/-/g, ' ')}
+                                  </div>
+                                  <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "Inter, system-ui, sans-serif" }}>
+                                    Season
+                                  </div>
+                                </div>
+                              </Col>
+                            )}
+                          </Row>
+                        )}
+
+                        {/* Special Features */}
+                        {(cause.categoryDetails.isCleaned || cause.categoryDetails.deliveryAvailable) && (
+                          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                            {cause.categoryDetails.isCleaned && (
+                              <div style={{
+                                background: "rgba(34, 197, 94, 0.1)",
+                                border: "1px solid rgba(34, 197, 94, 0.3)",
+                                borderRadius: "12px",
+                                padding: "8px 12px",
+                                textAlign: "center",
+                              }}>
+                                <FiCheckCircle style={{ color: "#22c55e", marginRight: "6px" }} />
+                                <Text style={{
+                                  fontSize: "12px",
+                                  color: "#22c55e",
+                                  fontWeight: "600",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  Cleaned & Ready
+                                </Text>
+                              </div>
+                            )}
+                            {cause.categoryDetails.deliveryAvailable && (
+                              <div style={{
+                                background: "rgba(59, 130, 246, 0.1)",
+                                border: "1px solid rgba(59, 130, 246, 0.3)",
+                                borderRadius: "12px",
+                                padding: "8px 12px",
+                                textAlign: "center",
+                              }}>
+                                <FiTruck style={{ color: "#3b82f6", marginRight: "6px" }} />
+                                <Text style={{
+                                  fontSize: "12px",
+                                  color: "#3b82f6",
+                                  fontWeight: "600",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}>
+                                  Delivery Available {cause.categoryDetails.deliveryRadius && `(${cause.categoryDetails.deliveryRadius}km)`}
+                                </Text>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Card>
+                    </motion.div>
+                  )}
+
+                </Space>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Microsoft-style comment modal */}
+        {/* Comment Modal */}
         <Modal
           title={
             <span
               style={{
-                fontFamily: "'Segoe UI', system-ui, sans-serif",
-                fontWeight: 600,
-                color: "#323130",
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontWeight: "600",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
             >
               Join the Discussion
@@ -2102,8 +2115,8 @@ export default function CauseDetailsPage() {
           width={500}
           styles={{
             content: {
-              borderRadius: 8,
-              fontFamily: "'Segoe UI', system-ui, sans-serif",
+              borderRadius: "20px",
+              fontFamily: "Inter, system-ui, sans-serif",
             },
           }}
         >
@@ -2111,16 +2124,16 @@ export default function CauseDetailsPage() {
             form={commentForm}
             onFinish={handleComment}
             layout="vertical"
-            style={{ marginTop: 24 }}
+            style={{ marginTop: "24px" }}
           >
             <Form.Item
               name="comment"
               label={
                 <span
                   style={{
-                    fontFamily: "'Segoe UI', system-ui, sans-serif",
-                    fontWeight: 600,
-                    color: "#323130",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    fontWeight: "600",
+                    color: "#1e293b",
                   }}
                 >
                   Your Comment
@@ -2132,9 +2145,9 @@ export default function CauseDetailsPage() {
                 rows={4}
                 placeholder="Share your thoughts about this initiative..."
                 style={{
-                  borderRadius: 4,
-                  borderColor: "#8a8886",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(102,126,234,0.2)",
+                  fontFamily: "Inter, system-ui, sans-serif",
                 }}
               />
             </Form.Item>
@@ -2143,10 +2156,10 @@ export default function CauseDetailsPage() {
                 <Button
                   onClick={() => setShowCommentModal(false)}
                   style={{
-                    borderRadius: 4,
-                    borderColor: "#8a8886",
-                    fontFamily: "'Segoe UI', system-ui, sans-serif",
-                    fontWeight: 600,
+                    borderRadius: "10px",
+                    border: "1px solid rgba(102,126,234,0.2)",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    fontWeight: "600",
                   }}
                 >
                   Cancel
@@ -2155,11 +2168,11 @@ export default function CauseDetailsPage() {
                   type="primary"
                   htmlType="submit"
                   style={{
-                    borderRadius: 4,
-                    backgroundColor: "#0078d4",
-                    borderColor: "#0078d4",
-                    fontFamily: "'Segoe UI', system-ui, sans-serif",
-                    fontWeight: 600,
+                    borderRadius: "10px",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    border: "none",
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    fontWeight: "600",
                   }}
                 >
                   Post Comment
@@ -2169,6 +2182,32 @@ export default function CauseDetailsPage() {
           </Form>
         </Modal>
       </div>
+
+      <style jsx global>{`
+        /* Hero section text override */
+        .hero-title h1 {
+          color: white !important;
+          text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.6) !important;
+        }
+        
+        .hero-content .ant-typography {
+          color: white !important;
+          text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.6) !important;
+        }
+
+        .hero-content .ant-typography-title {
+          color: white !important;
+        }
+
+        .hero-content .ant-typography-paragraph {
+          color: white !important;
+        }
+
+        .hero-content span {
+          color: white !important;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.8) !important;
+        }
+      `}</style>
     </MainLayout>
   );
 }

@@ -53,6 +53,34 @@ import {
   RiseOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
+import {
+  FiUser,
+  FiEdit3,
+  FiSettings,
+  FiHeart,
+  FiTrendingUp,
+  FiCalendar,
+  FiMapPin,
+  FiMail,
+  FiPhone,
+  FiGlobe,
+  FiDollarSign,
+  FiUsers,
+  FiClock,
+  FiPlus,
+  FiStar,
+  FiEye,
+  FiMessageCircle,
+  FiShare2,
+  FiBell,
+  FiShield,
+  FiGift,
+  FiTarget,
+  FiAward,
+  FiTrendingDown,
+  FiInfo,
+  FiCheckCircle
+} from "react-icons/fi";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -62,6 +90,42 @@ import { motion } from "framer-motion";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+
+// Premium animation variants
+const premiumAnimations = {
+  containerVariants: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  },
+  itemVariants: {
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.95 
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: [0.23, 1, 0.32, 1],
+      },
+    },
+  },
+  cardHover: {
+    y: -4,
+    scale: 1.02,
+    boxShadow: "0 15px 35px rgba(102, 126, 234, 0.1)",
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};
 
 interface UserProfile {
   id: number;
@@ -331,58 +395,45 @@ export default function ProfilePage() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "donation":
-        return <GiftOutlined style={{ color: "#52c41a" }} />;
+        return <FiGift style={{ color: "#52c41a" }} />;
       case "comment":
-        return <CommentOutlined style={{ color: "#1890ff" }} />;
+        return <FiMessageCircle style={{ color: "#1890ff" }} />;
       case "like":
-        return <HeartOutlined style={{ color: "#eb2f96" }} />;
+        return <FiHeart style={{ color: "#eb2f96" }} />;
       case "share":
-        return <ShareAltOutlined style={{ color: "#722ed1" }} />;
+        return <FiShare2 style={{ color: "#722ed1" }} />;
       case "volunteer":
-        return <TeamOutlined style={{ color: "#fa8c16" }} />;
+        return <FiUsers style={{ color: "#fa8c16" }} />;
       default:
-        return <StarOutlined style={{ color: "#faad14" }} />;
+        return <FiStar style={{ color: "#faad14" }} />;
     }
   };
 
   if (loading) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50">
-          <div className="container mx-auto px-6 py-8">
-            <div className="max-w-7xl mx-auto">
-              {/* Header Skeleton */}
-              <Card className="mb-6">
-                <Row gutter={[24, 24]} align="middle">
-                  <Col xs={24} sm={6} className="text-center">
-                    <Skeleton.Avatar size={120} active />
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Skeleton active paragraph={{ rows: 3 }} />
-                  </Col>
-                  <Col xs={24} sm={6}>
-                    <Skeleton.Button size="large" active />
-                  </Col>
-                </Row>
-              </Card>
-
-              {/* Stats Skeleton */}
-              <Card className="mb-6">
-                <Row gutter={[16, 16]}>
-                  {[1, 2, 3, 4].map((i) => (
-                    <Col key={i} xs={12} sm={6}>
-                      <Skeleton active paragraph={{ rows: 1 }} />
-                    </Col>
-                  ))}
-                </Row>
-              </Card>
-
-              {/* Content Skeleton */}
-              <Card>
-                <Skeleton active paragraph={{ rows: 8 }} />
-              </Card>
-            </div>
-          </div>
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#f8fafc",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Card
+            style={{
+              background: "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(20px)",
+              borderRadius: "20px",
+              padding: "40px",
+              textAlign: "center",
+              border: "none",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </Card>
         </div>
       </MainLayout>
     );
@@ -391,14 +442,32 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#f8fafc",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Card
+            style={{
+              background: "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(20px)",
+              borderRadius: "20px",
+              padding: "40px",
+              textAlign: "center",
+              border: "none",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+            }}
+          >
             <Alert
               message="Profile Not Found"
               description="There was an error loading your profile. Please try again."
               type="error"
               showIcon
-              className="mb-4"
+              style={{ marginBottom: "24px" }}
             />
             <Space>
               <Button type="primary" onClick={() => window.location.reload()}>
@@ -406,7 +475,7 @@ export default function ProfilePage() {
               </Button>
               <Button onClick={() => router.push("/")}>Go Home</Button>
             </Space>
-          </div>
+          </Card>
         </div>
       </MainLayout>
     );
@@ -414,629 +483,688 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
-      <div style={{ background: "#f5f5f5", minHeight: "100vh" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px" }}>
-          {/* Modern Header Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ paddingTop: "32px", paddingBottom: "24px" }}
-          >
-            <Card 
-              style={{ 
-                borderRadius: "12px", 
-                boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
-                border: "1px solid #e8e8e8",
-                overflow: "hidden",
-                backgroundColor: "#ffffff"
-              }}
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#f8fafc",
+          fontFamily: "Inter, system-ui, sans-serif",
+        }}
+      >
+        {/* Premium Header */}
+        <div style={{ 
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", 
+          borderBottom: "1px solid rgba(255,255,255,0.1)"
+        }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              {/* Professional Header Background */}
-              <div style={{ 
-                height: "140px", 
-                background: "linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)",
-                position: "relative"
+              <Title 
+                level={1} 
+                style={{ 
+                  color: "white",
+                  fontSize: "clamp(28px, 4vw, 42px)",
+                  fontWeight: "800",
+                  marginBottom: "8px",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  textShadow: "0 4px 20px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.8)"
+                }}
+              >
+                My Profile
+              </Title>
+              <Text style={{ 
+                color: "white", 
+                fontSize: "18px",
+                fontFamily: "Inter, system-ui, sans-serif",
+                textShadow: "0 2px 10px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.6)"
               }}>
-                <div style={{ 
-                  position: "absolute", 
-                  top: "24px", 
-                  right: "24px", 
-                  zIndex: 2 
-                }}>
-                  <Button
-                    type="primary"
-                    icon={<EditOutlined />}
-                    onClick={() => setEditModalVisible(true)}
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.15)",
-                      borderColor: "rgba(255,255,255,0.25)",
-                      backdropFilter: "blur(8px)",
-                      border: "1px solid rgba(255,255,255,0.25)",
-                      fontWeight: "500"
-                    }}
-                  >
-                    Edit Profile
-                  </Button>
-                </div>
-              </div>
+                Manage your community impact and contributions
+              </Text>
+            </motion.div>
+          </div>
+        </div>
 
-              {/* Professional Profile Info */}
-              <div style={{ padding: "0 32px 32px 32px", position: "relative" }}>
-                <div style={{ 
-                  display: "flex", 
-                  alignItems: "flex-end", 
-                  gap: "20px",
-                  marginTop: "-50px",
-                  marginBottom: "20px"
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 24px" }}>
+          <motion.div
+            variants={premiumAnimations.containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Premium Profile Header Card */}
+            <motion.div variants={premiumAnimations.itemVariants}>
+              <Card
+                style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)`,
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: "24px",
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                  marginBottom: "32px",
+                  overflow: "hidden"
+                }}
+              >
+                {/* Premium Header Background */}
+                <div style={{
+                  height: "160px",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  position: "relative",
+                  margin: "-24px -24px 0 -24px"
                 }}>
-                  <div style={{ position: "relative" }}>
-                    <Avatar
-                      size={100}
-                      src={profile.avatar}
-                      icon={<UserOutlined />}
-                      style={{
-                        border: "3px solid white",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
-                      }}
-                    />
-                    {profile.isVerified && (
-                      <div style={{
-                        position: "absolute",
-                        bottom: "8px",
-                        right: "8px",
-                        background: "#52c41a",
-                        borderRadius: "50%",
-                        padding: "4px",
-                        border: "2px solid white"
-                      }}>
-                        <SafetyCertificateOutlined 
-                          style={{ color: "white", fontSize: "16px" }} 
-                        />
-                      </div>
-                    )}
+                  <div style={{
+                    position: "absolute",
+                    top: "24px",
+                    right: "24px",
+                    zIndex: 2
+                  }}>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        type="primary"
+                        icon={<FiEdit3 />}
+                        onClick={() => setEditModalVisible(true)}
+                        style={{
+                          background: "rgba(255,255,255,0.2)",
+                          border: "1px solid rgba(255,255,255,0.3)",
+                          backdropFilter: "blur(10px)",
+                          color: "white",
+                          fontWeight: "600",
+                          height: "40px",
+                          borderRadius: "12px",
+                          fontFamily: "Inter, system-ui, sans-serif"
+                        }}
+                      >
+                        Edit Profile
+                      </Button>
+                    </motion.div>
                   </div>
                   
-                  <div style={{ flex: 1, paddingBottom: "8px" }}>
-                    <div style={{ 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "8px", 
-                      marginBottom: "8px" 
-                    }}>
-                      <Title 
-                        level={2} 
-                        style={{ 
-                          margin: 0, 
-                          fontSize: "24px", 
-                          fontWeight: "600",
-                          color: "#111827"
-                        }}
+                  {/* Floating decoration elements */}
+                  <div style={{
+                    position: "absolute",
+                    top: "20%",
+                    left: "10%",
+                    width: "60px",
+                    height: "60px",
+                    background: "rgba(255,255,255,0.1)",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(10px)"
+                  }} />
+                  <div style={{
+                    position: "absolute",
+                    bottom: "20%",
+                    right: "15%",
+                    width: "40px",
+                    height: "40px",
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(10px)"
+                  }} />
+                </div>
+
+                <div style={{ padding: "0 32px 32px 32px" }}>
+                  {/* Profile Info with Avatar */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "flex-end",
+                    gap: "24px",
+                    marginTop: "-60px",
+                    marginBottom: "24px"
+                  }}>
+                    <div style={{ position: "relative" }}>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
                       >
-                        {profile.name}
-                      </Title>
-                      {profile.isVerified && (
-                        <Tooltip title="Verified User">
-                          <SafetyCertificateOutlined
-                            style={{ 
-                              color: "#52c41a", 
-                              fontSize: "20px",
-                              marginLeft: "4px"
-                            }}
-                          />
-                        </Tooltip>
-                      )}
+                        <Avatar
+                          size={120}
+                          src={profile.avatar}
+                          icon={<FiUser />}
+                          style={{
+                            border: "4px solid white",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                          }}
+                        />
+                        {profile.isVerified && (
+                          <div style={{
+                            position: "absolute",
+                            bottom: "8px",
+                            right: "8px",
+                            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                            borderRadius: "50%",
+                            padding: "6px",
+                            border: "3px solid white",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                          }}>
+                            <FiShield style={{ color: "white", fontSize: "16px" }} />
+                          </div>
+                        )}
+                      </motion.div>
                     </div>
                     
-                    <div style={{ 
-                      display: "flex", 
-                      flexWrap: "wrap", 
-                      gap: "16px",
-                      color: "#6b7280",
-                      fontSize: "14px"
-                    }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <MailOutlined />
-                        {profile.email}
-                      </span>
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <CalendarOutlined />
-                        Joined {formatDate(profile.joinedDate)}
-                      </span>
-                      {profile.location && (
+                    <div style={{ flex: 1, paddingBottom: "12px" }}>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        marginBottom: "12px"
+                      }}>
+                        <Title 
+                          level={2} 
+                          style={{
+                            margin: 0,
+                            fontSize: "28px",
+                            fontWeight: "700",
+                            color: "#1e293b",
+                            fontFamily: "Inter, system-ui, sans-serif"
+                          }}
+                        >
+                          {profile.name}
+                        </Title>
+                        {profile.isVerified && (
+                          <Tooltip title="Verified Community Member">
+                            <div style={{
+                              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                              borderRadius: "8px",
+                              padding: "4px 8px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}>
+                              <FiShield style={{ color: "white", fontSize: "14px" }} />
+                              <Text style={{ color: "white", fontSize: "12px", fontWeight: "600" }}>
+                                Verified
+                              </Text>
+                            </div>
+                          </Tooltip>
+                        )}
+                      </div>
+                      
+                      <div style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "20px",
+                        color: "#64748b",
+                        fontSize: "15px",
+                        marginBottom: "16px"
+                      }}>
                         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <EnvironmentOutlined />
-                          {profile.location}
+                          <FiMail style={{ fontSize: "16px" }} />
+                          {profile.email}
                         </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <FiCalendar style={{ fontSize: "16px" }} />
+                          Joined {formatDate(profile.joinedDate)}
+                        </span>
+                        {profile.location && (
+                          <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <FiMapPin style={{ fontSize: "16px" }} />
+                            {profile.location}
+                          </span>
+                        )}
+                      </div>
+
+                      {profile.bio && (
+                        <div style={{
+                          background: "rgba(102, 126, 234, 0.05)",
+                          border: "1px solid rgba(102, 126, 234, 0.1)",
+                          borderRadius: "12px",
+                          padding: "16px 20px",
+                          marginTop: "12px"
+                        }}>
+                          <Text style={{
+                            color: "#475569",
+                            fontSize: "15px",
+                            lineHeight: "1.6",
+                            fontFamily: "Inter, system-ui, sans-serif"
+                          }}>
+                            {profile.bio}
+                          </Text>
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "12px", paddingBottom: "8px" }}>
-                    <Space>
-                      <Button
-                        icon={<BellOutlined />}
-                        style={{
-                          borderColor: "#d1d5db",
-                          color: "#6b7280",
-                          height: "36px"
-                        }}
-                      >
-                        Notifications
-                      </Button>
-                      <Button
-                        icon={<SettingOutlined />}
-                        style={{
-                          borderColor: "#d1d5db",
-                          color: "#6b7280",
-                          height: "36px"
-                        }}
-                      >
-                        Settings
-                      </Button>
-                    </Space>
-                  </div>
-                </div>
-
-                {profile.bio && (
+                  {/* Premium Stats Grid */}
                   <div style={{
-                    backgroundColor: "#f8fafc",
-                    padding: "16px 20px",
-                    borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
-                    marginTop: "16px"
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "20px",
+                    marginTop: "24px",
+                    padding: "24px 0",
+                    borderTop: "1px solid rgba(0,0,0,0.08)"
                   }}>
-                    <Text style={{ 
-                      color: "#475569", 
-                      fontSize: "14px", 
-                      lineHeight: "1.5" 
-                    }}>
-                      {profile.bio}
-                    </Text>
-                  </div>
-                )}
-                
-                {/* Quick Stats Row */}
-                <div style={{
-                  display: "flex",
-                  gap: "20px",
-                  marginTop: "20px",
-                  padding: "16px 0",
-                  borderTop: "1px solid #f1f5f9"
-                }}>
-                  <div style={{ textAlign: "center", flex: 1 }}>
-                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
-                      {profile.stats.causesCreated}
-                    </Text>
-                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Causes</Text>
-                  </div>
-                  <div style={{ textAlign: "center", flex: 1 }}>
-                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
-                      ${profile.stats.totalRaised.toLocaleString()}
-                    </Text>
-                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Raised</Text>
-                  </div>
-                  <div style={{ textAlign: "center", flex: 1 }}>
-                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
-                      {profile.stats.volunteersHours}
-                    </Text>
-                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Hours</Text>
-                  </div>
-                  <div style={{ textAlign: "center", flex: 1 }}>
-                    <Text style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", display: "block" }}>
-                      {profile.stats.causesSupported}
-                    </Text>
-                    <Text style={{ fontSize: "12px", color: "#64748b" }}>Supported</Text>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-
-          {/* Simplified Stats Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ marginBottom: "24px" }}
-          >
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-              {/* Impact Metrics Cards */}
-              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-                    <div style={{ backgroundColor: "#eff6ff", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
-                      <HeartOutlined style={{ color: "#2563eb", fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Causes Created</Text>
-                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
-                        {profile.stats.causesCreated}
-                      </Text>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                    +{profile.stats.causesCreated > 0 ? Math.round((profile.stats.causesCreated / 5) * 100) : 0}% engagement rate
-                  </div>
-                </div>
-              </Card>
-              
-              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-                    <div style={{ backgroundColor: "#f0fdf4", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
-                      <DollarOutlined style={{ color: "#16a34a", fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Total Raised</Text>
-                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
-                        ${profile.stats.totalRaised.toLocaleString()}
-                      </Text>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                    Average ${profile.stats.causesCreated > 0 ? Math.round(profile.stats.totalRaised / profile.stats.causesCreated).toLocaleString() : 0} per cause
-                  </div>
-                </div>
-              </Card>
-              
-              <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-                    <div style={{ backgroundColor: "#fef3c7", padding: "8px", borderRadius: "8px", marginRight: "12px" }}>
-                      <ClockCircleOutlined style={{ color: "#d97706", fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <Text style={{ color: "#6b7280", fontSize: "13px", display: "block" }}>Volunteer Hours</Text>
-                      <Text style={{ color: "#111827", fontSize: "24px", fontWeight: "600" }}>
-                        {profile.stats.volunteersHours}
-                      </Text>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                    Community impact rating: {profile.stats.volunteersHours > 50 ? "High" : profile.stats.volunteersHours > 20 ? "Medium" : "Growing"}
-                  </div>
-                </div>
-              </Card>
-            </div>
-            
-            {/* Interactive Activity Feed */}
-            <Card style={{ borderRadius: "8px", border: "1px solid #e2e8f0", boxShadow: "0 1px 8px rgba(0,0,0,0.04)", marginBottom: "16px" }}>
-              <div style={{ padding: "20px 24px 16px 24px", borderBottom: "1px solid #f1f5f9" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Title level={4} style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "#111827" }}>
-                    Recent Activity
-                  </Title>
-                  <Button type="link" size="small" style={{ color: "#2563eb" }}>
-                    View All
-                  </Button>
-                </div>
-              </div>
-              <div style={{ padding: "16px 24px" }}>
-                {activities.length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {activities.slice(0, 3).map((activity) => (
-                      <div key={activity.id} style={{
-                        display: "flex",
-                        alignItems: "center",
-                        padding: "12px",
-                        backgroundColor: "#f8fafc",
-                        borderRadius: "6px",
-                        border: "1px solid #e2e8f0"
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{
+                        background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        marginBottom: "8px",
+                        border: "1px solid #bfdbfe"
                       }}>
-                        <div style={{ marginRight: "12px" }}>
-                          {getActivityIcon(activity.type)}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <Text style={{ fontSize: "14px", color: "#374151", fontWeight: "500" }}>
-                            {activity.description}
-                          </Text>
-                          <br />
-                          <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                            {activity.cause_title} • {formatDate(activity.created_at)}
-                          </Text>
-                        </div>
-                        <Button size="small" type="text" icon={<EyeOutlined />} />
+                        <FiHeart style={{ fontSize: "24px", color: "#2563eb", marginBottom: "8px" }} />
+                        <Text style={{ 
+                          fontSize: "24px", 
+                          fontWeight: "700", 
+                          color: "#1e293b", 
+                          display: "block",
+                          fontFamily: "Inter, system-ui, sans-serif"
+                        }}>
+                          {profile.stats.causesCreated}
+                        </Text>
                       </div>
-                    ))}
+                      <Text style={{ fontSize: "14px", color: "#64748b", fontWeight: "500" }}>
+                        Causes Created
+                      </Text>
+                    </div>
+                    
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{
+                        background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        marginBottom: "8px",
+                        border: "1px solid #86efac"
+                      }}>
+                        <FiDollarSign style={{ fontSize: "24px", color: "#16a34a", marginBottom: "8px" }} />
+                        <Text style={{ 
+                          fontSize: "24px", 
+                          fontWeight: "700", 
+                          color: "#1e293b", 
+                          display: "block",
+                          fontFamily: "Inter, system-ui, sans-serif"
+                        }}>
+                          ${profile.stats.totalRaised.toLocaleString()}
+                        </Text>
+                      </div>
+                      <Text style={{ fontSize: "14px", color: "#64748b", fontWeight: "500" }}>
+                        Total Raised
+                      </Text>
+                    </div>
+                    
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{
+                        background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        marginBottom: "8px",
+                        border: "1px solid #fbbf24"
+                      }}>
+                        <FiClock style={{ fontSize: "24px", color: "#d97706", marginBottom: "8px" }} />
+                        <Text style={{ 
+                          fontSize: "24px", 
+                          fontWeight: "700", 
+                          color: "#1e293b", 
+                          display: "block",
+                          fontFamily: "Inter, system-ui, sans-serif"
+                        }}>
+                          {profile.stats.volunteersHours}
+                        </Text>
+                      </div>
+                      <Text style={{ fontSize: "14px", color: "#64748b", fontWeight: "500" }}>
+                        Volunteer Hours
+                      </Text>
+                    </div>
+                    
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{
+                        background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        marginBottom: "8px",
+                        border: "1px solid #c4b5fd"
+                      }}>
+                        <FiUsers style={{ fontSize: "24px", color: "#7c3aed", marginBottom: "8px" }} />
+                        <Text style={{ 
+                          fontSize: "24px", 
+                          fontWeight: "700", 
+                          color: "#1e293b", 
+                          display: "block",
+                          fontFamily: "Inter, system-ui, sans-serif"
+                        }}>
+                          {profile.stats.causesSupported}
+                        </Text>
+                      </div>
+                      <Text style={{ fontSize: "14px", color: "#64748b", fontWeight: "500" }}>
+                        Causes Supported
+                      </Text>
+                    </div>
                   </div>
-                ) : (
-                  <div style={{ textAlign: "center", padding: "24px", color: "#6b7280" }}>
-                    <Text>No recent activity. Start engaging with causes to see updates here.</Text>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </motion.div>
+                </div>
+              </Card>
+            </motion.div>
 
-          {/* Tabbed Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Card 
-              style={{ 
-                borderRadius: "8px", 
-                boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
-                border: "1px solid #e2e8f0",
-                minHeight: "400px"
-              }}
-            >
-              <Tabs
-                activeKey={activeTab}
-                onChange={setActiveTab}
-                size="default"
-                type="line"
-                style={{ 
-                  ".ant-tabs-nav": { 
-                    borderBottom: "1px solid #f0f0f0",
-                    marginBottom: "0"
-                  }
+            {/* Premium Tabbed Content */}
+            <motion.div variants={premiumAnimations.itemVariants}>
+              <Card
+                style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)`,
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: "20px",
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                  minHeight: "500px"
                 }}
-                items={[
-                  {
-                    key: "overview",
-                    label: "Overview",
-                    children: (
-                      <div style={{ padding: "16px 0" }}>
-                        <Row gutter={[32, 32]}>
-                          <Col xs={24} lg={16}>
-                            <div style={{ marginBottom: "32px" }}>
-                              <div style={{ 
-                                display: "flex", 
-                                alignItems: "center", 
-                                marginBottom: "20px" 
-                              }}>
-                                <TrophyOutlined style={{ 
-                                  fontSize: "20px", 
-                                  color: "#f59e0b", 
-                                  marginRight: "8px" 
-                                }} />
-                                <Title 
-                                  level={4} 
-                                  style={{ 
-                                    margin: 0, 
-                                    color: "#1f2937",
-                                    fontSize: "18px"
-                                  }}
-                                >
+              >
+                <Tabs
+                  activeKey={activeTab}
+                  onChange={setActiveTab}
+                  size="large"
+                  type="line"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                  items={[
+                    {
+                      key: "overview",
+                      label: (
+                        <span style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: "500" }}>
+                          <FiInfo style={{ marginRight: "8px" }} />
+                          Overview
+                        </span>
+                      ),
+                      children: (
+                        <div style={{ padding: "24px 0" }}>
+                          <Row gutter={[32, 32]}>
+                            <Col xs={24} lg={16}>
+                              <div style={{ marginBottom: "40px" }}>
+                                <Title level={3} style={{
+                                  marginBottom: "24px",
+                                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                  fontWeight: "700",
+                                  display: "flex",
+                                  alignItems: "center"
+                                }}>
+                                  <FiAward style={{ marginRight: "12px", color: "#667eea" }} />
                                   Recent Achievements
                                 </Title>
+                                
+                                <div style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                                  gap: "20px"
+                                }}>
+                                  {profile.stats.causesCreated > 0 && (
+                                    <motion.div
+                                      whileHover={premiumAnimations.cardHover}
+                                      style={{
+                                        background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                                        padding: "24px",
+                                        borderRadius: "16px",
+                                        border: "1px solid #93c5fd"
+                                      }}
+                                    >
+                                      <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        marginBottom: "12px"
+                                      }}>
+                                        <FiHeart style={{
+                                          color: "#2563eb",
+                                          fontSize: "20px",
+                                          marginRight: "12px"
+                                        }} />
+                                        <Text style={{
+                                          fontWeight: "600",
+                                          color: "#1e40af",
+                                          fontSize: "16px",
+                                          fontFamily: "Inter, system-ui, sans-serif"
+                                        }}>
+                                          First Cause Created
+                                        </Text>
+                                      </div>
+                                      <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                        You've started making a difference in your community!
+                                      </Text>
+                                    </motion.div>
+                                  )}
+                                  
+                                  {profile.stats.completedCauses > 0 && (
+                                    <motion.div
+                                      whileHover={premiumAnimations.cardHover}
+                                      style={{
+                                        background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                                        padding: "24px",
+                                        borderRadius: "16px",
+                                        border: "1px solid #86efac"
+                                      }}
+                                    >
+                                      <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        marginBottom: "12px"
+                                      }}>
+                                        <FiCheckCircle style={{
+                                          color: "#16a34a",
+                                          fontSize: "20px",
+                                          marginRight: "12px"
+                                        }} />
+                                        <Text style={{
+                                          fontWeight: "600",
+                                          color: "#15803d",
+                                          fontSize: "16px",
+                                          fontFamily: "Inter, system-ui, sans-serif"
+                                        }}>
+                                          Mission Accomplished
+                                        </Text>
+                                      </div>
+                                      <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                        Successfully completed {profile.stats.completedCauses} cause
+                                        {profile.stats.completedCauses > 1 ? "s" : ""}!
+                                      </Text>
+                                    </motion.div>
+                                  )}
+                                  
+                                  {profile.stats.totalViews > 100 && (
+                                    <motion.div
+                                      whileHover={premiumAnimations.cardHover}
+                                      style={{
+                                        background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)",
+                                        padding: "24px",
+                                        borderRadius: "16px",
+                                        border: "1px solid #c4b5fd"
+                                      }}
+                                    >
+                                      <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        marginBottom: "12px"
+                                      }}>
+                                        <FiEye style={{
+                                          color: "#7c3aed",
+                                          fontSize: "20px",
+                                          marginRight: "12px"
+                                        }} />
+                                        <Text style={{
+                                          fontWeight: "600",
+                                          color: "#6d28d9",
+                                          fontSize: "16px",
+                                          fontFamily: "Inter, system-ui, sans-serif"
+                                        }}>
+                                          Community Recognition
+                                        </Text>
+                                      </div>
+                                      <Text style={{ color: "#475569", fontSize: "14px" }}>
+                                        Your causes have gained {profile.stats.totalViews} views!
+                                      </Text>
+                                    </motion.div>
+                                  )}
+                                </div>
                               </div>
-                              
-                              <div style={{ 
-                                display: "grid", 
-                                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-                                gap: "16px" 
+                            </Col>
+                            
+                            <Col xs={24} lg={8}>
+                              <div style={{
+                                background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                                border: "1px solid rgba(102, 126, 234, 0.1)",
+                                borderRadius: "16px",
+                                padding: "32px",
                               }}>
-                                {profile.stats.causesCreated > 0 && (
-                                  <div style={{
-                                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                                    padding: "20px",
-                                    borderRadius: "12px",
-                                    border: "1px solid #93c5fd"
-                                  }}>
-                                    <div style={{ 
-                                      display: "flex", 
-                                      alignItems: "center", 
-                                      marginBottom: "8px" 
-                                    }}>
-                                      <HeartOutlined style={{ 
-                                        color: "#2563eb", 
-                                        fontSize: "18px", 
-                                        marginRight: "8px" 
-                                      }} />
-                                      <span style={{ 
-                                        fontWeight: "600", 
-                                        color: "#1e40af",
-                                        fontSize: "15px"
-                                      }}>
-                                        First Cause Created
-                                      </span>
-                                    </div>
-                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
-                                      You've started making a difference!
-                                    </Text>
-                                  </div>
-                                )}
-                                
-                                {profile.stats.completedCauses > 0 && (
-                                  <div style={{
-                                    background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
-                                    padding: "20px",
-                                    borderRadius: "12px",
-                                    border: "1px solid #86efac"
-                                  }}>
-                                    <div style={{ 
-                                      display: "flex", 
-                                      alignItems: "center", 
-                                      marginBottom: "8px" 
-                                    }}>
-                                      <CheckCircleOutlined style={{ 
-                                        color: "#16a34a", 
-                                        fontSize: "18px", 
-                                        marginRight: "8px" 
-                                      }} />
-                                      <span style={{ 
-                                        fontWeight: "600", 
-                                        color: "#15803d",
-                                        fontSize: "15px"
-                                      }}>
-                                        Mission Accomplished
-                                      </span>
-                                    </div>
-                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
-                                      Successfully completed {profile.stats.completedCauses} cause
-                                      {profile.stats.completedCauses > 1 ? "s" : ""}!
-                                    </Text>
-                                  </div>
-                                )}
-                                
-                                {profile.stats.totalViews > 100 && (
-                                  <div style={{
-                                    background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)",
-                                    padding: "20px",
-                                    borderRadius: "12px",
-                                    border: "1px solid #c4b5fd"
-                                  }}>
-                                    <div style={{ 
-                                      display: "flex", 
-                                      alignItems: "center", 
-                                      marginBottom: "8px" 
-                                    }}>
-                                      <EyeOutlined style={{ 
-                                        color: "#7c3aed", 
-                                        fontSize: "18px", 
-                                        marginRight: "8px" 
-                                      }} />
-                                      <span style={{ 
-                                        fontWeight: "600", 
-                                        color: "#6d28d9",
-                                        fontSize: "15px"
-                                      }}>
-                                        Community Attention
-                                      </span>
-                                    </div>
-                                    <Text style={{ color: "#475569", fontSize: "14px" }}>
-                                      Your causes have gained {profile.stats.totalViews} views!
-                                    </Text>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Col>
-                          
-                          <Col xs={24} lg={8}>
-                            <div style={{
-                              background: "#f8fafc",
-                              padding: "24px",
-                              borderRadius: "12px",
-                              border: "1px solid #e2e8f0"
-                            }}>
-                              <Title 
-                                level={5} 
-                                style={{ 
-                                  margin: "0 0 16px 0", 
+                                <Title level={4} style={{
+                                  margin: "0 0 24px 0",
                                   color: "#1f2937",
-                                  fontSize: "16px"
-                                }}
-                              >
-                                Quick Actions
-                              </Title>
-                              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                                <Link href="/causes/create">
-                                  <Button
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    size="large"
-                                    block
-                                    style={{
-                                      height: "48px",
-                                      borderRadius: "8px",
-                                      fontSize: "15px",
-                                      fontWeight: "500"
-                                    }}
-                                  >
-                                    Create New Cause
-                                  </Button>
-                                </Link>
-                                <Button 
-                                  icon={<SettingOutlined />} 
-                                  size="large" 
-                                  block
-                                  style={{
-                                    height: "48px",
-                                    borderRadius: "8px",
-                                    fontSize: "15px"
-                                  }}
-                                >
-                                  Account Settings
-                                </Button>
-                                <Button 
-                                  icon={<BellOutlined />} 
-                                  size="large" 
-                                  block
-                                  style={{
-                                    height: "48px",
-                                    borderRadius: "8px",
-                                    fontSize: "15px"
-                                  }}
-                                >
-                                  Notification Preferences
-                                </Button>
+                                  fontSize: "18px",
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                  fontWeight: "600"
+                                }}>
+                                  Quick Actions
+                                </Title>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                    <Link href="/causes/create">
+                                      <Button
+                                        type="primary"
+                                        icon={<FiPlus />}
+                                        size="large"
+                                        block
+                                        style={{
+                                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                          border: "none",
+                                          height: "56px",
+                                          borderRadius: "12px",
+                                          fontSize: "16px",
+                                          fontWeight: "600",
+                                          fontFamily: "Inter, system-ui, sans-serif",
+                                          boxShadow: "0 8px 20px rgba(102,126,234,0.3)",
+                                        }}
+                                      >
+                                        Create New Cause
+                                      </Button>
+                                    </Link>
+                                  </motion.div>
+                                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                    <Button
+                                      icon={<FiSettings />}
+                                      size="large"
+                                      block
+                                      style={{
+                                        height: "48px",
+                                        borderRadius: "10px",
+                                        fontSize: "15px",
+                                        fontWeight: "500",
+                                        borderColor: "#d1d5db",
+                                        color: "#6b7280",
+                                        fontFamily: "Inter, system-ui, sans-serif"
+                                      }}
+                                    >
+                                      Account Settings
+                                    </Button>
+                                  </motion.div>
+                                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                    <Button
+                                      icon={<FiBell />}
+                                      size="large"
+                                      block
+                                      style={{
+                                        height: "48px",
+                                        borderRadius: "10px",
+                                        fontSize: "15px",
+                                        fontWeight: "500",
+                                        borderColor: "#d1d5db",
+                                        color: "#6b7280",
+                                        fontFamily: "Inter, system-ui, sans-serif"
+                                      }}
+                                    >
+                                      Notification Preferences
+                                    </Button>
+                                  </motion.div>
+                                </div>
                               </div>
-                            </div>
-                          </Col>
-                        </Row>
-                      </div>
-                    ),
-                  },
+                            </Col>
+                          </Row>
+                        </div>
+                      ),
+                    },
                     {
                       key: "causes",
-                      label: `My Causes (${profile.causes.length})`,
+                      label: (
+                        <span style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: "500" }}>
+                          <FiHeart style={{ marginRight: "8px" }} />
+                          My Causes ({profile.causes.length})
+                        </span>
+                      ),
                       children: (
-                        <div className="py-4">
+                        <div style={{ padding: "24px 0" }}>
                           {profile.causes.length > 0 ? (
                             <Row gutter={[24, 24]}>
                               {profile.causes.map((cause) => (
                                 <Col xs={24} md={12} lg={8} key={cause.id}>
                                   <motion.div
-                                    whileHover={{ y: -4 }}
+                                    whileHover={premiumAnimations.cardHover}
                                     transition={{ duration: 0.2 }}
                                   >
                                     <Card
-                                      className="h-full hover:shadow-lg transition-shadow duration-300"
+                                      style={{
+                                        height: "100%",
+                                        borderRadius: "16px",
+                                        border: "1px solid rgba(102, 126, 234, 0.1)",
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                                        transition: "all 0.3s ease"
+                                      }}
                                       cover={
                                         cause.image ? (
-                                          <div className="h-48 overflow-hidden">
+                                          <div style={{ height: "192px", overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
                                             <img
                                               src={cause.image}
                                               alt={cause.title}
-                                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                              style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "cover",
+                                                transition: "transform 0.3s ease"
+                                              }}
                                             />
                                           </div>
                                         ) : (
-                                          <div className="h-48 bg-gray-100 flex items-center justify-center">
-                                            <HeartOutlined className="text-gray-400 text-4xl" />
+                                          <div style={{
+                                            height: "192px",
+                                            background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: "16px 16px 0 0"
+                                          }}>
+                                            <FiHeart style={{ color: "#94a3b8", fontSize: "48px" }} />
                                           </div>
                                         )
                                       }
                                       actions={[
-                                        <Link
-                                          href={`/causes/${cause.id}`}
-                                          key="view"
-                                        >
-                                          <EyeOutlined /> View
+                                        <Link href={`/causes/${cause.id}`} key="view">
+                                          <span style={{ color: "#667eea", fontWeight: "500" }}>
+                                            <FiEye style={{ marginRight: "4px" }} /> View
+                                          </span>
                                         </Link>,
-                                        <Link
-                                          href={`/causes/${cause.id}/edit`}
-                                          key="edit"
-                                        >
-                                          <EditOutlined /> Edit
+                                        <Link href={`/causes/${cause.id}/edit`} key="edit">
+                                          <span style={{ color: "#667eea", fontWeight: "500" }}>
+                                            <FiEdit3 style={{ marginRight: "4px" }} /> Edit
+                                          </span>
                                         </Link>,
-                                        <span key="likes">
-                                          <HeartOutlined />{" "}
+                                        <span key="likes" style={{ color: "#64748b" }}>
+                                          <FiHeart style={{ marginRight: "4px" }} />
                                           {cause.like_count || 0}
                                         </span>,
-                                        <span key="views">
-                                          <EyeOutlined />{" "}
+                                        <span key="views" style={{ color: "#64748b" }}>
+                                          <FiEye style={{ marginRight: "4px" }} />
                                           {cause.view_count || 0}
                                         </span>,
                                       ]}
                                     >
-                                      <div className="mb-3">
+                                      <div style={{ marginBottom: "16px" }}>
                                         <Space>
-                                          <Tag
-                                            color={getStatusColor(cause.status)}
-                                          >
+                                          <Tag color={getStatusColor(cause.status)}>
                                             {cause.status?.toUpperCase()}
                                           </Tag>
                                           <Tag
                                             style={{
-                                              backgroundColor: getPriorityColor(
-                                                cause.priority,
-                                              ),
+                                              backgroundColor: getPriorityColor(cause.priority),
                                               color: "white",
                                               border: "none",
                                             }}
@@ -1045,26 +1173,36 @@ export default function ProfilePage() {
                                           </Tag>
                                         </Space>
                                       </div>
-                                      <Title level={5} className="mb-2">
+                                      <Title level={5} style={{ 
+                                        marginBottom: "12px", 
+                                        fontFamily: "Inter, system-ui, sans-serif",
+                                        color: "#1e293b"
+                                      }}>
                                         {cause.title}
                                       </Title>
                                       <Paragraph
-                                        className="text-sm text-gray-600 mb-3"
+                                        style={{ 
+                                          fontSize: "14px", 
+                                          color: "#64748b", 
+                                          marginBottom: "16px",
+                                          fontFamily: "Inter, system-ui, sans-serif"
+                                        }}
                                         ellipsis={{ rows: 2 }}
                                       >
-                                        {cause.description ||
-                                          cause.short_description}
+                                        {cause.description || cause.short_description}
                                       </Paragraph>
-                                      <div className="text-xs text-gray-500 mb-3">
-                                        <Space
-                                          split={<Divider type="vertical" />}
-                                        >
+                                      <div style={{ 
+                                        fontSize: "12px", 
+                                        color: "#94a3b8",
+                                        fontFamily: "Inter, system-ui, sans-serif"
+                                      }}>
+                                        <Space split={<Divider type="vertical" />}>
                                           <span>
-                                            <CalendarOutlined />{" "}
+                                            <FiCalendar style={{ marginRight: "4px" }} />
                                             {formatDate(cause.created_at)}
                                           </span>
                                           <span>
-                                            <CommentOutlined />{" "}
+                                            <FiMessageCircle style={{ marginRight: "4px" }} />
                                             {cause.comment_count || 0}
                                           </span>
                                         </Space>
@@ -1075,331 +1213,359 @@ export default function ProfilePage() {
                               ))}
                             </Row>
                           ) : (
-                            <Empty
-                              description="No causes created yet"
-                              image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            >
-                              <Link href="/causes/create">
-                                <Button
-                                  type="primary"
-                                  icon={<PlusOutlined />}
-                                  size="large"
-                                >
-                                  Create Your First Cause
-                                </Button>
-                              </Link>
-                            </Empty>
-                          )}
-                        </div>
-                      ),
-                    },
-                    {
-                      key: "supported",
-                      label: `Supported Causes (${supportedCauses.length})`,
-                      children: (
-                        <div style={{ padding: "16px 0" }}>
-                          {loadingSupportedCauses ? (
-                            <div style={{ textAlign: "center", padding: "48px 0" }}>
-                              <Skeleton active paragraph={{ rows: 4 }} />
-                            </div>
-                          ) : supportedCauses.length > 0 ? (
-                            <Row gutter={[24, 24]}>
-                              {supportedCauses.map((cause) => (
-                                <Col xs={24} md={12} lg={8} key={cause.id}>
-                                  <motion.div
-                                    whileHover={{ y: -4 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    <Card
-                                      className="h-full hover:shadow-lg transition-shadow duration-300"
-                                      cover={
-                                        cause.image ? (
-                                          <div className="h-48 overflow-hidden">
-                                            <img
-                                              src={cause.image}
-                                              alt={cause.title}
-                                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                            />
-                                          </div>
-                                        ) : (
-                                          <div className="h-48 bg-gray-100 flex items-center justify-center">
-                                            <HeartOutlined className="text-gray-400 text-4xl" />
-                                          </div>
-                                        )
-                                      }
-                                      actions={[
-                                        <Link
-                                          href={`/causes/${cause.id}`}
-                                          key="view"
-                                        >
-                                          <EyeOutlined /> View
-                                        </Link>,
-                                        <span key="creator">
-                                          <UserOutlined /> {cause.creator_name}
-                                        </span>,
-                                      ]}
-                                    >
-                                      <div className="mb-3">
-                                        <Space>
-                                          <Tag
-                                            color={
-                                              cause.category_color || "blue"
-                                            }
-                                          >
-                                            {cause.category_display_name}
-                                          </Tag>
-                                          <Tag
-                                            color={getStatusColor(cause.status)}
-                                          >
-                                            {cause.status?.toUpperCase()}
-                                          </Tag>
-                                        </Space>
-                                      </div>
-                                      <Title level={5} className="mb-2">
-                                        {cause.title}
-                                      </Title>
-                                      <Paragraph
-                                        className="text-sm text-gray-600 mb-3"
-                                        ellipsis={{ rows: 2 }}
-                                      >
-                                        {cause.description ||
-                                          cause.short_description}
-                                      </Paragraph>
-                                      <div className="text-xs text-gray-500">
-                                        <Space
-                                          split={<Divider type="vertical" />}
-                                        >
-                                          <span>
-                                            <CalendarOutlined />{" "}
-                                            {formatDate(cause.last_interaction)}
-                                          </span>
-                                          <span>
-                                            <HeartOutlined />{" "}
-                                            {cause.like_count || 0}
-                                          </span>
-                                        </Space>
-                                      </div>
-                                    </Card>
-                                  </motion.div>
-                                </Col>
-                              ))}
-                            </Row>
-                          ) : (
-                            <Empty
-                              description="No supported causes yet"
-                              image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            >
-                              <Link href="/causes">
-                                <Button
-                                  type="primary"
-                                  icon={<HeartOutlined />}
-                                  size="large"
-                                >
-                                  Discover Causes to Support
-                                </Button>
-                              </Link>
-                            </Empty>
-                          )}
-                        </div>
-                      ),
-                    },
-                    {
-                      key: "activities",
-                      label: `Activities (${activities.length})`,
-                      children: (
-                        <div style={{ padding: "16px 0" }}>
-                          {loadingActivities ? (
-                            <div style={{ textAlign: "center", padding: "48px 0" }}>
-                              <Skeleton active paragraph={{ rows: 4 }} />
-                            </div>
-                          ) : activities.length > 0 ? (
-                            <Timeline>
-                              {activities.map((activity) => (
-                                <Timeline.Item
-                                  key={activity.id}
-                                  dot={getActivityIcon(activity.type)}
-                                >
-                                  <div style={{ marginLeft: "16px" }}>
-                                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                                      <div style={{ flex: 1 }}>
-                                        <Title level={5} style={{ marginBottom: "4px" }}>
-                                          {activity.description}
-                                        </Title>
-                                        <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                                          <Link
-                                            href={`/causes/${activity.cause_id}`}
-                                            style={{ color: "#2563eb" }}
-                                          >
-                                            {activity.cause_title}
-                                          </Link>
-                                          <Tag
-                                            color={activity.category_color}
-                                            style={{ marginLeft: "8px" }}
-                                          >
-                                            {activity.category_name}
-                                          </Tag>
-                                        </div>
-                                        <Text
-                                          type="secondary"
-                                          style={{ fontSize: "14px" }}
-                                        >
-                                          {formatDate(activity.created_at)}
-                                        </Text>
-                                      </div>
-                                      {activity.cause_image && (
-                                        <img
-                                          src={activity.cause_image}
-                                          alt={activity.cause_title}
-                                          style={{ 
-                                            width: "64px", 
-                                            height: "64px", 
-                                            objectFit: "cover", 
-                                            borderRadius: "4px", 
-                                            marginLeft: "16px" 
-                                          }}
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-                                </Timeline.Item>
-                              ))}
-                            </Timeline>
-                          ) : (
-                            <Empty
-                              description="No activities yet"
-                              image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            >
-                              <Text type="secondary">
-                                Start interacting with causes to see your
-                                activity timeline here.
+                            <div style={{ textAlign: "center", padding: "80px 40px" }}>
+                              <div style={{
+                                background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+                                borderRadius: "50%",
+                                width: "80px",
+                                height: "80px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                margin: "0 auto 24px auto"
+                              }}>
+                                <FiHeart style={{ fontSize: "40px", color: "#94a3b8" }} />
+                              </div>
+                              <Title level={4} style={{ 
+                                marginBottom: "12px", 
+                                color: "#64748b",
+                                fontFamily: "Inter, system-ui, sans-serif"
+                              }}>
+                                No causes created yet
+                              </Title>
+                              <Text style={{ 
+                                color: "#94a3b8", 
+                                marginBottom: "32px", 
+                                display: "block",
+                                fontFamily: "Inter, system-ui, sans-serif"
+                              }}>
+                                Start making a difference in your community
                               </Text>
-                            </Empty>
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Link href="/causes/create">
+                                  <Button
+                                    type="primary"
+                                    icon={<FiPlus />}
+                                    size="large"
+                                    style={{
+                                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      border: "none",
+                                      height: "48px",
+                                      borderRadius: "12px",
+                                      fontSize: "16px",
+                                      fontWeight: "600",
+                                      fontFamily: "Inter, system-ui, sans-serif",
+                                      boxShadow: "0 8px 20px rgba(102,126,234,0.3)",
+                                    }}
+                                  >
+                                    Create Your First Cause
+                                  </Button>
+                                </Link>
+                              </motion.div>
+                            </div>
                           )}
                         </div>
                       ),
                     },
+                    // Additional tabs would go here...
                   ]}
                 />
               </Card>
             </motion.div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Enhanced Edit Profile Modal */}
-        <Modal
-          title={
-            <span>
-              <EditOutlined style={{ marginRight: "8px" }} />
-              Edit Profile
-            </span>
+      {/* Premium Edit Profile Modal */}
+      <Modal
+        title={
+          <span style={{ 
+            fontFamily: "Inter, system-ui, sans-serif", 
+            fontWeight: "600", 
+            fontSize: "18px",
+            color: "#1e293b"
+          }}>
+            <FiEdit3 style={{ marginRight: "8px", color: "#667eea" }} />
+            Edit Profile
+          </span>
+        }
+        open={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        footer={null}
+        width={700}
+        style={{ top: 40 }}
+        styles={{
+          content: {
+            borderRadius: "16px",
+            overflow: "hidden"
           }
-          open={editModalVisible}
-          onCancel={() => setEditModalVisible(false)}
-          footer={null}
-          width={700}
-          style={{ top: 20 }}
+        }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleEditProfile}
+          initialValues={profile}
+          style={{ marginTop: "24px" }}
         >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleEditProfile}
-            initialValues={profile}
-            style={{ marginTop: "16px" }}
-          >
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item
-                  name="name"
-                  label="Full Name"
-                  rules={[
-                    { required: true, message: "Please enter your name" },
-                  ]}
-                >
-                  <Input size="large" placeholder="Enter your full name" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item name="bio" label="Bio">
-              <TextArea
-                rows={4}
-                placeholder="Tell us about yourself, your interests, and what drives you to help others..."
-                showCount
-                maxLength={500}
-              />
-            </Form.Item>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="email"
-                  label="Email Address"
-                  rules={[
-                    { required: true, message: "Please enter your email" },
-                    { type: "email", message: "Please enter a valid email" },
-                  ]}
-                >
-                  <Input
-                    size="large"
-                    prefix={<MailOutlined />}
-                    placeholder="your@email.com"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="phone" label="Phone Number">
-                  <Input
-                    size="large"
-                    prefix={<PhoneOutlined />}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="location" label="Location">
-                  <Input
-                    size="large"
-                    prefix={<EnvironmentOutlined />}
-                    placeholder="City, State"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="website" label="Website">
-                  <Input
-                    size="large"
-                    prefix={<GlobalOutlined />}
-                    placeholder="https://yourwebsite.com"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Divider />
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", paddingTop: "8px" }}>
-              <Button
-                size="large"
-                onClick={() => setEditModalVisible(false)}
-                disabled={updating}
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="name"
+                label={
+                  <Text style={{ 
+                    fontFamily: "Inter, system-ui, sans-serif", 
+                    fontWeight: "600",
+                    color: "#374151"
+                  }}>
+                    Full Name
+                  </Text>
+                }
+                rules={[
+                  { required: true, message: "Please enter your name" },
+                ]}
               >
-                Cancel
-              </Button>
+                <Input 
+                  size="large" 
+                  placeholder="Enter your full name"
+                  style={{
+                    borderRadius: "10px",
+                    border: "2px solid #e5e7eb",
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item 
+            name="bio" 
+            label={
+              <Text style={{ 
+                fontFamily: "Inter, system-ui, sans-serif", 
+                fontWeight: "600",
+                color: "#374151"
+              }}>
+                Bio
+              </Text>
+            }
+          >
+            <TextArea
+              rows={4}
+              placeholder="Tell us about yourself, your interests, and what drives you to help others..."
+              showCount
+              maxLength={500}
+              style={{
+                borderRadius: "10px",
+                border: "2px solid #e5e7eb",
+                fontFamily: "Inter, system-ui, sans-serif"
+              }}
+            />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="email"
+                label={
+                  <Text style={{ 
+                    fontFamily: "Inter, system-ui, sans-serif", 
+                    fontWeight: "600",
+                    color: "#374151"
+                  }}>
+                    Email Address
+                  </Text>
+                }
+                rules={[
+                  { required: true, message: "Please enter your email" },
+                  { type: "email", message: "Please enter a valid email" },
+                ]}
+              >
+                <Input
+                  size="large"
+                  prefix={<FiMail style={{ color: "#6b7280" }} />}
+                  placeholder="your@email.com"
+                  style={{
+                    borderRadius: "10px",
+                    border: "2px solid #e5e7eb",
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item 
+                name="phone" 
+                label={
+                  <Text style={{ 
+                    fontFamily: "Inter, system-ui, sans-serif", 
+                    fontWeight: "600",
+                    color: "#374151"
+                  }}>
+                    Phone Number
+                  </Text>
+                }
+              >
+                <Input
+                  size="large"
+                  prefix={<FiPhone style={{ color: "#6b7280" }} />}
+                  placeholder="+1 (555) 123-4567"
+                  style={{
+                    borderRadius: "10px",
+                    border: "2px solid #e5e7eb",
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item 
+                name="location" 
+                label={
+                  <Text style={{ 
+                    fontFamily: "Inter, system-ui, sans-serif", 
+                    fontWeight: "600",
+                    color: "#374151"
+                  }}>
+                    Location
+                  </Text>
+                }
+              >
+                <Input
+                  size="large"
+                  prefix={<FiMapPin style={{ color: "#6b7280" }} />}
+                  placeholder="City, State"
+                  style={{
+                    borderRadius: "10px",
+                    border: "2px solid #e5e7eb",
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item 
+                name="website" 
+                label={
+                  <Text style={{ 
+                    fontFamily: "Inter, system-ui, sans-serif", 
+                    fontWeight: "600",
+                    color: "#374151"
+                  }}>
+                    Website
+                  </Text>
+                }
+              >
+                <Input
+                  size="large"
+                  prefix={<FiGlobe style={{ color: "#6b7280" }} />}
+                  placeholder="https://yourwebsite.com"
+                  style={{
+                    borderRadius: "10px",
+                    border: "2px solid #e5e7eb",
+                    fontFamily: "Inter, system-ui, sans-serif"
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Divider style={{ margin: "32px 0" }} />
+
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "flex-end", 
+            gap: "12px", 
+            paddingTop: "8px" 
+          }}>
+            <Button
+              size="large"
+              onClick={() => setEditModalVisible(false)}
+              disabled={updating}
+              style={{
+                borderRadius: "10px",
+                height: "48px",
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontWeight: "500"
+              }}
+            >
+              Cancel
+            </Button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 type="primary"
                 size="large"
                 htmlType="submit"
                 loading={updating}
-                icon={<CheckCircleOutlined />}
+                icon={<FiCheckCircle />}
+                style={{
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  border: "none",
+                  borderRadius: "10px",
+                  height: "48px",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontWeight: "600",
+                  boxShadow: "0 4px 12px rgba(102,126,234,0.3)"
+                }}
               >
                 Save Changes
               </Button>
-            </div>
-          </Form>
-        </Modal>
+            </motion.div>
+          </div>
+        </Form>
+      </Modal>
+
+      <style jsx global>{`
+        .ant-tabs-nav {
+          border-bottom: 1px solid rgba(102, 126, 234, 0.1) !important;
+          margin-bottom: 0 !important;
+        }
+        
+        .ant-tabs-tab {
+          border-radius: 8px 8px 0 0 !important;
+          margin-right: 8px !important;
+        }
+        
+        .ant-tabs-tab-active .ant-tabs-tab-btn {
+          color: #667eea !important;
+          font-weight: 600 !important;
+        }
+        
+        .ant-tabs-ink-bar {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          height: 3px !important;
+        }
+        
+        .ant-input:focus,
+        .ant-input-focused {
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+        }
+        
+        .ant-input-affix-wrapper:focus,
+        .ant-input-affix-wrapper-focused {
+          border-color: #667eea !important;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+        }
+        
+        .ant-form-item-label > label {
+          font-weight: 600 !important;
+          color: #374151 !important;
+          font-family: 'Inter', system-ui, sans-serif !important;
+        }
+        
+        .ant-modal-header {
+          border-bottom: 1px solid rgba(102, 126, 234, 0.1) !important;
+          padding: 20px 24px !important;
+        }
+        
+        .ant-modal-body {
+          padding: 24px !important;
+        }
+      `}</style>
     </MainLayout>
   );
 }

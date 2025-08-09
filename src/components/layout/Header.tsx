@@ -46,14 +46,14 @@ const LogoComponent = () => (
     <Image
       src="/images/logo2.png"
       alt="Hands2gether Logo"
+      height={60}
       width={50}
-      height={55}
       priority
     />
   </Link>
 );
 
-// Navigation Menu Items - Microsoft style with icons
+// Navigation Menu Items - Focused on helping people
 const navigationItems = [
   {
     key: "home",
@@ -62,14 +62,20 @@ const navigationItems = [
     icon: <FiHome size={16} />,
   },
   {
-    key: "initiatives",
-    label: "Initiatives",
-    href: "/causes",
+    key: "food",
+    label: "Food Assistance",
+    href: "/causes?category=food",
+    icon: <FiHeart size={16} />,
+  },
+  {
+    key: "clothing",
+    label: "Clothing Support",
+    href: "/causes?category=clothing",
     icon: <FiTarget size={16} />,
   },
   {
     key: "education",
-    label: "Education",
+    label: "Training & Education",
     href: "/education",
     icon: <FiBookOpen size={16} />,
   },
@@ -260,7 +266,7 @@ const MobileMenu = ({
               fontFamily: "'Segoe UI', system-ui, sans-serif",
             }}
           >
-            Start initiative
+            Help someone today
           </Button>
         </div>
 
@@ -458,7 +464,7 @@ export default function RevampedHeader() {
           left: 0,
           right: 0,
           zIndex: 1000,
-          height: 60,
+          height: 90,
           padding: 0,
           backgroundColor: "white",
           borderBottom: `1px solid ${isScrolled ? "#e5e5e5" : "rgba(0,0,0,0.08)"}`,
@@ -500,17 +506,17 @@ export default function RevampedHeader() {
                       ? [
                           {
                             key: "browse",
-                            label: "Browse all initiatives",
+                            label: "Find ways to help",
                             onClick: () => router.push("/causes"),
                           },
                           {
                             key: "create",
-                            label: "Start an initiative",
+                            label: "Create a way to help",
                             onClick: () => router.push("/causes/create"),
                           },
                           {
                             key: "my-initiatives",
-                            label: "My initiatives",
+                            label: "My ways to help",
                             onClick: () => router.push("/profile#causes"),
                           },
                         ]
@@ -696,7 +702,7 @@ export default function RevampedHeader() {
                 }}
                 onClick={() => router.push("/causes/create")}
               >
-                Start initiative
+                Help someone today
               </Button>
             </div>
 

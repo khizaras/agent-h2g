@@ -56,140 +56,173 @@ export default function PremiumNewHomePage() {
     }
   };
 
-  // Enterprise metrics
-  const enterpriseMetrics = [
+  // Impact metrics
+  const impactMetrics = [
     { 
-      value: "340%", 
-      label: "Efficiency increase", 
-      description: "Average resource allocation improvement",
-      icon: <FiTrendingUp />,
+      value: "156K+", 
+      label: "People helped", 
+      description: "Lives improved through community support",
+      icon: <FiUsers />,
       color: "#06b6d4"
     },
     { 
-      value: "2.8M", 
-      label: "Lives transformed", 
-      description: "Cross-platform impact measurement",
-      icon: <FiUsers />,
+      value: "2,847", 
+      label: "Active communities", 
+      description: "Local groups making a difference",
+      icon: <FiTarget />,
       color: "#8b5cf6"
     },
     { 
-      value: "98.4%", 
-      label: "Client satisfaction", 
-      description: "Enterprise-grade service reliability",
+      value: "94%", 
+      label: "Success rate", 
+      description: "People receiving needed assistance",
       icon: <FiStar />,
       color: "#10b981"
     },
     { 
-      value: "45min", 
-      label: "Average setup time", 
-      description: "From onboarding to first initiative",
+      value: "24/7", 
+      label: "Available support", 
+      description: "Round-the-clock community assistance",
       icon: <FiZap />,
       color: "#f59e0b"
     }
   ];
 
-  // Three premium pillars
-  const premiumPillars = [
+  // Three core pillars
+  const corePillars = [
     {
-      title: "Strategic Food Networks",
-      subtitle: "Enterprise-grade nutrition distribution",
-      description: "Orchestrate sophisticated supply chains connecting premium food partners with underserved communities through data-driven allocation strategies.",
-      image: imageConfig.getImage('photo-1556909114-f6e7ad7d3136', { w: 600, h: 400 }),
+      title: "Food Assistance",
+      subtitle: "Nutrition support and meal programs",
+      description: "Connect people in need with food resources through community kitchens, meal programs, and food distribution networks that ensure no one goes hungry.",
+      image: imageConfig.getImage('photo-1504113888839-1c8eb50233d3', { w: 600, h: 400 }),
       metrics: {
-        partners: "847+",
-        efficiency: "89%",
-        coverage: "23 cities"
+        served: "84K+",
+        meals: "2.1M",
+        locations: "156"
       },
       features: [
-        "AI-powered demand forecasting",
-        "Real-time inventory optimization", 
-        "Quality assurance protocols",
-        "Impact measurement dashboard"
+        "Community meal programs",
+        "Emergency food assistance", 
+        "Nutrition education",
+        "Food pantry networks"
       ],
       color: "#dc2626",
       gradient: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
       route: "/causes?category=food"
     },
     {
-      title: "Sustainable Fashion Exchange",
-      subtitle: "Circular economy textile platform",
-      description: "Deploy advanced clothing redistribution systems that maximize utility while minimizing environmental impact through sophisticated matching algorithms.",
+      title: "Clothing Support",
+      subtitle: "Wardrobe assistance and donations",
+      description: "Help individuals and families access quality clothing through donation drives, clothing exchanges, and wardrobe assistance programs.",
       image: imageConfig.getImage('photo-1441986300917-64674bd600d8', { w: 600, h: 400 }),
       metrics: {
-        exchanges: "15.2K",
-        sustainability: "94%",
-        satisfaction: "4.9/5"
+        donated: "45K+",
+        families: "8.2K",
+        items: "180K"
       },
       features: [
-        "Size optimization algorithms",
-        "Carbon footprint tracking",
-        "Premium brand partnerships",
-        "Seasonal demand analytics"
+        "Clothing donation drives",
+        "Professional attire programs",
+        "Seasonal clothing support",
+        "Children's clothing assistance"
       ],
       color: "#7c3aed",
       gradient: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
       route: "/causes?category=clothing"
     },
     {
-      title: "Professional Development Hub",
-      subtitle: "Executive-level skill transformation",
-      description: "Deliver sophisticated training programs and mentorship networks designed to accelerate career advancement and professional excellence.",
+      title: "Training & Education",
+      subtitle: "Skill development and learning opportunities",
+      description: "Empower people through educational resources, job training programs, and skill development that opens doors to better opportunities.",
       image: imageConfig.getImage('photo-1571019613454-1cb2f99b2d8b', { w: 600, h: 400 }),
       metrics: {
-        graduated: "3.4K",
-        placement: "92%",
-        income: "+156%"
+        trained: "12K+",
+        placed: "89%",
+        programs: "67"
       },
       features: [
-        "Executive mentorship matching",
-        "Industry certification programs",
-        "Career trajectory analysis",
-        "Corporate partnership network"
+        "Job skills training",
+        "Educational scholarships",
+        "Career development programs",
+        "Digital literacy courses"
       ],
       color: "#0d9488",
       gradient: "linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)",
       route: "/education"
+    },
+    {
+      title: "AI Training",
+      subtitle: "Future-ready technology skills",
+      description: "Prepare people for tomorrow's workforce with cutting-edge AI and machine learning training programs that open doors to high-paying tech careers.",
+      image: imageConfig.getImage('photo-1485827404703-89b55fcc595e', { w: 600, h: 400 }),
+      metrics: {
+        enrolled: "3.2K+",
+        certified: "94%",
+        salary: "+180%"
+      },
+      features: [
+        "Machine learning fundamentals",
+        "AI application development",
+        "Data science certification",
+        "Tech industry placement"
+      ],
+      color: "#6366f1",
+      gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+      route: "/education?category=ai"
     }
   ];
 
-  // Enterprise testimonials
-  const enterpriseTestimonials = [
+  // Community testimonials
+  const communityTestimonials = [
     {
       name: 'Sarah Chen',
-      title: 'Chief Strategy Officer',
-      company: 'Metropolitan Community Alliance',
+      title: 'Community Coordinator',
+      company: 'Local Food Bank',
       avatar: imageConfig.getImage('photo-1494790108755-2616b612b786', { w: 100, h: 100, fit: 'crop', crop: 'face' }),
-      quote: 'This platform revolutionized our resource allocation strategy. We achieved 340% efficiency increase and expanded our impact across 12 metropolitan areas.',
+      quote: 'This platform helped us connect with families in need and coordinate food distribution more effectively. We\'ve been able to serve 3x more people.',
       metrics: {
-        impact: '84,000 residents served',
-        efficiency: '340% improvement',
-        roi: '$2.4M annual savings'
+        impact: '12,000 meals distributed',
+        families: '2,800 families helped',
+        volunteers: '450 active volunteers'
       },
       rating: 5
     },
     {
       name: 'Marcus Rivera',
-      title: 'Director of Operations',
-      company: 'Corporate Social Impact Ventures',
+      title: 'Program Manager',
+      company: 'Skills Training Center',
       avatar: imageConfig.getImage('photo-1507003211169-0a1dd7228f2d', { w: 100, h: 100, fit: 'crop', crop: 'face' }),
-      quote: 'The analytical capabilities and strategic insights transformed how we approach community partnerships. ROI tracking is exceptional.',
+      quote: 'Our job training programs now reach more people than ever. The platform makes it easy to connect with individuals seeking career development.',
       metrics: {
-        impact: '45 corporate partners',
-        efficiency: '89% resource optimization',
-        roi: '12x investment return'
+        impact: '890 people trained',
+        placement: '85% job placement rate',
+        programs: '24 active programs'
       },
       rating: 5
     },
     {
       name: 'Dr. Elena Vasquez',
-      title: 'Chief Innovation Officer', 
-      company: 'Future Cities Institute',
+      title: 'Education Director', 
+      company: 'Community Learning Center',
       avatar: imageConfig.getImage('photo-1559839734-2b71ea197ec2', { w: 100, h: 100, fit: 'crop', crop: 'face' }),
-      quote: 'Sophisticated data visualization and predictive analytics enable us to anticipate community needs and deploy resources strategically.',
+      quote: 'We\'ve been able to provide educational resources and scholarships to hundreds of students who wouldn\'t have had these opportunities otherwise.',
       metrics: {
-        impact: '156% outcome improvement',
-        efficiency: '91% accuracy rate', 
-        roi: '$5.2M impact generated'
+        impact: '560 students supported',
+        scholarships: '89 scholarships awarded', 
+        success: '92% graduation rate'
+      },
+      rating: 5
+    },
+    {
+      name: 'Alex Thompson',
+      title: 'AI Training Coordinator',
+      company: 'Tech Skills Institute',
+      avatar: imageConfig.getImage('photo-1507003211169-0a1dd7228f2d', { w: 100, h: 100, fit: 'crop', crop: 'face' }),
+      quote: 'Our AI training programs have transformed lives by teaching cutting-edge skills. People with no tech background are now landing high-paying jobs in AI and machine learning.',
+      metrics: {
+        impact: '1,240 people trained in AI',
+        placement: '94% job placement rate',
+        salary: 'Average $95K starting salary'
       },
       rating: 5
     }
@@ -197,7 +230,7 @@ export default function PremiumNewHomePage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % enterpriseTestimonials.length);
+      setActiveTestimonial((prev) => (prev + 1) % communityTestimonials.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -293,7 +326,7 @@ export default function PremiumNewHomePage() {
                       fontFamily: 'var(--font-inter)',
                       letterSpacing: '-0.01em'
                     }}>
-                      Enterprise-grade • Trusted by 2,847 organizations
+                      Community-focused • Helping 156K+ people nationwide
                     </Text>
                   </motion.div>
 
@@ -309,7 +342,7 @@ export default function PremiumNewHomePage() {
                       letterSpacing: '-0.025em'
                     }}
                   >
-                    Orchestrate
+                    Help people
                     <br />
                     <span style={{ 
                       background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
@@ -317,7 +350,7 @@ export default function PremiumNewHomePage() {
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text'
                     }}>
-                      meaningful change
+                      transform lives
                     </span>
                   </Title>
                   
@@ -332,8 +365,8 @@ export default function PremiumNewHomePage() {
                       fontWeight: 400
                     }}
                   >
-                    Advanced community impact platform for strategic leaders who demand 
-                    excellence in resource allocation and measurable outcomes.
+                    Connect communities to provide essential support through food assistance, 
+                    clothing donations, educational opportunities, and AI training that change lives.
                   </Paragraph>
                   
                   <Space size={20} wrap>
@@ -358,7 +391,7 @@ export default function PremiumNewHomePage() {
                         }}
                         onClick={() => router.push('/causes/create')}
                       >
-                        Launch strategic initiative
+                        Start helping today
                       </Button>
                     </motion.div>
                     
@@ -383,7 +416,7 @@ export default function PremiumNewHomePage() {
                         }}
                         onClick={() => router.push('/causes')}
                       >
-                        Watch demo
+                        Explore causes
                       </Button>
                     </motion.div>
                   </Space>
@@ -510,7 +543,7 @@ export default function PremiumNewHomePage() {
               viewport={{ once: true }}
             >
               <Row gutter={[40, 40]}>
-                {enterpriseMetrics.map((metric, index) => (
+                {impactMetrics.map((metric, index) => (
                   <Col xs={12} sm={6} key={index}>
                     <motion.div 
                       variants={fadeInUp}
@@ -579,7 +612,7 @@ export default function PremiumNewHomePage() {
                 fontFamily: 'var(--font-inter)',
                 letterSpacing: '-0.02em'
               }}>
-                Three strategic pillars
+                Four ways we help
               </Title>
               <Paragraph style={{ 
                 color: '#64748b', 
@@ -588,8 +621,8 @@ export default function PremiumNewHomePage() {
                 margin: '0 auto',
                 fontFamily: 'var(--font-inter)'
               }}>
-                Advanced frameworks for sophisticated community impact measurement 
-                and resource optimization across key vertical markets.
+                Essential support services that connect communities and transform lives 
+                through food assistance, clothing donations, educational opportunities, and AI training.
               </Paragraph>
             </motion.div>
 
@@ -599,14 +632,14 @@ export default function PremiumNewHomePage() {
               whileInView="animate"
               viewport={{ once: true }}
             >
-              {premiumPillars.map((pillar, index) => (
+              {corePillars.map((pillar, index) => (
                 <motion.div 
                   key={index} 
                   variants={fadeInUp}
                   style={{ marginBottom: 80 }}
                 >
                   <Row gutter={[80, 40]} align="middle">
-                    <Col xs={24} lg={index % 2 === 0 ? 12 : 0} order={index % 2 === 0 ? 1 : 2}>
+                    <Col xs={24} lg={12} order={index % 2 === 0 ? 1 : 2}>
                       <motion.div
                         whileHover={{ scale: 1.02, y: -8 }}
                         transition={{ duration: 0.4 }}
@@ -767,7 +800,7 @@ export default function PremiumNewHomePage() {
                             }}
                             onClick={() => router.push(pillar.route)}
                           >
-                            Explore strategic framework
+                            Learn how to help
                           </Button>
                         </motion.div>
                       </div>
@@ -794,7 +827,7 @@ export default function PremiumNewHomePage() {
                 fontFamily: 'var(--font-inter)',
                 letterSpacing: '-0.02em'
               }}>
-                Trusted by enterprise leaders
+                Trusted by community leaders
               </Title>
               <Paragraph style={{ 
                 color: '#64748b', 
@@ -803,14 +836,14 @@ export default function PremiumNewHomePage() {
                 margin: '0 auto',
                 fontFamily: 'var(--font-inter)'
               }}>
-                Strategic decision-makers who demand excellence choose our platform 
-                for mission-critical community impact initiatives.
+                Local organizations and community leaders who are making a real difference 
+                in people's lives every day through our platform.
               </Paragraph>
             </motion.div>
 
             <Row gutter={[40, 40]}>
-              {enterpriseTestimonials.map((testimonial, index) => (
-                <Col xs={24} md={8} key={index}>
+              {communityTestimonials.map((testimonial, index) => (
+                <Col xs={24} sm={12} lg={6} key={index}>
                   <motion.div 
                     whileHover={{ y: -12, scale: 1.02 }}
                     transition={{ duration: 0.4 }}
@@ -953,7 +986,7 @@ export default function PremiumNewHomePage() {
                 fontFamily: 'var(--font-inter)',
                 letterSpacing: '-0.02em'
               }}>
-                Ready to transform your impact?
+                Ready to help people in need?
               </Title>
               
               <Paragraph style={{ 
@@ -964,8 +997,8 @@ export default function PremiumNewHomePage() {
                 margin: '0 auto 48px',
                 fontFamily: 'var(--font-inter)'
               }}>
-                Join the executive network driving sophisticated community transformation 
-                through data-driven strategies and measurable outcomes.
+                Join thousands of people making a difference by providing food assistance, 
+                clothing donations, and educational opportunities to those who need it most.
               </Paragraph>
               
               <Space size="large" wrap>
@@ -989,7 +1022,7 @@ export default function PremiumNewHomePage() {
                     icon={<FiArrowRight />}
                     onClick={() => router.push('/causes/create')}
                   >
-                    Launch strategic initiative
+                    Start helping today
                   </Button>
                 </motion.div>
                 
@@ -1013,7 +1046,7 @@ export default function PremiumNewHomePage() {
                     icon={<FiGlobe />}
                     onClick={() => router.push('/causes')}
                   >
-                    Explore network
+                    Find ways to help
                   </Button>
                 </motion.div>
               </Space>

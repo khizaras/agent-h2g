@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { Layout } from 'antd';
-import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import RevampedHeader from './Header';
-import { Footer } from './Footer';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { setViewportDimensions, selectViewport } from '@/store/slices/uiSlice';
+import React, { useEffect } from "react";
+import { Layout } from "antd";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
+import UltimatePremiumHeader from "./Header";
+import { Footer } from "./Footer";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setViewportDimensions, selectViewport } from "@/store/slices/uiSlice";
 
 const { Content } = Layout;
 
@@ -35,16 +35,16 @@ const pageVariants = {
 };
 
 const pageTransition = {
-  type: 'tween',
-  ease: 'anticipate',
+  type: "tween",
+  ease: "anticipate",
   duration: 0.4,
 };
 
-export function MainLayout({ 
-  children, 
-  showHeader = true, 
+export function MainLayout({
+  children,
+  showHeader = true,
   showFooter = true,
-  className = '' 
+  className = "",
 }: MainLayoutProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
@@ -54,39 +54,42 @@ export function MainLayout({
   // Handle viewport changes
   useEffect(() => {
     const handleResize = () => {
-      dispatch(setViewportDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      }));
+      dispatch(
+        setViewportDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }),
+      );
     };
 
     // Set initial dimensions
     handleResize();
 
     // Add event listener
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [dispatch]);
 
   // Determine if we should show minimal layout (auth pages, etc.)
-  const isAuthPage = pathname.startsWith('/auth/');
-  const isAdminPage = pathname.startsWith('/admin/');
-  const isFullPageApp = pathname.startsWith('/app/');
+  const isAuthPage = pathname.startsWith("/auth/");
+  const isAdminPage = pathname.startsWith("/admin/");
+  const isFullPageApp = pathname.startsWith("/app/");
 
   // Override layout settings for special pages
   const shouldShowHeader = showHeader && !isFullPageApp;
-  const shouldShowFooter = showFooter && !isAuthPage && !isAdminPage && !isFullPageApp;
+  const shouldShowFooter =
+    showFooter && !isAuthPage && !isAdminPage && !isFullPageApp;
 
-  // Calculate content padding based on header (60px for Microsoft header)
+  // Calculate content padding based on header (85px for Ultimate Premium header)
   const contentStyle = {
-    minHeight: shouldShowHeader ? 'calc(100vh - 60px)' : '100vh',
-    paddingTop: shouldShowHeader ? '0' : '0',
+    minHeight: shouldShowHeader ? "calc(100vh - 85px)" : "100vh",
+    paddingTop: shouldShowHeader ? "85px" : "0",
   };
 
   return (
-    <Layout className={className} style={{ minHeight: '100vh' }}>
+    <Layout className={className} style={{ minHeight: "100vh" }}>
       {/* Header */}
       <AnimatePresence mode="wait">
         {shouldShowHeader && (
@@ -94,9 +97,9 @@ export function MainLayout({
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -60, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <RevampedHeader />
+            <UltimatePremiumHeader />
           </motion.div>
         )}
       </AnimatePresence>
@@ -111,7 +114,7 @@ export function MainLayout({
             exit="out"
             variants={pageVariants}
             transition={pageTransition}
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           >
             {children}
           </motion.div>
@@ -119,16 +122,16 @@ export function MainLayout({
 
         {/* Scroll Progress Indicator */}
         <motion.div
-          style={{ 
-            position: 'fixed',
+          style={{
+            position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             height: 4,
-            background: 'linear-gradient(90deg, var(--color-primary), #722ed1)',
-            transformOrigin: 'left',
+            background: "linear-gradient(90deg, var(--color-primary), #722ed1)",
+            transformOrigin: "left",
             zIndex: 50,
-            scaleX: 0
+            scaleX: 0,
           }}
           whileInView={{ scaleX: 1 }}
           viewport={{ once: false, amount: 0 }}
@@ -143,7 +146,7 @@ export function MainLayout({
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut', delay: 0.1 }}
+            transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
           >
             <Footer />
           </motion.div>
@@ -180,7 +183,12 @@ export function MainLayout({
 
         /* Loading states */
         .loading-skeleton {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background: linear-gradient(
+            90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%
+          );
           background-size: 200% 100%;
           animation: loading 1.5s infinite;
         }
@@ -335,8 +343,9 @@ export function MainLayout({
 
         .gradient-border {
           border: 2px solid transparent;
-          background: linear-gradient(white, white) padding-box,
-                      linear-gradient(135deg, #3b82f6, #8b5cf6) border-box;
+          background:
+            linear-gradient(white, white) padding-box,
+            linear-gradient(135deg, #3b82f6, #8b5cf6) border-box;
         }
       `}</style>
     </Layout>

@@ -20,7 +20,17 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    // Safely parse JSON body (it might be empty)
+    let body = {};
+    try {
+      const text = await request.text();
+      if (text) {
+        body = JSON.parse(text);
+      }
+    } catch (error) {
+      // If no body or invalid JSON, use empty object
+      body = {};
+    }
     const validatedData = enrollmentSchema.parse(body);
     const resolvedParams = await params;
     const causeId = parseInt(resolvedParams.id);

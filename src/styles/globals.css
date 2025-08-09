@@ -716,6 +716,28 @@ a:focus {
   }
 }
 
+/* Premium Design System Overrides - SAFE */
+.premium-page-wrapper {
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Only override main layout backgrounds - NOT component backgrounds */
+body {
+  background: var(--color-background);
+}
+
+/* Ensure premium text contrast in all hero sections ONLY */
+.hero-content h1,
+.hero-content .ant-typography-title,
+.hero-content .ant-typography-paragraph,
+.hero-content span,
+.hero-title h1,
+.hero-title .ant-typography-title {
+  color: white !important;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.6) !important;
+}
+
 /* Print Styles */
 @media print {
   .no-print {
