@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal original SVG illustration for teamwork (public domain by project author) -->
+<svg width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Teamwork Illustration</title>
+  <desc id="desc">Three abstract people figures standing together with connecting shapes.</desc>
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="none"/>
+  <!-- ground shadow -->
+  <ellipse cx="320" cy="360" rx="220" ry="30" fill="#0f172a0f"/>
+  <!-- left person -->
+  <circle cx="210" cy="170" r="36" fill="#1e293b"/>
+  <path d="M170 280 a80 80 0 0 1 160 0 v30 h-160z" fill="url(#g1)" opacity="0.9"/>
+  <!-- center person -->
+  <circle cx="320" cy="150" r="40" fill="#0f172a"/>
+  <path d="M260 280 a90 90 0 0 1 180 0 v35 h-180z" fill="#64748b20"/>
+  <path d="M280 210 h80 a60 60 0 0 1 60 60 v45 h-200 v-45 a60 60 0 0 1 60-60z" fill="url(#g1)"/>
+  <!-- right person -->
+  <circle cx="430" cy="170" r="36" fill="#1e293b"/>
+  <path d="M390 280 a80 80 0 0 1 160 0 v30 h-160z" fill="url(#g1)" opacity="0.9"/>
+  <!-- connectors -->
+  <path d="M210 200 Q 320 250 430 200" fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+</svg>

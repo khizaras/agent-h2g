@@ -85,7 +85,7 @@ export function MainLayout({
   // Calculate content padding based on header (85px for Ultimate Premium header)
   const contentStyle = {
     minHeight: shouldShowHeader ? "calc(100vh - 85px)" : "100vh",
-    paddingTop: shouldShowHeader ? "85px" : "0",
+    paddingTop: "0",
   };
 
   return (

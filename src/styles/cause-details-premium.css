@@ -1,0 +1,268 @@
+:root {
+  --surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --muted: #f1f5f9;
+  --border: #e2e8f0;
+  --brand: #0ea5e9; /* professional blue */
+  --brand-2: #6366f1; /* indigo accent */
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+/* Layout wrappers */
+.cause-page {
+  min-height: 100vh;
+  background: var(--surface);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.cause-details-page .comments-spacer {
+  margin-top: 32px;
+}
+
+/* Headings and text */
+.premium-card-title,
+.training-header,
+.sidebar-title {
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+.premium-card-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Tags section */
+.tags-section {
+  margin-top: 8px;
+}
+.tags-grid {
+  display: grid;
+  gap: 16px;
+}
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag-item {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #0f172a;
+}
+.tag-topic {
+  background: #eef2ff;
+  border-color: #e0e7ff;
+  color: #3730a3;
+}
+.tag-provided {
+  background: #ecfeff;
+  border-color: #cffafe;
+  color: #155e75;
+}
+.tag-required {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+/* Content cards */
+.content-grid {
+  display: grid;
+  gap: 16px;
+}
+.content-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+}
+.content-card-primary {
+  background:
+    linear-gradient(0deg, #ffffff, #ffffff),
+    linear-gradient(135deg, #e0e7ff, #dbeafe);
+}
+.content-card-success {
+  background:
+    linear-gradient(0deg, #ffffff, #ffffff),
+    linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+.content-card-warning {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+.content-card-title {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 16px;
+}
+.content-card-text {
+  color: #334155;
+}
+
+/* Schedule card */
+.schedule-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+}
+.schedule-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.schedule-icon {
+  color: var(--brand-2);
+}
+.schedule-title {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 16px;
+}
+.schedule-item {
+  color: #334155;
+}
+.schedule-label {
+  color: #64748b;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Sidebar */
+.sidebar-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.sidebar-title {
+  margin: 8px 0 0;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Buttons */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)) !important;
+  border: none !important;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.btn-ghost {
+  border: 1px solid var(--border) !important;
+  border-radius: 10px;
+  font-weight: 600;
+  background: #fff !important;
+}
+.btn-ghost-light {
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: #fff !important;
+  background: transparent !important;
+  border-radius: 10px;
+}
+
+/* Modal */
+.modal-title-gradient {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+.comment-form {
+  margin-top: 24px;
+}
+.comment-label {
+  color: #0f172a;
+  font-weight: 600;
+}
+.comment-input {
+  border-radius: 12px !important;
+}
+.comment-actions {
+  margin-bottom: 0 !important;
+  text-align: right;
+}
+
+/* Premium hero overrides */
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+.error-text {
+  color: #fff;
+  font-size: 18px;
+}
+.error-actions {
+  margin-top: 20px;
+}
+
+/* Training details compact */
+.training-overview {
+  margin-top: 8px;
+}
+.kv-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.kv-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.kv-value {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.training-metrics {
+  margin: 24px 0;
+}
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #0f172a;
+  font-size: 12px;
+}
+.pill svg {
+  color: var(--brand-2);
+}
+
+.enrollment-progress-bar {
+  margin-bottom: 12px;
+}

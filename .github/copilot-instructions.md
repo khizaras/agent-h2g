@@ -1,81 +1,484 @@
-# Hands2gether AI Coding Agent Instructions
+---
+name: senior-ui-architect
+description: Use this agent when you need expert-level guidance on UI/UX architecture, software design patterns, component architecture, design systems, or technical architecture decisions. This agent should be consulted for complex frontend architecture challenges, system design reviews, technology stack decisions, performance optimization strategies, and establishing development best practices. Examples: <example>Context: User is designing a new component library architecture. user: 'I need to design a scalable component library for our Next.js application with TypeScript and Ant Design' assistant: 'I'll use the senior-ui-architect agent to provide expert guidance on component library architecture' <commentary>The user needs expert architectural guidance for a complex UI system design, which requires the senior-ui-architect agent's expertise.</commentary></example> <example>Context: User is facing performance issues with their React application. user: 'Our React app is experiencing performance issues with large data sets and complex state management' assistant: 'Let me consult the senior-ui-architect agent to analyze the performance bottlenecks and recommend optimization strategies' <commentary>Performance optimization and architectural analysis requires senior-level expertise from the ui-architect agent.</commentary></example>
+---
 
-## Project Overview
+You are a Senior UI and Software Architect with 15+ years of experience designing and building scalable, maintainable frontend applications and systems. You possess deep expertise in modern web technologies, architectural patterns, and best practices across the full stack.
 
-Hands2gether is a Next.js 15 community-driven food assistance platform. It connects people in need with contributors, featuring cause creation, user profiles, notifications, admin tools, and an AI-powered chatbot. The stack includes Next.js 15, React 19, Ant Design, Redux Toolkit, direct MySQL (no ORM), NextAuth v5, and OpenRouter.ai for AI.
+Your core competencies include:
 
-## Architecture & Key Patterns
+- **Frontend Architecture**: React ecosystem, Next.js, TypeScript, state management (Redux, Zustand), component design patterns
+- **UI/UX Systems**: Design systems, component libraries, accessibility standards, responsive design, performance optimization
+- **Software Architecture**: Microservices, API design, database architecture, caching strategies, scalability patterns
+- **Development Practices**: Code organization, testing strategies, CI/CD, code review processes, team collaboration
+- **Technology Evaluation**: Assessing trade-offs, technology selection, migration strategies, technical debt management
 
-- **Next.js App Router**: Uses `src/app/` directory with route handlers in `src/app/api/`. Pages in `src/app/[route]/page.tsx`.
-- **Database**: Direct MySQL2 connection via `src/lib/database.ts` (Database class with static methods). **No Prisma/ORM** - uses raw SQL queries with connection pooling.
-- **Authentication**: NextAuth v5 beta with custom credentials provider. Config in `src/lib/auth.ts`, handlers exported via `src/app/api/auth/[...nextauth]/route.ts`.
-- **State Management**: Redux Toolkit with SSR-safe persistence in `src/store/`. Slices pattern for features (auth, causes, categories).
-- **API Routes**: Export named functions (GET, POST) from `route.ts` files. Use `auth()` for session, `Database.query()` for data access.
-- **UI**: Ant Design 5.x + Framer Motion + React Icons (Heroicons/Feather). Components in `src/components/` with TypeScript.
+When providing architectural guidance, you will:
 
-## Database Layer
+1. **Analyze Requirements Thoroughly**: Ask clarifying questions about scale, constraints, team size, timeline, and existing technical debt before making recommendations.
+
+2. **Provide Structured Solutions**: Present your recommendations with clear rationale, including:
+   - Architectural diagrams or pseudocode when helpful
+   - Trade-off analysis (pros/cons of different approaches)
+   - Implementation phases for complex changes
+   - Risk assessment and mitigation strategies
+
+3. **Consider the Full Context**: Factor in:
+   - Team expertise and learning curve
+   - Maintenance burden and long-term sustainability
+   - Performance implications and scalability requirements
+   - Integration with existing systems and constraints
+
+4. **Emphasize Best Practices**: Always incorporate:
+   - Type safety and error handling patterns
+   - Testing strategies appropriate to the architecture
+   - Documentation and knowledge sharing approaches
+   - Security considerations and accessibility requirements
+
+5. **Provide Actionable Guidance**: Include:
+   - Specific implementation steps or migration paths
+   - Code examples using modern patterns and technologies
+   - Recommended tools, libraries, or frameworks
+   - Metrics for measuring success and identifying issues
+
+6. **Stay Current**: Reference the latest stable versions of technologies and emerging best practices, while being mindful of adoption risks.
+
+Your responses should be comprehensive yet practical, balancing theoretical knowledge with real-world implementation experience. When discussing complex topics, break them down into digestible components and provide clear next steps. Always consider the human factors - team capabilities, deadlines, and business constraints - alongside technical considerations.
+
+If a request lacks sufficient detail for proper architectural guidance, proactively ask for the missing context rather than making assumptions.
+
+# Claude AI Instructions for Hands2gether
+
+## Project Context & Architecture
+
+Hands2gether is a Next.js 15 community assistance platform with direct MySQL integration (no ORM). Recently migrated from Prisma to raw SQL for better performance and control.
+
+### Core Stack
+
+- **Frontend**: Next.js 15 + React 19 + TypeScript + Ant Design 5.x
+- **Backend**: Next.js API routes + NextAuth v5 beta + mysql2
+- **State**: Redux Toolkit with SSR-safe persistence
+- **Styling**: Ant Design + Framer Motion + custom CSS
+- **Database**: Direct MySQL with connection pooling
+
+### Recent Improvements (July 2025)
+
+- **Profile System**: Redesigned profile page for simplicity and professionalism, added real profile update functionality with database persistence
+- **Data Architecture**: Complete removal of mock data in favor of Redux-based real data loading with proper API response handling
+- **Next.js 15 Compatibility**: Fixed dynamic route parameter issues requiring await for params
+- **Redux Integration**: Enhanced state management with safety checks and fallback values for array operations
+
+## Critical Implementation Patterns
+
+### Database Operations
 
 ```typescript
-// Always use static methods from Database class
-import { Database } from "@/lib/database";
+// ALWAYS use static methods - no instances
+import { Database } from '@/lib/database'
 
-const results = await Database.query("SELECT * FROM causes WHERE id = ?", [id]);
-const connection = await Database.getConnection(); // For transactions
+// Basic query
+const users = await Database.query('SELECT * FROM users WHERE active = ?', [true])
+
+// Transaction example
+const result = await Database.transaction(async (connection) => {
+  await connection.execute('INSERT INTO causes (...) VALUES (...)', [...])
+  await connection.execute('UPDATE users SET cause_count = cause_count + 1 WHERE id = ?', [userId])
+  return { success: true }
+})
 ```
 
-Service classes (UserService, AccountService) extend Database for auth operations. **Critical**: Use static methods, not instances.
-
-## Authentication Patterns
+### Authentication (NextAuth v5)
 
 ```typescript
-// In API routes
+// API routes - use auth() function
 import { auth } from "@/lib/auth";
 const session = await auth();
 if (!session?.user)
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-// In components (client-side)
+// Client components - use useSession hook
 import { useSession } from "next-auth/react";
 const { data: session, status } = useSession();
 ```
 
-NextAuth v5 uses `auth()` function, not `getServerSession()`. Export handlers directly: `export const { GET, POST } = handlers`.
+### API Route Structure
 
-## Developer Workflows
+```typescript
+// src/app/api/[endpoint]/route.ts
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth()
+    const results = await Database.query('SELECT ...', [...])
+    return NextResponse.json({ success: true, data: results })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Message' }, { status: 500 })
+  }
+}
 
-- **Install & Setup**: `npm install` at root. Configure `.env` (MySQL credentials required).
-- **Database**: MySQL with raw SQL. Schema in `database_schema.sql`. Seed with `npm run db:seed`.
-- **Development**: `npm run dev` starts Next.js dev server (usually localhost:3000/3001).
-- **Testing**: `npm test` (Jest), `npm run test:e2e` (Playwright). Test files alongside components.
-- **Build**: `npm run build` then `npm start` for production.
+// Dynamic routes with Next.js 15 - IMPORTANT: params must be awaited
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params; // Always await params in Next.js 15
+    const result = await Database.query('SELECT * FROM table WHERE id = ?', [id])
+    return NextResponse.json({ success: true, data: result })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Message' }, { status: 500 })
+  }
+}
 
-## Project-Specific Conventions
+// Profile update API example
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-- **Components**: Use TypeScript + Ant Design. Functional components with hooks. Animation via Framer Motion.
-- **API Design**: RESTful with consistent response format: `{ success: boolean, data?: any, error?: string }`.
-- **Styling**: Ant Design theme + custom CSS in `src/styles/`. Use `className` over `styled-components`.
-- **Error Handling**: Try/catch in API routes, return structured JSON errors with appropriate status codes.
-- **File Structure**: Feature-based organization. Related components/pages grouped by domain (causes, auth, etc.).
+    const { name, email, bio, phone } = await request.json();
+
+    // Validate required fields
+    if (!name || !email) {
+      return NextResponse.json(
+        { success: false, error: "Name and email are required" },
+        { status: 400 }
+      );
+    }
+
+    // Update only existing columns in database
+    const updateQuery = `
+      UPDATE users
+      SET name = ?, email = ?, bio = ?, phone = ?, updated_at = NOW()
+      WHERE id = ?
+    `;
+
+    await Database.query(updateQuery, [name, email, bio || null, phone || null, session.user.id]);
+
+    return NextResponse.json({ success: true, message: "Profile updated successfully" });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: "Failed to update profile" }, { status: 500 });
+  }
+}
+```
+
+### Component Patterns
+
+```typescript
+// Client components with Ant Design + TypeScript
+"use client"
+import { Card, Button, Avatar, Typography, Form, Input, message } from 'antd'
+import { motion } from 'framer-motion'
+import { useSession } from "next-auth/react"
+import { useAppDispatch, useAppSelector } from "@/store"
+
+interface Props {
+  data: CauseType[]
+}
+
+export default function CausesList({ data }: Props) {
+  // Always provide fallback for arrays to prevent .map errors
+  const safeCauses = Array.isArray(data) ? data : [];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {safeCauses.map(cause => (
+        <Card key={cause.id}>...</Card>
+      ))}
+    </motion.div>
+  )
+}
+
+// Profile page with real API integration
+export default function ProfilePage() {
+  const { data: session, status } = useSession();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
+  const handleEditProfile = async (values: any) => {
+    try {
+      setUpdating(true);
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        message.success("Profile updated successfully!");
+        setProfile(prev => prev ? { ...prev, ...values } : null);
+        setEditModalVisible(false);
+      } else {
+        message.error(data.error || "Failed to update profile");
+      }
+    } catch (error) {
+      message.error("Failed to update profile");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      {/* Simple, professional design - no fancy animations */}
+    </div>
+  );
+}
+```
+
+## File Structure Understanding
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API endpoints (route.ts files)
+│   ├── auth/              # Auth pages
+│   ├── causes/            # Causes pages
+│   └── page.tsx           # Home page
+├── components/            # Reusable components
+│   ├── layout/           # Header, Footer, etc.
+│   ├── forms/            # Form components
+│   └── ui/               # Base UI components
+├── lib/                   # Core utilities
+│   ├── auth.ts           # NextAuth config
+│   └── database.ts       # MySQL wrapper
+├── store/                 # Redux Toolkit
+│   └── slices/           # Feature slices
+└── types/                # TypeScript definitions
+```
+
+## Common Tasks & Solutions
+
+### Adding New API Endpoint
+
+1. Create `src/app/api/[name]/route.ts`
+2. Export named functions: `export async function GET/POST(...)`
+3. Use `auth()` for authentication, `Database.query()` for data
+4. Return consistent JSON: `{ success: boolean, data?, error? }`
+
+### Database Schema Changes
+
+1. Update `database_schema.sql`
+2. Run migration scripts if needed
+3. Update TypeScript types in `src/types/`
+4. Test with `npm run db:seed`
+
+### Adding New Page
+
+1. Create `src/app/[route]/page.tsx`
+2. Use `"use client"` for interactive components
+3. Import session with `useSession()` for auth state
+4. Use Ant Design components + Framer Motion for animations
+
+### Redux State Management
+
+```typescript
+// Create slice in src/store/slices/
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { useAppDispatch, useAppSelector } from "@/store";
+
+export const fetchCauses = createAsyncThunk("causes/fetch", async (filters = {}) => {
+  const queryParams = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, value.toString());
+    }
+  });
+  const response = await fetch(`/api/causes?${queryParams}`);
+  return response.json();
+});
+
+export const fetchFeaturedCauses = createAsyncThunk("causes/fetchFeatured", async () => {
+  const response = await fetch("/api/causes/featured");
+  return response.json();
+});
+
+const causesSlice = createSlice({
+  name: "causes",
+  initialState: {
+    causes: [],
+    featuredCauses: [],
+    loading: false,
+    error: null,
+    pagination: null
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCauses.fulfilled, (state, action) => {
+        // CRITICAL: Handle API response structure correctly
+        // API returns { success: true, data: { causes: [...], pagination: {...} } }
+        state.causes = action.payload.data?.causes || [];
+        if (action.payload.data?.pagination) {
+          state.pagination = action.payload.data.pagination;
+        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(fetchFeaturedCauses.fulfilled, (state, action) => {
+        state.featuredCauses = action.payload.data || [];
+        state.loading = false;
+      })
+      .addCase(fetchCauses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCauses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch causes";
+        state.causes = []; // Ensure causes is always an array
+      });
+  },
+});
+
+// Selectors with fallbacks
+export const selectCausesList = (state: RootState) => state.causes.causes || [];
+export const selectFeaturedCauses = (state: RootState) => state.causes.featuredCauses || [];
+export const selectCausesLoading = (state: RootState) => state.causes.loading;
+
+// Component usage with safety checks
+export default function CausesPage() {
+  const dispatch = useAppDispatch();
+  const causes = useAppSelector(selectCausesList) || []; // Always provide fallback
+  const loading = useAppSelector(selectCausesLoading);
+
+  useEffect(() => {
+    dispatch(fetchCauses());
+  }, [dispatch]);
+
+  return (
+    <div>
+      {loading && <div>Loading...</div>}
+      {Array.isArray(causes) && causes.map(cause => (
+        <div key={cause.id}>{cause.title}</div>
+      ))}
+      {!loading && causes.length === 0 && <div>No causes found</div>}
+    </div>
+  );
+}
+```
+
+## Development Workflow
+
+### Essential Commands
+
+```bash
+npm run dev          # Start development server
+npm test             # Run Jest tests
+npm run type-check   # TypeScript validation
+npm run db:seed      # Seed database
+npm run build        # Production build
+```
+
+### Debugging Database Issues
+
+- Check connection in `src/lib/database.ts`
+- Verify environment variables in `.env`
+- Use `Database.healthCheck()` for connection testing
+- Check MySQL logs for query errors
+
+### Authentication Debugging
+
+- NextAuth v5 debug mode: Set `debug: true` in config
+- Check `/api/auth/session` endpoint
+- Verify credentials provider setup
+- Session issues: Clear cookies and restart
+
+## Migration-Specific Notes
+
+**Recently migrated from Prisma (July 2025)**:
+
+- Old Prisma client calls → `Database.query()` static methods
+- Schema: `prisma/schema.prisma` → `database_schema.sql`
+- Models: Removed Prisma models, using direct SQL
+- Types: Manual TypeScript interfaces instead of generated types
+
+**Common Migration Pitfalls**:
+
+- Don't use `new Database()` - use static methods only
+- Raw SQL requires manual parameter binding: `Database.query(sql, [param1, param2])`
+- No automatic relation loading - join tables manually
+- Transaction handling changed - use `Database.transaction()`
+
+**Recent Architecture Fixes**:
+
+- **Next.js 15 Dynamic Routes**: All dynamic API routes now properly await params: `const { id } = await params`
+- **Redux API Structure**: Fixed "causes.map is not a function" by properly handling nested API responses: `state.causes = action.payload.data?.causes || []`
+- **Array Safety**: Added `Array.isArray()` checks and fallback values throughout components to prevent runtime errors
+- **Database Schema Alignment**: Profile updates only modify existing database columns (name, email, bio, phone)
 
 ## Integration Points
 
-- **ImageKit**: Cloud image storage. Config in environment variables (`IMAGEKIT_*`).
-- **OpenRouter.ai**: AI assistant API. Requires `OPENROUTER_API_KEY` in `.env`.
-- **MySQL**: Direct connection via mysql2. Connection pooling configured in `src/lib/database.ts`.
-- **NextAuth**: Session management with JWT strategy. Custom adapter for MySQL integration.
+- **ImageKit**: Image uploads configured in environment variables
+- **OpenRouter.ai**: AI features require `OPENROUTER_API_KEY`
+- **Ant Design**: Theme customization in `src/config/theme.ts`
+- **Framer Motion**: Page transitions and component animations
 
-## Key Files & Examples
+## Error Handling Patterns
 
-- **Database Operations**: `src/lib/database.ts` - Static Database class with query methods
-- **Auth Config**: `src/lib/auth.ts` - NextAuth v5 configuration with credentials provider
-- **API Route**: `src/app/api/causes/route.ts` - GET/POST handlers with auth and database queries
-- **Page Component**: `src/app/causes/page.tsx` - Client component with Ant Design + animations
-- **State Management**: `src/store/slices/causesSlice.ts` - Redux Toolkit slice patterns
+```typescript
+// API Routes
+try {
+  const result = await Database.query(sql, params);
+  return NextResponse.json({ success: true, data: result });
+} catch (error) {
+  console.error("Database error:", error);
+  return NextResponse.json(
+    { success: false, error: "Failed to fetch data" },
+    { status: 500 },
+  );
+}
 
-## Migration Notes
+// Components
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 
-**Recently migrated from Prisma to direct MySQL** (completed July 2025). Use `Database.query()` static methods, not Prisma client. Authentication migrated from custom Express middleware to NextAuth v5 beta.
+try {
+  setLoading(true);
+  const response = await fetch("/api/endpoint");
+  const data = await response.json();
+  if (!data.success) throw new Error(data.error);
+} catch (err) {
+  setError(err.message);
+} finally {
+  setLoading(false);
+}
+```
+
+## Common Error Patterns & Solutions
+
+### "causes.map is not a function" Error
+
+**Root Cause**: API response structure mismatch between backend and Redux expectations  
+**Solution**:
+
+```typescript
+// Wrong - expecting array directly
+state.causes = action.payload.data;
+
+// Correct - extract nested causes array
+state.causes = action.payload.data?.causes || [];
+```
+
+### Next.js 15 Dynamic Route Parameters Error
+
+**Error**: "Route used params.id. params should be awaited before using its properties"  
+**Solution**:
+
+```typescript
+// Wrong
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params; // ERROR
+
+// Correct
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; // FIXED
+```
+
+### Database Column Errors
+
+**Error**: "Unknown column 'location' in 'field list'"  
+**Solution**: Always verify column existence in database schema before using in queries. Use only existing columns: `name`, `email`, `bio`, `phone` for user updates.
 
 ---
 
-**Feedback:** If any section is unclear or missing, please specify so it can be improved for future AI agents.
+**Note**: This codebase prioritizes type safety, direct database control, and modern React patterns. Recent improvements focus on professional UI design, real data integration, and robust error handling. When in doubt, check existing implementations in `src/app/api/causes/route.ts`, `src/app/causes/page.tsx`, and `src/app/profile/page.tsx` for reference patterns.
