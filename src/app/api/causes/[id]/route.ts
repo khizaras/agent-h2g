@@ -80,9 +80,9 @@ export async function GET(
         WHERE c.cause_id = ? AND c.is_approved = TRUE
         ORDER BY c.created_at DESC
       `;
-      comments = await Database.query(commentsQuery, [causeId]);
+      comments = (await Database.query(commentsQuery, [causeId])) as any[];
     } catch (error) {
-      console.log('Comments table not available:', error.message);
+      console.log("Comments table not available:", (error as Error).message);
       comments = [];
     }
 
@@ -100,10 +100,13 @@ export async function GET(
         ORDER BY ae.created_at DESC
         LIMIT 10
       `;
-      activities = await Database.query(activitiesQuery, [causeId]);
+      activities = (await Database.query(activitiesQuery, [causeId])) as any[];
     } catch (error) {
       // Analytics table doesn't exist in current schema, use empty array
-      console.log('Analytics events table not available:', error.message);
+      console.log(
+        "Analytics events table not available:",
+        (error as Error).message,
+      );
       activities = [];
     }
 
@@ -193,17 +196,21 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching cause details:", error);
-    
+
     // Provide more specific error information in development
-    const errorMessage = process.env.NODE_ENV === 'development' 
-      ? `Failed to fetch cause details: ${error.message}`
-      : "Failed to fetch cause details";
-    
+    const errorMessage =
+      process.env.NODE_ENV === "development"
+        ? `Failed to fetch cause details: ${(error as Error).message}`
+        : "Failed to fetch cause details";
+
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: errorMessage,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details:
+          process.env.NODE_ENV === "development"
+            ? (error as Error).stack
+            : undefined,
       },
       { status: 500 },
     );
@@ -355,10 +362,18 @@ export async function PUT(
                 categoryDetails.isUrgent ?? false,
                 categoryDetails.ingredients ?? null,
                 JSON.stringify(categoryDetails.nutritionalInfo ?? {}),
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('halal')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('kosher')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegan')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegetarian')) ?? false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("halal")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("kosher")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("vegan")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("vegetarian")) ??
+                  false,
                 false, // organic
                 causeId,
               ],
@@ -392,10 +407,18 @@ export async function PUT(
                 categoryDetails.isUrgent ?? false,
                 categoryDetails.ingredients ?? null,
                 JSON.stringify(categoryDetails.nutritionalInfo ?? {}),
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('halal')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('kosher')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegan')) ?? false,
-                (categoryDetails.dietaryRestrictions && categoryDetails.dietaryRestrictions.includes('vegetarian')) ?? false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("halal")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("kosher")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("vegan")) ??
+                  false,
+                (categoryDetails.dietaryRestrictions &&
+                  categoryDetails.dietaryRestrictions.includes("vegetarian")) ??
+                  false,
                 false, // organic
               ],
             );
@@ -499,8 +522,13 @@ export async function PUT(
           if (existingTraining) {
             // Handle multiple instructors
             const instructors = categoryDetails.instructors || [];
-            const primaryInstructor = instructors[0] || { name: '', email: '', bio: '', qualifications: '' };
-            
+            const primaryInstructor = instructors[0] || {
+              name: "",
+              email: "",
+              bio: "",
+              qualifications: "",
+            };
+
             await Database.query(
               `
               UPDATE training_details 
@@ -541,48 +569,127 @@ export async function PUT(
               WHERE cause_id = ?
             `,
               [
-                categoryDetails.trainingType ?? "course",
-                categoryDetails.skillLevel ?? "all-levels",
-                JSON.stringify(categoryDetails.topics ?? []),
-                categoryDetails.maxParticipants ?? 20,
-                categoryDetails.currentParticipants ?? 0,
-                categoryDetails.durationHours ?? 1,
-                categoryDetails.numberOfSessions ?? 1,
-                categoryDetails.prerequisites ?? null,
-                categoryDetails.learningObjectives ?? null,
-                categoryDetails.curriculum ?? null,
-                categoryDetails.startDate ?? null,
-                categoryDetails.endDate ?? null,
-                categoryDetails.registrationDeadline ?? null,
-                JSON.stringify(categoryDetails.schedule ?? []),
-                categoryDetails.deliveryMethod ?? "in-person",
-                categoryDetails.locationDetails ?? null,
-                categoryDetails.meetingPlatform ?? null,
-                categoryDetails.meetingLink ?? null,
-                primaryInstructor.name ?? "",
-                primaryInstructor.email ?? null,
-                primaryInstructor.bio ?? null,
-                primaryInstructor.qualifications ?? null,
-                categoryDetails.certificationProvided ?? false,
-                categoryDetails.certificationBody ?? null,
-                JSON.stringify(categoryDetails.materialsProvided ?? []),
-                JSON.stringify(categoryDetails.materialsRequired ?? []),
-                JSON.stringify(categoryDetails.softwareRequired ?? []),
-                categoryDetails.price ?? 0.0,
-                categoryDetails.isFree ?? true,
-                categoryDetails.courseLanguage ?? "English",
-                JSON.stringify(categoryDetails.subtitlesAvailable ?? []),
-                categoryDetails.difficultyRating ?? 1,
-                categoryDetails.courseMaterialsUrl ?? null,
-                categoryDetails.enrollmentStatus ?? "open",
+                categoryDetails.training_type ||
+                  categoryDetails.trainingType ||
+                  "course",
+                categoryDetails.skill_level ||
+                  categoryDetails.skillLevel ||
+                  "all-levels",
+                JSON.stringify(categoryDetails.topics || []),
+                parseInt(
+                  categoryDetails.max_trainees ||
+                    categoryDetails.maxParticipants ||
+                    "20",
+                ),
+                parseInt(
+                  categoryDetails.current_trainees ||
+                    categoryDetails.currentParticipants ||
+                    "0",
+                ),
+                parseFloat(
+                  categoryDetails.duration_hours ||
+                    categoryDetails.durationHours ||
+                    "1",
+                ),
+                parseInt(
+                  categoryDetails.number_of_days ||
+                    categoryDetails.numberOfSessions ||
+                    "1",
+                ),
+                categoryDetails.prerequisites || null,
+                categoryDetails.learning_objectives
+                  ? typeof categoryDetails.learning_objectives === "string"
+                    ? categoryDetails.learning_objectives
+                    : JSON.stringify(categoryDetails.learning_objectives)
+                  : categoryDetails.learningObjectives
+                    ? JSON.stringify(categoryDetails.learningObjectives)
+                    : null,
+                categoryDetails.curriculum || null,
+                categoryDetails.start_date || categoryDetails.startDate || null,
+                categoryDetails.end_date || categoryDetails.endDate || null,
+                categoryDetails.registration_deadline ||
+                  categoryDetails.registrationDeadline ||
+                  null,
+                JSON.stringify(categoryDetails.schedule || []),
+                categoryDetails.delivery_method ||
+                  categoryDetails.deliveryMethod ||
+                  "in-person",
+                categoryDetails.location_details ||
+                  categoryDetails.locationDetails ||
+                  null,
+                categoryDetails.meeting_platform ||
+                  categoryDetails.meetingPlatform ||
+                  null,
+                categoryDetails.meeting_link ||
+                  categoryDetails.meetingLink ||
+                  null,
+                categoryDetails.instructor_name || primaryInstructor.name || "",
+                categoryDetails.instructor_email ||
+                  primaryInstructor.email ||
+                  null,
+                categoryDetails.instructor_bio || primaryInstructor.bio || null,
+                categoryDetails.instructor_qualifications ||
+                  primaryInstructor.qualifications ||
+                  null,
+                categoryDetails.certification ||
+                  categoryDetails.certificationProvided ||
+                  false,
+                categoryDetails.certification_body ||
+                  categoryDetails.certificationBody ||
+                  null,
+                JSON.stringify(
+                  categoryDetails.materials_provided ||
+                    categoryDetails.materialsProvided ||
+                    [],
+                ),
+                JSON.stringify(
+                  categoryDetails.materials_required ||
+                    categoryDetails.materialsRequired ||
+                    [],
+                ),
+                JSON.stringify(
+                  categoryDetails.equipment_required ||
+                    categoryDetails.softwareRequired ||
+                    [],
+                ),
+                parseFloat(categoryDetails.price || "0"),
+                categoryDetails.is_free !== undefined
+                  ? categoryDetails.is_free
+                  : categoryDetails.isFree !== undefined
+                    ? categoryDetails.isFree
+                    : true,
+                categoryDetails.course_language ||
+                  categoryDetails.courseLanguage ||
+                  "English",
+                JSON.stringify(
+                  categoryDetails.subtitles_available ||
+                    categoryDetails.subtitlesAvailable ||
+                    [],
+                ),
+                parseInt(
+                  categoryDetails.difficulty_rating ||
+                    categoryDetails.difficultyRating ||
+                    "1",
+                ),
+                categoryDetails.course_materials_url ||
+                  categoryDetails.courseMaterialsUrl ||
+                  null,
+                categoryDetails.enrollment_status ||
+                  categoryDetails.enrollmentStatus ||
+                  "open",
                 causeId,
               ],
             );
           } else {
             // Handle multiple instructors
             const instructors = categoryDetails.instructors || [];
-            const primaryInstructor = instructors[0] || { name: '', email: '', bio: '', qualifications: '' };
-            
+            const primaryInstructor = instructors[0] || {
+              name: "",
+              email: "",
+              bio: "",
+              qualifications: "",
+            };
+
             await Database.query(
               `
               INSERT INTO training_details 

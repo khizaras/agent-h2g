@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { UserService } from "@/lib/database";
+import { UserService, Database } from "@/lib/database";
 import { EmailService } from "@/lib/email";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const registerSchema = z
   .object({
@@ -44,6 +45,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     // Create user
     const user = await UserService.create({
       name: validatedData.name,
@@ -52,12 +57,31 @@ export async function POST(request: NextRequest) {
       isVerified: false,
     });
 
-    // Send welcome email (don't block the response if email fails)
+    // Store verification token in verificationtokens table
+    await Database.query(
+      `INSERT INTO verificationtokens (identifier, token, expires) VALUES (?, ?, ?)`,
+      [validatedData.email, verificationToken, verificationTokenExpiry],
+    );
+
+    // Send welcome email and verification email (don't block the response if email fails)
+    const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001"}/auth/verify-email?token=${verificationToken}`;
+
+    // Send welcome email
     EmailService.sendWelcomeEmail({
       name: validatedData.name,
       email: validatedData.email,
     }).catch((error) => {
       console.error("Welcome email failed (non-blocking):", error);
+    });
+
+    // Send verification email
+    EmailService.sendEmailVerificationEmail({
+      name: validatedData.name,
+      email: validatedData.email,
+      verificationToken,
+      verificationUrl,
+    }).catch((error) => {
+      console.error("Verification email failed (non-blocking):", error);
     });
 
     // TODO: Add analytics logging when analytics service is implemented

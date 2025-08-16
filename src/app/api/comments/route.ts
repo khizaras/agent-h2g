@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { Database } from "@/lib/database";
+import EmailService from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -99,11 +100,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const {
-      cause_id,
-      parent_id,
-      content,
-    } = await request.json();
+    const { cause_id, parent_id, content } = await request.json();
 
     // Validate required fields
     if (!cause_id || !content) {
@@ -175,6 +172,81 @@ export async function POST(request: NextRequest) {
     `,
       [result.insertId],
     )) as any[];
+
+    // Send email notifications asynchronously (don't wait for them to complete)
+    setImmediate(async () => {
+      try {
+        // Get cause and creator information
+        const causeInfo = (await Database.query(
+          `
+          SELECT 
+            c.title as cause_title,
+            c.user_id as creator_id,
+            u.name as creator_name,
+            u.email as creator_email
+          FROM causes c
+          LEFT JOIN users u ON c.user_id = u.id
+          WHERE c.id = ?
+        `,
+          [cause_id],
+        )) as any[];
+
+        if (causeInfo.length > 0) {
+          const cause = causeInfo[0];
+          const commenterName = newComment[0].user_name;
+          const commentContent = content;
+
+          // Send notification to cause creator (if not the commenter)
+          if (cause.creator_id !== session.user.id) {
+            await EmailService.sendNewCommentEmail({
+              creatorName: cause.creator_name,
+              creatorEmail: cause.creator_email,
+              causeName: cause.cause_title,
+              commenterName: commenterName,
+              comment: commentContent,
+              causeId: parseInt(cause_id),
+            });
+          }
+
+          // Get all unique users who have commented on this cause (except the new commenter and creator)
+          const previousCommenters = (await Database.query(
+            `
+            SELECT DISTINCT
+              u.id as user_id,
+              u.name,
+              u.email
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.cause_id = ? 
+              AND c.user_id != ? 
+              AND c.user_id != ?
+              AND c.is_approved = 1
+              AND u.email IS NOT NULL
+              AND u.email != ''
+          `,
+            [cause_id, session.user.id, cause.creator_id],
+          )) as any[];
+
+          // Send notifications to previous commenters if there are any
+          if (previousCommenters.length > 0) {
+            await EmailService.sendCommentReplyNotifications({
+              causeName: cause.cause_title,
+              commenterName: commenterName,
+              comment: commentContent,
+              causeId: parseInt(cause_id),
+              recipients: previousCommenters,
+              newCommenterId: parseInt(session.user.id as string),
+            });
+          }
+        }
+      } catch (emailError) {
+        // Log email errors but don't fail the API call
+        console.error(
+          "Failed to send comment notification emails:",
+          emailError,
+        );
+      }
+    });
 
     return NextResponse.json({
       success: true,

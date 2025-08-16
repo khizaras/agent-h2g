@@ -58,6 +58,7 @@ import {
   FiTruck,
   FiInfo,
   FiDollarSign,
+  FiTag,
   FiMonitor,
   FiBookOpen,
   FiAward,
@@ -657,7 +658,7 @@ const PremiumComments = ({
   );
 };
 
-// Premium enrollment component with enhanced interactions
+// Premium enrollment component with enhanced interactions - Training specific
 const PremiumEnrollment = ({
   cause,
   onEnroll,
@@ -670,20 +671,33 @@ const PremiumEnrollment = ({
 
   const handleEnroll = async () => {
     if (!session) {
-      message.warning("Please log in to enroll");
+      message.warning("Please log in to enroll in this training");
       return;
     }
 
     setEnrolling(true);
     try {
       await onEnroll();
-      message.success("Successfully enrolled!");
+      message.success("Successfully enrolled in the training!");
     } catch (error) {
-      message.error("Failed to enroll");
+      message.error("Failed to enroll in training");
     } finally {
       setEnrolling(false);
     }
   };
+
+  // Check if training has capacity
+  const hasCapacity =
+    !cause.categoryDetails?.max_participants ||
+    (cause.categoryDetails.current_participants || 0) <
+      cause.categoryDetails.max_participants;
+
+  // Check if registration is still open
+  const registrationOpen =
+    !cause.categoryDetails?.registration_deadline ||
+    new Date() < new Date(cause.categoryDetails.registration_deadline);
+
+  const canEnroll = hasCapacity && registrationOpen;
 
   return (
     <motion.div
@@ -717,7 +731,7 @@ const PremiumEnrollment = ({
               boxShadow: "0 10px 30px rgba(102,126,234,0.3)",
             }}
           >
-            <FiUsers style={{ color: "white", fontSize: "24px" }} />
+            <FiBookOpen style={{ color: "white", fontSize: "24px" }} />
           </div>
         </motion.div>
 
@@ -732,7 +746,7 @@ const PremiumEnrollment = ({
             fontWeight: "700",
           }}
         >
-          Join This Initiative
+          Enroll in Training
         </Title>
 
         <Paragraph
@@ -742,18 +756,54 @@ const PremiumEnrollment = ({
             fontFamily: "Inter, system-ui, sans-serif",
           }}
         >
-          Be part of making a difference in your community
+          {canEnroll
+            ? "Join this training program and enhance your skills"
+            : !hasCapacity
+              ? "Training is full - registration closed"
+              : "Registration deadline has passed"}
         </Paragraph>
 
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        {/* Show enrollment status */}
+        {cause.categoryDetails?.max_participants && (
+          <div style={{ marginBottom: "16px" }}>
+            <Text
+              style={{
+                fontSize: "12px",
+                color: "#64748b",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              {cause.categoryDetails.current_participants || 0} /{" "}
+              {cause.categoryDetails.max_participants} enrolled
+            </Text>
+            <Progress
+              percent={Math.round(
+                ((cause.categoryDetails.current_participants || 0) /
+                  cause.categoryDetails.max_participants) *
+                  100,
+              )}
+              size="small"
+              showInfo={false}
+              style={{ marginTop: "4px" }}
+            />
+          </div>
+        )}
+
+        <motion.div
+          whileHover={{ scale: canEnroll ? 1.05 : 1 }}
+          whileTap={{ scale: canEnroll ? 0.95 : 1 }}
+        >
           <Button
             type="primary"
             size="large"
             icon={<FiCheckCircle />}
             loading={enrolling}
             onClick={handleEnroll}
+            disabled={!canEnroll}
             style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: canEnroll
+                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                : "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
               border: "none",
               borderRadius: "12px",
               height: "48px",
@@ -761,12 +811,36 @@ const PremiumEnrollment = ({
               fontWeight: "600",
               fontSize: "16px",
               padding: "0 32px",
-              boxShadow: "0 8px 20px rgba(102,126,234,0.3)",
+              boxShadow: canEnroll
+                ? "0 8px 20px rgba(102,126,234,0.3)"
+                : "none",
             }}
           >
-            Enroll Now
+            {!hasCapacity
+              ? "Training Full"
+              : !registrationOpen
+                ? "Registration Closed"
+                : "Enroll Now"}
           </Button>
         </motion.div>
+
+        {/* Show deadline if exists */}
+        {cause.categoryDetails?.registration_deadline && registrationOpen && (
+          <Text
+            style={{
+              fontSize: "11px",
+              color: "#ef4444",
+              fontFamily: "Inter, system-ui, sans-serif",
+              marginTop: "8px",
+              display: "block",
+            }}
+          >
+            Registration deadline:{" "}
+            {new Date(
+              cause.categoryDetails.registration_deadline,
+            ).toLocaleDateString()}
+          </Text>
+        )}
       </Card>
     </motion.div>
   );
@@ -1256,90 +1330,166 @@ export default function CauseDetailsPage() {
   return (
     <MainLayout>
       <div className="cause-details-page cause-page">
-        {/* Modern Premium Header */}
-        <div className="cause-header">
-          <div className="cause-header-container">
-            {/* Navigation */}
+        {/* Compact Image-Focused Hero Section */}
+        <div className="compact-hero">
+          <div className="compact-hero-container">
+            {/* Back Navigation */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
+              className="compact-nav"
             >
               <Button
                 icon={<FiArrowLeft />}
                 onClick={() => router.back()}
-                className="cause-nav-back"
+                type="text"
+                size="small"
               >
                 Back
               </Button>
             </motion.div>
 
-            {/* Badges */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="cause-badges-container"
-            >
-              <div className="cause-category-badge">
-                {getCategoryIcon(cause.category_name)}
-                {cause.category_display_name}
-              </div>
-              {cause.cause_type && (
-                <div
-                  className={`cause-type-badge cause-type-${cause.cause_type}`}
-                >
-                  {cause.cause_type === "offered" ? "OFFERING" : "REQUESTING"}
-                </div>
-              )}
-              {cause.priority !== "medium" && (
-                <div
-                  className={`cause-priority-badge priority-${cause.priority}`}
-                >
-                  {cause.priority.toUpperCase()}
-                </div>
-              )}
-            </motion.div>
+            {/* Hero Content */}
+            <div className="compact-hero-content">
+              {/* Image Section */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="compact-hero-image"
+              >
+                {cause.image ? (
+                  <Image
+                    src={cause.image}
+                    alt={cause.title}
+                    style={{
+                      width: "100%",
+                      height: "300px",
+                      objectFit: "cover",
+                      borderRadius: "16px",
+                    }}
+                    preview={{
+                      mask: (
+                        <div className="image-preview-mask">
+                          <FiCamera />
+                          <span>View Full Size</span>
+                        </div>
+                      ),
+                    }}
+                  />
+                ) : (
+                  <div className="compact-hero-placeholder">
+                    {getCategoryIcon(cause.category_name)}
+                    <span>No Image Available</span>
+                  </div>
+                )}
 
-            {/* Title */}
-            <motion.div
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h1 className="cause-title">{cause.title}</h1>
-            </motion.div>
+                {/* Floating Badges */}
+                <div className="floating-badges">
+                  <div className="compact-category-badge">
+                    {getCategoryIcon(cause.category_name)}
+                    {cause.category_display_name}
+                  </div>
+                  {cause.cause_type && (
+                    <div
+                      className={`compact-type-badge type-${cause.cause_type}`}
+                    >
+                      {cause.cause_type === "offered"
+                        ? "OFFERING"
+                        : "REQUESTING"}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
 
-            {/* Meta Information */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="cause-meta-info"
-            >
-              <div className="cause-meta-item">
-                <FiMapPin className="cause-meta-icon" />
-                <span className="cause-meta-text">{cause.location}</span>
-              </div>
-              <div className="cause-meta-item">
-                <FiClock className="cause-meta-icon" />
-                <span className="cause-meta-text">
-                  {new Date(cause.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="cause-meta-item">
-                <FiEye className="cause-meta-icon" />
-                <span className="cause-meta-text">
-                  {cause.view_count} views
-                </span>
-              </div>
-              <div className="cause-meta-item">
-                <FiHeart className="cause-meta-icon" />
-                <span className="cause-meta-text">
-                  {cause.like_count} likes
-                </span>
-              </div>
-            </motion.div>
+              {/* Content Section */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="compact-hero-info"
+              >
+                {/* Title and Priority */}
+                <div className="compact-title-section">
+                  <h1 className="compact-title">{cause.title}</h1>
+                  {cause.priority !== "medium" && (
+                    <div
+                      className={`compact-priority priority-${cause.priority}`}
+                    >
+                      {cause.priority.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Meta */}
+                <div className="compact-meta">
+                  <div className="compact-meta-item">
+                    <FiMapPin />
+                    <span>{cause.location}</span>
+                  </div>
+                  <div className="compact-meta-item">
+                    <FiUser />
+                    <span>{cause.creator?.name || "Anonymous"}</span>
+                  </div>
+                  <div className="compact-meta-item">
+                    <FiCalendar />
+                    <span>
+                      {new Date(cause.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stats Row */}
+                <div className="compact-stats">
+                  <div className="compact-stat">
+                    <FiEye />
+                    <span>{cause.view_count || 0}</span>
+                  </div>
+                  <div className="compact-stat">
+                    <FiHeart
+                      style={{ color: isLiked ? "#ef4444" : "#64748b" }}
+                    />
+                    <span>{likeCount}</span>
+                  </div>
+                  <div className="compact-stat">
+                    <FiMessageCircle />
+                    <span>{cause.comments?.length || 0}</span>
+                  </div>
+                  <div className={`compact-status status-${cause.status}`}>
+                    {cause.status.toUpperCase()}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="compact-actions">
+                  <Button
+                    type={isLiked ? "primary" : "default"}
+                    icon={<FiHeart />}
+                    onClick={handleLike}
+                    size="small"
+                  >
+                    {isLiked ? "Liked" : "Like"}
+                  </Button>
+                  <Button
+                    icon={<FiShare2 />}
+                    onClick={handleShare}
+                    size="small"
+                  >
+                    Share
+                  </Button>
+                  {isOwner && (
+                    <Button
+                      icon={<FiEdit />}
+                      onClick={() => router.push(`/causes/${cause.id}/edit`)}
+                      size="small"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
 
@@ -1350,31 +1500,235 @@ export default function CauseDetailsPage() {
             initial="hidden"
             animate="visible"
           >
-            {/* Statistics */}
-            <div style={{ marginBottom: "48px" }}>
-              <PremiumStats cause={cause} />
-            </div>
-
             <div className="cause-content-grid">
               {/* Left Column */}
               <div className="main-content-column">
-                <Space
-                  direction="vertical"
-                  size="large"
-                  style={{ width: "100%" }}
-                >
-                  {/* Description */}
+                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                  {/* Enhanced Description Section */}
                   <motion.div variants={premiumAnimations.itemVariants}>
-                    <div className="premium-card">
-                      <div className="premium-card-content">
-                        <h3 className="premium-card-title">
-                          About this initiative
-                        </h3>
-                        <div className="cause-description">
+                    <Card>
+                      <div style={{ padding: "24px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            marginBottom: "16px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              background:
+                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              borderRadius: "10px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                              fontSize: "16px",
+                            }}
+                          >
+                            <FiBookOpen />
+                          </div>
+                          <Title
+                            level={4}
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              margin: 0,
+                              fontFamily: "Inter, system-ui, sans-serif",
+                              fontWeight: "700",
+                              fontSize: "20px",
+                            }}
+                          >
+                            About this initiative
+                          </Title>
+                        </div>
+                        <div className="enhanced-description">
                           <MarkdownRenderer content={cause.description} />
                         </div>
                       </div>
-                    </div>
+                    </Card>
+                  </motion.div>
+
+                  {/* Enhanced Initiative Details */}
+                  <motion.div variants={premiumAnimations.itemVariants}>
+                    <Card>
+                      <div style={{ padding: "24px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            marginBottom: "20px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              background:
+                                "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                              borderRadius: "10px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                              fontSize: "16px",
+                            }}
+                          >
+                            <FiInfo />
+                          </div>
+                          <Title
+                            level={4}
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              margin: 0,
+                              fontFamily: "Inter, system-ui, sans-serif",
+                              fontWeight: "700",
+                              fontSize: "20px",
+                            }}
+                          >
+                            Initiative Details
+                          </Title>
+                        </div>
+
+                        <div className="enhanced-details-grid">
+                          <div className="detail-card">
+                            <div className="detail-icon type">
+                              {cause.cause_type === "offered" ? (
+                                <FiPackage />
+                              ) : (
+                                <FiHeart />
+                              )}
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Type</div>
+                              <div className="detail-value">
+                                {cause.cause_type === "offered"
+                                  ? "Offering Help"
+                                  : "Requesting Help"}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="detail-card">
+                            <div className="detail-icon priority">
+                              <FiTrendingUp />
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Priority</div>
+                              <div className="detail-value">
+                                {cause.priority.charAt(0).toUpperCase() +
+                                  cause.priority.slice(1)}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="detail-card">
+                            <div className="detail-icon status">
+                              <FiCheckCircle />
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Status</div>
+                              <div className="detail-value">
+                                {cause.status.charAt(0).toUpperCase() +
+                                  cause.status.slice(1)}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="detail-card">
+                            <div className="detail-icon location">
+                              <FiMapPin />
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Location</div>
+                              <div className="detail-value">
+                                {cause.location}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="detail-card">
+                            <div className="detail-icon created">
+                              <FiCalendar />
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Created</div>
+                              <div className="detail-value">
+                                {new Date(cause.created_at).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="detail-card">
+                            <div className="detail-icon updated">
+                              <FiClock />
+                            </div>
+                            <div className="detail-content">
+                              <div className="detail-label">Last Updated</div>
+                              <div className="detail-value">
+                                {new Date(cause.updated_at).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {cause.special_instructions && (
+                          <div className="special-instructions">
+                            <div className="instruction-header">
+                              <FiAlertCircle
+                                style={{ color: "#f59e0b", fontSize: "20px" }}
+                              />
+                              <span>Special Instructions</span>
+                            </div>
+                            <div className="instruction-content">
+                              {cause.special_instructions}
+                            </div>
+                          </div>
+                        )}
+
+                        {cause.tags && cause.tags.length > 0 && (
+                          <div className="tags-section">
+                            <div className="tags-header">
+                              <FiTag
+                                style={{ color: "#8b5cf6", fontSize: "18px" }}
+                              />
+                              <span>Tags</span>
+                            </div>
+                            <div className="enhanced-tags">
+                              {cause.tags.map((tag: string, index: number) => (
+                                <span key={index} className="enhanced-tag">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
                   </motion.div>
 
                   {/* Category-specific details */}
@@ -1953,110 +2307,183 @@ export default function CauseDetailsPage() {
                   size="large"
                   style={{ width: "100%" }}
                 >
-                  {/* Creator Info */}
+                  {/* Enhanced Creator Info */}
                   <motion.div variants={premiumAnimations.itemVariants}>
-                    <div className="sidebar-card">
-                      <div
-                        style={{ textAlign: "center", marginBottom: "20px" }}
-                      >
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Avatar
-                            src={cause.creator?.avatar}
-                            icon={<FiUser />}
-                            size={80}
-                            style={{
-                              marginBottom: "16px",
-                              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                            }}
-                          />
-                        </motion.div>
-                        <h4 className="sidebar-title">
-                          {cause.creator?.name || "Anonymous"}
-                        </h4>
-                        <p className="premium-card-subtitle">
-                          Initiative Creator
-                        </p>
-                      </div>
-
-                      {cause.contact_phone && (
-                        <Space
-                          style={{
-                            width: "100%",
-                            justifyContent: "center",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          <FiPhone style={{ color: "#64748b" }} />
-                          <Text
-                            style={{
-                              fontFamily: "Inter, system-ui, sans-serif",
-                            }}
+                    <Card
+                      style={{
+                        background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)`,
+                        backdropFilter: "blur(30px)",
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        borderRadius: "24px",
+                        boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{ padding: "32px", textAlign: "center" }}>
+                        <div className="creator-avatar-container">
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3 }}
                           >
-                            {cause.contact_phone}
-                          </Text>
-                        </Space>
-                      )}
+                            <Avatar
+                              src={cause.creator?.avatar}
+                              icon={<FiUser />}
+                              size={80}
+                              style={{
+                                marginBottom: "20px",
+                                boxShadow:
+                                  "0 12px 40px rgba(102, 126, 234, 0.2)",
+                                border: "4px solid white",
+                              }}
+                            />
+                          </motion.div>
+                          <div className="creator-badge">
+                            <FiCheckCircle style={{ fontSize: "14px" }} />
+                            Verified Creator
+                          </div>
+                        </div>
 
-                      {(cause.contact_email || cause.creator?.email) && (
-                        <Space
+                        <Title
+                          level={4}
                           style={{
-                            width: "100%",
-                            justifyContent: "center",
-                            marginBottom: "20px",
-                          }}
-                        >
-                          <FiMail style={{ color: "#64748b" }} />
-                          <Text
-                            style={{
-                              fontFamily: "Inter, system-ui, sans-serif",
-                            }}
-                          >
-                            {cause.contact_email || cause.creator?.email}
-                          </Text>
-                        </Space>
-                      )}
-
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Button
-                          type="primary"
-                          block
-                          icon={<FiMail />}
-                          onClick={() =>
-                            (window.location.href = `mailto:${cause.contact_email || cause.creator?.email}`)
-                          }
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            border: "none",
-                            borderRadius: "12px",
-                            height: "40px",
+                            color: "#1e293b",
+                            marginBottom: "8px",
                             fontFamily: "Inter, system-ui, sans-serif",
-                            fontWeight: "600",
-                            fontSize: "14px",
+                            fontWeight: "700",
+                            fontSize: "20px",
                           }}
                         >
-                          Send Message
-                        </Button>
-                      </motion.div>
-                    </div>
+                          {cause.creator?.name || "Anonymous"}
+                        </Title>
+
+                        <Text
+                          style={{
+                            color: "#64748b",
+                            fontSize: "14px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            display: "block",
+                            marginBottom: "24px",
+                          }}
+                        >
+                          Initiative Creator
+                        </Text>
+
+                        {cause.creator?.bio && (
+                          <Text
+                            style={{
+                              color: "#475569",
+                              fontSize: "15px",
+                              fontFamily: "Inter, system-ui, sans-serif",
+                              lineHeight: "1.6",
+                              display: "block",
+                              marginBottom: "24px",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            "{cause.creator.bio}"
+                          </Text>
+                        )}
+
+                        <div className="creator-contact-info">
+                          {cause.contact_phone && (
+                            <div className="contact-item">
+                              <div className="contact-icon">
+                                <FiPhone />
+                              </div>
+                              <Text
+                                style={{
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}
+                              >
+                                {cause.contact_phone}
+                              </Text>
+                            </div>
+                          )}
+
+                          {(cause.contact_email || cause.creator?.email) && (
+                            <div className="contact-item">
+                              <div className="contact-icon">
+                                <FiMail />
+                              </div>
+                              <Text
+                                style={{
+                                  fontFamily: "Inter, system-ui, sans-serif",
+                                }}
+                              >
+                                {cause.contact_email || cause.creator?.email}
+                              </Text>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="creator-actions">
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <Button
+                              type="primary"
+                              block
+                              size="large"
+                              icon={<FiMail />}
+                              onClick={() =>
+                                (window.location.href = `mailto:${cause.contact_email || cause.creator?.email}`)
+                              }
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                border: "none",
+                                borderRadius: "12px",
+                                height: "48px",
+                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontWeight: "600",
+                                fontSize: "15px",
+                                marginBottom: "12px",
+                                boxShadow:
+                                  "0 4px 20px rgba(102, 126, 234, 0.3)",
+                              }}
+                            >
+                              Send Message
+                            </Button>
+                          </motion.div>
+
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <Button
+                              block
+                              size="large"
+                              icon={<FiUser />}
+                              style={{
+                                background: "rgba(255,255,255,0.8)",
+                                border: "1px solid rgba(102,126,234,0.2)",
+                                borderRadius: "12px",
+                                height: "48px",
+                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontWeight: "600",
+                                fontSize: "15px",
+                                color: "#667eea",
+                              }}
+                            >
+                              View Profile
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </Card>
                   </motion.div>
 
-                  {/* Enrollment */}
-                  {!enrolled && (
+                  {/* Enrollment - Only for training-related causes */}
+                  {cause.category_name === "training" && !enrolled && (
                     <PremiumEnrollment cause={cause} onEnroll={handleEnroll} />
                   )}
 
-                  {enrolled && (
+                  {cause.category_name === "training" && enrolled && (
                     <motion.div variants={premiumAnimations.itemVariants}>
                       <Alert
                         message="You're enrolled!"
-                        description="You have successfully joined this initiative. The creator will contact you soon."
+                        description="You have successfully joined this training. The instructor will contact you soon with course details."
                         type="success"
                         showIcon
                         style={{
@@ -2066,6 +2493,101 @@ export default function CauseDetailsPage() {
                           fontFamily: "Inter, system-ui, sans-serif",
                         }}
                       />
+                    </motion.div>
+                  )}
+
+                  {/* Action buttons for non-training causes */}
+                  {cause.category_name !== "training" && (
+                    <motion.div variants={premiumAnimations.itemVariants}>
+                      <Card
+                        style={{
+                          background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)`,
+                          backdropFilter: "blur(20px)",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          borderRadius: "20px",
+                          textAlign: "center",
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <Title
+                          level={4}
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            marginBottom: "16px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                            fontWeight: "700",
+                          }}
+                        >
+                          {cause.cause_type === "offered"
+                            ? "Interested?"
+                            : "Want to Help?"}
+                        </Title>
+
+                        <Paragraph
+                          style={{
+                            color: "#64748b",
+                            marginBottom: "20px",
+                            fontFamily: "Inter, system-ui, sans-serif",
+                          }}
+                        >
+                          {cause.cause_type === "offered"
+                            ? "Contact the creator to learn more about this offering"
+                            : "Reach out to provide assistance for this request"}
+                        </Paragraph>
+
+                        <Space direction="vertical" style={{ width: "100%" }}>
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <Button
+                              type="primary"
+                              block
+                              icon={<FiHeart />}
+                              onClick={handleLike}
+                              style={{
+                                background: isLiked
+                                  ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+                                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                border: "none",
+                                borderRadius: "12px",
+                                height: "40px",
+                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontWeight: "600",
+                                fontSize: "14px",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              {isLiked ? "❤️ Liked" : "👍 Show Interest"}
+                            </Button>
+                          </motion.div>
+
+                          <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <Button
+                              block
+                              icon={<FiShare2 />}
+                              onClick={handleShare}
+                              style={{
+                                background: "rgba(255,255,255,0.6)",
+                                border: "1px solid rgba(102,126,234,0.2)",
+                                borderRadius: "12px",
+                                height: "40px",
+                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontWeight: "600",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Share Initiative
+                            </Button>
+                          </motion.div>
+                        </Space>
+                      </Card>
                     </motion.div>
                   )}
 

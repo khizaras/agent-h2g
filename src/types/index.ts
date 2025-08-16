@@ -177,8 +177,9 @@ export interface EducationDetails {
   currentTrainees: number;
   durationHours: number;
   numberOfDays: number;
-  prerequisites?: string;
-  learningObjectives?: LearningObjective[];
+  prerequisites?: string; // Rich text content
+  learningObjectives?: string; // Rich text content (changed from LearningObjective[])
+  curriculum?: string; // Rich text content for detailed curriculum
   startDate: string;
   endDate: string;
   registrationDeadline?: string;
@@ -189,22 +190,32 @@ export interface EducationDetails {
   meetingLink?: string;
   meetingId?: string;
   meetingPassword?: string;
-  instructorName: string;
+  // Legacy fields for backward compatibility
+  instructorName?: string;
   instructorEmail?: string;
   instructorBio?: string;
   instructorQualifications?: string;
   instructorRating: number;
+  // New multiple instructors field
+  instructors: Instructor[];
   certification: boolean;
   certificationBody?: string;
-  materialsProvided?: string[];
-  equipmentRequired?: string[];
-  softwareRequired?: string[];
+  materialsProvided?: string; // Rich text content (changed from string[])
+  equipmentRequired?: string; // Rich text content (changed from string[])
+  softwareRequired?: string; // Rich text content (changed from string[])
   price: number;
   isFree: boolean;
   courseLanguage: string;
   subtitlesAvailable?: string[];
   difficultyRating: number;
   createdAt: string;
+}
+
+export interface Instructor {
+  name: string;
+  email?: string;
+  bio?: string;
+  qualifications?: string;
 }
 
 export interface FoodCause extends BaseCause {

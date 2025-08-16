@@ -1,41 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Database } from '@/lib/database';
-import { auth } from '@/lib/auth';
-import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from "next/server";
+import { Database } from "@/lib/database";
+import { auth } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
+
     // Security check - only allow in development or with admin credentials
     const { adminKey } = await request.json();
     const isValidAdmin = adminKey === process.env.ADMIN_SETUP_KEY;
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     if (!isDevelopment && !isValidAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized. This endpoint is only available in development or with admin key.' },
-        { status: 403 }
+        {
+          success: false,
+          error:
+            "Unauthorized. This endpoint is only available in development or with admin key.",
+        },
+        { status: 403 },
       );
     }
 
     const results: string[] = [];
-    
+
     // Step 1: Drop existing tables
-    results.push('[DELETE] Dropping existing tables...');
-    
+    results.push("[DELETE] Dropping existing tables...");
+
     const dropTables = [
-      'enrollments',
-      'training_details',
-      'clothes_details', 
-      'food_details',
-      'comments',
-      'cause_views',
-      'cause_likes',
-      'supporters',
-      'causes',
-      'categories',
-      'users'
+      "verificationtokens",
+      "sessions",
+      "accounts",
+      "activities",
+      "user_interactions",
+      "like_interactions",
+      "training_enrollments",
+      "training_details",
+      "clothes_details",
+      "food_details",
+      "comments",
+      "cause_views",
+      "cause_likes",
+      "supporters",
+      "causes",
+      "categories",
+      "users",
     ];
 
     for (const table of dropTables) {
@@ -43,13 +53,15 @@ export async function POST(request: NextRequest) {
         await Database.query(`DROP TABLE IF EXISTS \`${table}\``);
         results.push(`[SUCCESS] Dropped table: ${table}`);
       } catch (error) {
-        results.push(`[WARNING] Failed to drop ${table}: ${error.message}`);
+        results.push(
+          `[WARNING] Failed to drop ${table}: ${(error as Error).message}`,
+        );
       }
     }
 
     // Step 2: Create tables
-    results.push('[CREATE] Creating new tables...');
-    
+    results.push("[CREATE] Creating new tables...");
+
     // Create users table
     await Database.query(`
       CREATE TABLE \`users\` (
@@ -72,7 +84,7 @@ export async function POST(request: NextRequest) {
         UNIQUE KEY \`email\` (\`email\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created users table');
+    results.push("[SUCCESS] Created users table");
 
     // Create categories table
     await Database.query(`
@@ -91,7 +103,7 @@ export async function POST(request: NextRequest) {
         UNIQUE KEY \`name\` (\`name\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created categories table');
+    results.push("[SUCCESS] Created categories table");
 
     // Create causes table
     await Database.query(`
@@ -135,7 +147,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`causes_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created causes table');
+    results.push("[SUCCESS] Created causes table");
 
     // Create food_details table
     await Database.query(`
@@ -171,7 +183,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`food_details_ibfk_1\` FOREIGN KEY (\`cause_id\`) REFERENCES \`causes\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created food_details table');
+    results.push("[SUCCESS] Created food_details table");
 
     // Create clothes_details table
     await Database.query(`
@@ -203,7 +215,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`clothes_details_ibfk_1\` FOREIGN KEY (\`cause_id\`) REFERENCES \`causes\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created clothes_details table');
+    results.push("[SUCCESS] Created clothes_details table");
 
     // Create training_details table
     await Database.query(`
@@ -217,9 +229,9 @@ export async function POST(request: NextRequest) {
         \`current_participants\` int DEFAULT '0',
         \`duration_hours\` decimal(5,2) NOT NULL DEFAULT '1.00',
         \`number_of_sessions\` int DEFAULT '1',
-        \`prerequisites\` text,
-        \`learning_objectives\` text,
-        \`curriculum\` text,
+        \`prerequisites\` longtext,
+        \`learning_objectives\` json DEFAULT NULL,
+        \`curriculum\` longtext,
         \`start_date\` date NOT NULL,
         \`end_date\` date NOT NULL,
         \`registration_deadline\` date DEFAULT NULL,
@@ -251,7 +263,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`training_details_ibfk_1\` FOREIGN KEY (\`cause_id\`) REFERENCES \`causes\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created training_details table');
+    results.push("[SUCCESS] Created training_details table");
 
     // Create supporting tables
     await Database.query(`
@@ -271,7 +283,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`supporters_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created supporters table');
+    results.push("[SUCCESS] Created supporters table");
 
     await Database.query(`
       CREATE TABLE \`cause_views\` (
@@ -288,7 +300,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`cause_views_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created cause_views table');
+    results.push("[SUCCESS] Created cause_views table");
 
     await Database.query(`
       CREATE TABLE \`cause_likes\` (
@@ -304,7 +316,7 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`cause_likes_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created cause_likes table');
+    results.push("[SUCCESS] Created cause_likes table");
 
     await Database.query(`
       CREATE TABLE \`comments\` (
@@ -325,33 +337,140 @@ export async function POST(request: NextRequest) {
         CONSTRAINT \`comments_ibfk_3\` FOREIGN KEY (\`parent_id\`) REFERENCES \`comments\` (\`id\`) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created comments table');
+    results.push("[SUCCESS] Created comments table");
 
     await Database.query(`
-      CREATE TABLE \`enrollments\` (
+      CREATE TABLE \`training_enrollments\` (
         \`id\` int NOT NULL AUTO_INCREMENT,
-        \`cause_id\` int NOT NULL,
-        \`user_id\` int NOT NULL,
-        \`enrollment_status\` enum('pending','accepted','rejected','completed','cancelled') DEFAULT 'pending',
-        \`enrollment_date\` timestamp DEFAULT CURRENT_TIMESTAMP,
-        \`message\` text,
-        \`notes\` text,
-        \`completion_date\` timestamp NULL DEFAULT NULL,
-        \`created_at\` timestamp DEFAULT CURRENT_TIMESTAMP,
-        \`updated_at\` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        \`training_id\` int NOT NULL COMMENT 'References training_details.id',
+        \`user_id\` int NOT NULL COMMENT 'References users.id',
+        \`status\` enum('pending','approved','rejected','completed','dropped') DEFAULT 'pending',
+        \`enrollment_date\` datetime DEFAULT CURRENT_TIMESTAMP,
+        \`approval_date\` datetime NULL DEFAULT NULL,
+        \`completion_date\` datetime NULL DEFAULT NULL,
+        \`attendance_percentage\` decimal(5,2) DEFAULT 0.00,
+        \`final_grade\` varchar(10) NULL DEFAULT NULL,
+        \`certificate_issued\` boolean DEFAULT FALSE,
+        \`certificate_url\` varchar(500) NULL DEFAULT NULL,
+        \`feedback_rating\` int NULL DEFAULT NULL COMMENT '1-5 scale',
+        \`feedback_comment\` text NULL DEFAULT NULL,
+        \`notes\` text NULL DEFAULT NULL,
+        \`created_at\` datetime DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (\`id\`),
-        UNIQUE KEY \`unique_enrollment\` (\`cause_id\`,\`user_id\`),
-        KEY \`idx_cause_id\` (\`cause_id\`),
+        UNIQUE KEY \`enrollments_training_user_key\` (\`training_id\`,\`user_id\`),
+        KEY \`idx_training_id\` (\`training_id\`),
         KEY \`idx_user_id\` (\`user_id\`),
-        KEY \`idx_status\` (\`enrollment_status\`),
-        CONSTRAINT \`enrollments_ibfk_1\` FOREIGN KEY (\`cause_id\`) REFERENCES \`causes\` (\`id\`) ON DELETE CASCADE,
-        CONSTRAINT \`enrollments_ibfk_2\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+        KEY \`idx_status\` (\`status\`),
+        KEY \`idx_enrollment_date\` (\`enrollment_date\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
-    results.push('[SUCCESS] Created enrollments table');
+    results.push("[SUCCESS] Created training_enrollments table");
+
+    await Database.query(`
+      CREATE TABLE \`like_interactions\` (
+        \`id\` int NOT NULL AUTO_INCREMENT,
+        \`user_id\` int NOT NULL COMMENT 'References users.id',
+        \`cause_id\` int NOT NULL COMMENT 'References causes.id',
+        \`is_liked\` boolean NOT NULL DEFAULT TRUE,
+        \`created_at\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        UNIQUE KEY \`unique_user_cause_like\` (\`user_id\`,\`cause_id\`),
+        KEY \`idx_user_id\` (\`user_id\`),
+        KEY \`idx_cause_id\` (\`cause_id\`),
+        KEY \`idx_created_at\` (\`created_at\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created like_interactions table");
+
+    await Database.query(`
+      CREATE TABLE \`user_interactions\` (
+        \`id\` int NOT NULL AUTO_INCREMENT,
+        \`user_id\` int NOT NULL COMMENT 'References users.id',
+        \`cause_id\` int NOT NULL COMMENT 'References causes.id',
+        \`interaction_type\` enum('view','like','share','contact','bookmark') NOT NULL,
+        \`metadata\` json NULL DEFAULT NULL COMMENT 'Additional interaction data',
+        \`created_at\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        KEY \`idx_user_cause\` (\`user_id\`,\`cause_id\`),
+        KEY \`idx_interaction_type\` (\`interaction_type\`),
+        KEY \`idx_created_at\` (\`created_at\`),
+        UNIQUE KEY \`unique_user_cause_interaction\` (\`user_id\`,\`cause_id\`,\`interaction_type\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created user_interactions table");
+
+    await Database.query(`
+      CREATE TABLE \`activities\` (
+        \`id\` int NOT NULL AUTO_INCREMENT,
+        \`user_id\` int NOT NULL,
+        \`cause_id\` int NULL DEFAULT NULL,
+        \`type\` enum('cause_created','cause_updated','cause_viewed','activity_logged','registration','donation','comment_added','support_given') NOT NULL,
+        \`description\` text NOT NULL,
+        \`metadata\` json NULL DEFAULT NULL,
+        \`ip_address\` varchar(45) NULL DEFAULT NULL,
+        \`user_agent\` text NULL DEFAULT NULL,
+        \`created_at\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (\`id\`),
+        KEY \`idx_user_id\` (\`user_id\`),
+        KEY \`idx_cause_id\` (\`cause_id\`),
+        KEY \`idx_type\` (\`type\`),
+        KEY \`idx_created_at\` (\`created_at\`),
+        KEY \`idx_user_cause\` (\`user_id\`,\`cause_id\`),
+        KEY \`idx_user_type\` (\`user_id\`,\`type\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created activities table");
+
+    await Database.query(`
+      CREATE TABLE \`accounts\` (
+        \`id\` varchar(191) NOT NULL,
+        \`user_id\` int NOT NULL COMMENT 'References users.id',
+        \`type\` varchar(191) NOT NULL,
+        \`provider\` varchar(191) NOT NULL,
+        \`provider_account_id\` varchar(191) NOT NULL,
+        \`refresh_token\` text NULL DEFAULT NULL,
+        \`access_token\` text NULL DEFAULT NULL,
+        \`expires_at\` int NULL DEFAULT NULL,
+        \`token_type\` varchar(191) NULL DEFAULT NULL,
+        \`scope\` varchar(191) NULL DEFAULT NULL,
+        \`id_token\` text NULL DEFAULT NULL,
+        \`session_state\` varchar(191) NULL DEFAULT NULL,
+        PRIMARY KEY (\`id\`),
+        UNIQUE KEY \`accounts_provider_provider_account_id_key\` (\`provider\`,\`provider_account_id\`),
+        KEY \`accounts_user_id_idx\` (\`user_id\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created accounts table");
+
+    await Database.query(`
+      CREATE TABLE \`sessions\` (
+        \`id\` varchar(191) NOT NULL,
+        \`session_token\` varchar(191) NOT NULL,
+        \`user_id\` int NOT NULL COMMENT 'References users.id',
+        \`expires\` datetime NOT NULL,
+        PRIMARY KEY (\`id\`),
+        UNIQUE KEY \`sessions_session_token_key\` (\`session_token\`),
+        KEY \`sessions_user_id_idx\` (\`user_id\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created sessions table");
+
+    await Database.query(`
+      CREATE TABLE \`verificationtokens\` (
+        \`identifier\` varchar(191) NOT NULL,
+        \`token\` varchar(191) NOT NULL,
+        \`expires\` datetime NOT NULL,
+        UNIQUE KEY \`verificationtokens_token_key\` (\`token\`),
+        UNIQUE KEY \`verificationtokens_identifier_token_key\` (\`identifier\`,\`token\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    results.push("[SUCCESS] Created verificationtokens table");
 
     // Step 3: Insert seed data
-    results.push('[SEED] Seeding initial data...');
+    results.push("[SEED] Seeding initial data...");
 
     // Insert categories
     await Database.query(`
@@ -360,42 +479,61 @@ export async function POST(request: NextRequest) {
       ('clothes', 'Clothing', 'Donate and request clothing items for all ages', 'clothes', '#4ecdc4', 2),
       ('training', 'Training', 'Share knowledge through courses and workshops', 'training', '#45b7d1', 3)
     `);
-    results.push('[SUCCESS] Inserted categories');
+    results.push("[SUCCESS] Inserted categories");
 
     // Insert sample users
-    const hashedPassword = await bcrypt.hash('password123', 10);
-    
-    await Database.query(`
+    const hashedPassword = await bcrypt.hash("password123", 10);
+
+    await Database.query(
+      `
       INSERT INTO \`users\` (\`name\`, \`email\`, \`password\`, \`bio\`, \`location\`, \`role\`) VALUES
       ('Admin User', 'admin@hands2gether.com', ?, 'System administrator', 'New York, NY', 'admin'),
       ('John Doe', 'john@example.com', ?, 'Community volunteer passionate about helping others', 'San Francisco, CA', 'user'),
       ('Jane Smith', 'jane@example.com', ?, 'Food coordinator with 5 years experience', 'Los Angeles, CA', 'user'),
       ('Mike Johnson', 'mike@example.com', ?, 'Professional trainer and mentor', 'Chicago, IL', 'user'),
       ('Sarah Wilson', 'sarah@example.com', ?, 'Social worker focused on clothing donations', 'Miami, FL', 'user')
-    `, [hashedPassword, hashedPassword, hashedPassword, hashedPassword, hashedPassword]);
-    results.push('[SUCCESS] Inserted sample users');
+    `,
+      [
+        hashedPassword,
+        hashedPassword,
+        hashedPassword,
+        hashedPassword,
+        hashedPassword,
+      ],
+    );
+    results.push("[SUCCESS] Inserted sample users");
 
     // Get user and category IDs for sample causes
-    const users = await Database.query('SELECT id FROM users LIMIT 5');
-    const categories = await Database.query('SELECT id, name FROM categories');
-    
+    const users = (await Database.query(
+      "SELECT id FROM users LIMIT 5",
+    )) as any[];
+    const categories = (await Database.query(
+      "SELECT id, name FROM categories",
+    )) as any[];
+
     // Validate we have the required data
     if (!users || users.length < 4) {
-      throw new Error(`Not enough users created. Expected at least 4, got ${users?.length || 0}`);
+      throw new Error(
+        `Not enough users created. Expected at least 4, got ${users?.length || 0}`,
+      );
     }
-    
+
     if (!categories || categories.length < 3) {
-      throw new Error(`Not enough categories created. Expected 3, got ${categories?.length || 0}`);
+      throw new Error(
+        `Not enough categories created. Expected 3, got ${categories?.length || 0}`,
+      );
     }
-    
-    const foodCategory = categories.find(c => c.name === 'food');
-    const clothesCategory = categories.find(c => c.name === 'clothes');
-    const trainingCategory = categories.find(c => c.name === 'training');
-    
+
+    const foodCategory = categories.find((c: any) => c.name === "food");
+    const clothesCategory = categories.find((c: any) => c.name === "clothes");
+    const trainingCategory = categories.find((c: any) => c.name === "training");
+
     if (!foodCategory || !clothesCategory || !trainingCategory) {
-      throw new Error('Missing required categories: food, clothes, or training');
+      throw new Error(
+        "Missing required categories: food, clothes, or training",
+      );
     }
-    
+
     const foodCategoryId = foodCategory.id;
     const clothesCategoryId = clothesCategory.id;
     const trainingCategoryId = trainingCategory.id;
@@ -403,107 +541,158 @@ export async function POST(request: NextRequest) {
     // Insert sample causes
     const sampleCauses = [
       {
-        title: 'Fresh Vegetable Surplus from Local Farm',
-        description: 'We have excess fresh vegetables including tomatoes, carrots, lettuce, and peppers from our organic farm. Perfect for families in need or community kitchens.',
+        title: "Fresh Vegetable Surplus from Local Farm",
+        description:
+          "We have excess fresh vegetables including tomatoes, carrots, lettuce, and peppers from our organic farm. Perfect for families in need or community kitchens.",
         category_id: foodCategoryId,
         user_id: users[1].id,
-        cause_type: 'offered',
-        location: 'San Francisco Bay Area, CA',
-        priority: 'medium',
-        contact_email: 'john@example.com'
+        cause_type: "offered",
+        location: "San Francisco Bay Area, CA",
+        priority: "medium",
+        contact_email: "john@example.com",
       },
       {
-        title: 'Winter Coats Needed for Homeless Shelter',
-        description: 'Our local homeless shelter urgently needs winter coats in all sizes. We serve 200+ individuals daily and are preparing for the winter season.',
+        title: "Winter Coats Needed for Homeless Shelter",
+        description:
+          "Our local homeless shelter urgently needs winter coats in all sizes. We serve 200+ individuals daily and are preparing for the winter season.",
         category_id: clothesCategoryId,
         user_id: users[2].id,
-        cause_type: 'wanted',
-        location: 'Los Angeles, CA',
-        priority: 'urgent',
-        contact_email: 'jane@example.com'
+        cause_type: "wanted",
+        location: "Los Angeles, CA",
+        priority: "urgent",
+        contact_email: "jane@example.com",
       },
       {
-        title: 'Free Web Development Bootcamp',
-        description: 'Offering a comprehensive 8-week web development course covering HTML, CSS, JavaScript, and React. Perfect for beginners looking to start their tech career.',
+        title: "Free Web Development Bootcamp",
+        description:
+          "Offering a comprehensive 8-week web development course covering HTML, CSS, JavaScript, and React. Perfect for beginners looking to start their tech career.",
         category_id: trainingCategoryId,
         user_id: users[3].id,
-        cause_type: 'offered',
-        location: 'Chicago, IL (Online Available)',
-        priority: 'medium',
-        contact_email: 'mike@example.com'
-      }
+        cause_type: "offered",
+        location: "Chicago, IL (Online Available)",
+        priority: "medium",
+        contact_email: "mike@example.com",
+      },
     ];
 
     for (const cause of sampleCauses) {
-      const causeResult = await Database.query(`
+      const causeResult = await Database.query(
+        `
         INSERT INTO \`causes\` (
           \`title\`, \`description\`, \`short_description\`, \`category_id\`, \`user_id\`, 
           \`cause_type\`, \`location\`, \`priority\`, \`contact_email\`, \`contact_person\`
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        cause.title,
-        cause.description,
-        cause.description.substring(0, 200) + '...',
-        cause.category_id,
-        cause.user_id,
-        cause.cause_type,
-        cause.location,
-        cause.priority,
-        cause.contact_email,
-        'Contact Person'
-      ]);
+      `,
+        [
+          cause.title,
+          cause.description,
+          cause.description.substring(0, 200) + "...",
+          cause.category_id,
+          cause.user_id,
+          cause.cause_type,
+          cause.location,
+          cause.priority,
+          cause.contact_email,
+          "Contact Person",
+        ],
+      );
 
       // Extract insertId using the same pattern as UserService
       const causeId = (causeResult as any).insertId;
-      
+
       if (!causeId) {
-        console.error('Failed to get insertId from cause insertion. Full result:', causeResult);
-        console.error('Result type:', typeof causeResult);
-        console.error('Result keys:', causeResult ? Object.keys(causeResult) : 'null/undefined');
-        throw new Error(`Failed to create cause - no insertId returned. Result: ${JSON.stringify(causeResult)}`);
+        console.error(
+          "Failed to get insertId from cause insertion. Full result:",
+          causeResult,
+        );
+        console.error("Result type:", typeof causeResult);
+        console.error(
+          "Result keys:",
+          causeResult ? Object.keys(causeResult) : "null/undefined",
+        );
+        throw new Error(
+          `Failed to create cause - no insertId returned. Result: ${JSON.stringify(causeResult)}`,
+        );
       }
 
       // Insert category-specific details
       if (cause.category_id === foodCategoryId) {
-        await Database.query(`
+        await Database.query(
+          `
           INSERT INTO \`food_details\` (
             \`cause_id\`, \`food_type\`, \`quantity\`, \`unit\`, \`dietary_restrictions\`, 
             \`temperature_requirements\`, \`is_urgent\`
           ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [
-          causeId, 'fresh-produce', 50, 'pounds', 
-          JSON.stringify(['organic', 'fresh']), 'refrigerated', false
-        ]);
+        `,
+          [
+            causeId,
+            "fresh-produce",
+            50,
+            "pounds",
+            JSON.stringify(["organic", "fresh"]),
+            "refrigerated",
+            false,
+          ],
+        );
       } else if (cause.category_id === clothesCategoryId) {
-        await Database.query(`
+        await Database.query(
+          `
           INSERT INTO \`clothes_details\` (
             \`cause_id\`, \`clothes_type\`, \`gender\`, \`age_group\`, \`size_range\`, 
             \`condition\`, \`season\`, \`quantity\`, \`is_urgent\`
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-          causeId, 'jackets', 'unisex', 'adult', 
-          JSON.stringify(['S', 'M', 'L', 'XL', 'XXL']), 'good', 'winter', 100, true
-        ]);
+        `,
+          [
+            causeId,
+            "jackets",
+            "unisex",
+            "adult",
+            JSON.stringify(["S", "M", "L", "XL", "XXL"]),
+            "good",
+            "winter",
+            100,
+            true,
+          ],
+        );
       } else if (cause.category_id === trainingCategoryId) {
-        await Database.query(`
+        await Database.query(
+          `
           INSERT INTO \`training_details\` (
             \`cause_id\`, \`training_type\`, \`skill_level\`, \`topics\`, \`max_participants\`,
             \`duration_hours\`, \`number_of_sessions\`, \`start_date\`, \`end_date\`,
             \`schedule\`, \`delivery_method\`, \`instructor_name\`, \`is_free\`
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-          causeId, 'bootcamp', 'beginner', 
-          JSON.stringify(['web-development', 'programming', 'javascript', 'react']),
-          25, 320, 40, '2024-02-01', '2024-03-31',
-          JSON.stringify([{day: 'Monday', time: '18:00-22:00'}, {day: 'Wednesday', time: '18:00-22:00'}]),
-          'hybrid', 'Mike Johnson', true
-        ]);
+        `,
+          [
+            causeId,
+            "bootcamp",
+            "beginner",
+            JSON.stringify([
+              "web-development",
+              "programming",
+              "javascript",
+              "react",
+            ]),
+            25,
+            320,
+            40,
+            "2024-02-01",
+            "2024-03-31",
+            JSON.stringify([
+              { day: "Monday", time: "18:00-22:00" },
+              { day: "Wednesday", time: "18:00-22:00" },
+            ]),
+            "hybrid",
+            "Mike Johnson",
+            true,
+          ],
+        );
       }
     }
-    results.push('[SUCCESS] Inserted sample causes with details');
+    results.push("[SUCCESS] Inserted sample causes with details");
 
     // Get final statistics
-    const stats = await Database.query(`
+    const stats = (await Database.query(`
       SELECT 
         (SELECT COUNT(*) FROM users) as users,
         (SELECT COUNT(*) FROM categories) as categories,
@@ -512,13 +701,13 @@ export async function POST(request: NextRequest) {
         (SELECT COUNT(*) FROM clothes_details) as clothes_details,
         (SELECT COUNT(*) FROM training_details) as training_details,
         (SELECT COUNT(*) FROM comments) as comments,
-        (SELECT COUNT(*) FROM enrollments) as enrollments
-    `);
-    
-    results.push('');
-    results.push('[COMPLETE] Database setup completed successfully!');
-    results.push('');
-    results.push('[STATS] Final Statistics:');
+        (SELECT COUNT(*) FROM training_enrollments) as training_enrollments
+    `)) as any[];
+
+    results.push("");
+    results.push("[COMPLETE] Database setup completed successfully!");
+    results.push("");
+    results.push("[STATS] Final Statistics:");
     results.push(`[INFO] Users: ${stats[0].users}`);
     results.push(`[INFO] Categories: ${stats[0].categories}`);
     results.push(`[INFO] Causes: ${stats[0].causes}`);
@@ -526,29 +715,30 @@ export async function POST(request: NextRequest) {
     results.push(`[INFO] Clothes Details: ${stats[0].clothes_details}`);
     results.push(`[INFO] Training Details: ${stats[0].training_details}`);
     results.push(`[INFO] Comments: ${stats[0].comments}`);
-    results.push(`[INFO] Enrollments: ${stats[0].enrollments}`);
-    results.push('');
-    results.push('[CREDENTIALS] Sample Login Credentials:');
-    results.push('[ADMIN] admin@hands2gether.com / password123');
-    results.push('[USER] john@example.com / password123');
+    results.push(
+      `[INFO] Training Enrollments: ${stats[0].training_enrollments}`,
+    );
+    results.push("");
+    results.push("[CREDENTIALS] Sample Login Credentials:");
+    results.push("[ADMIN] admin@hands2gether.com / password123");
+    results.push("[USER] john@example.com / password123");
 
     return NextResponse.json({
       success: true,
-      message: 'Database setup completed successfully',
+      message: "Database setup completed successfully",
       results,
-      statistics: stats[0]
+      statistics: stats[0],
     });
-
   } catch (error) {
-    console.error('Database setup error:', error);
+    console.error("Database setup error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Database setup failed', 
-        details: error.message,
-        results: [`[ERROR] ${error.message}`]
+      {
+        success: false,
+        error: "Database setup failed",
+        details: (error as Error).message,
+        results: [`[ERROR] ${(error as Error).message}`],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

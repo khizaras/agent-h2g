@@ -89,7 +89,7 @@ export const authConfig: NextAuthConfig = {
             email: user.email,
             name: user.name,
             avatar: user.avatar,
-            is_admin: Boolean(user.role === 'admin'),
+            is_admin: Boolean(user.role === "admin"),
             is_verified: Boolean(user.email_verified),
           };
         } catch (error) {
@@ -134,13 +134,16 @@ export const authConfig: NextAuthConfig = {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: false, // Disable debug warnings
   logger: {
     error(error: Error) {
       console.error("NextAuth Error:", error);
     },
     warn(code: string) {
-      console.warn("NextAuth Warning:", code);
+      // Suppress debug-enabled warning
+      if (code !== "debug-enabled") {
+        console.warn("NextAuth Warning:", code);
+      }
     },
     debug(code: string, metadata?: any) {
       if (process.env.NODE_ENV === "development") {

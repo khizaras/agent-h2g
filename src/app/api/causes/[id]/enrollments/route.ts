@@ -48,8 +48,9 @@ export async function GET(
       // For other users, just return the count
       const enrollmentCount = (await Database.query(
         `SELECT COUNT(*) as count 
-         FROM enrollments e
-         WHERE e.cause_id = ? AND e.enrollment_status IN ('pending', 'accepted')`,
+         FROM training_enrollments te
+         INNER JOIN training_details td ON te.training_id = td.id
+         WHERE td.cause_id = ? AND te.status IN ('pending', 'approved')`,
         [causeId],
       )) as any[];
 
@@ -67,21 +68,22 @@ export async function GET(
     // Get all enrolled users with their details
     const enrollments = (await Database.query(
       `SELECT 
-         e.id as enrollment_id,
-         e.enrollment_status,
-         e.message,
-         e.notes,
-         e.created_at as enrollment_date,
+         te.id as enrollment_id,
+         te.status as enrollment_status,
+         te.notes as message,
+         te.notes,
+         te.created_at as enrollment_date,
          u.id as user_id,
          u.name,
          u.email,
          u.bio,
          u.avatar,
          u.created_at as user_since
-       FROM enrollments e
-       INNER JOIN users u ON e.user_id = u.id
-       WHERE e.cause_id = ? 
-       ORDER BY e.created_at DESC`,
+       FROM training_enrollments te
+       INNER JOIN training_details td ON te.training_id = td.id
+       INNER JOIN users u ON te.user_id = u.id
+       WHERE td.cause_id = ? 
+       ORDER BY te.created_at DESC`,
       [causeId],
     )) as any[];
 
@@ -90,12 +92,12 @@ export async function GET(
       `SELECT 
          td.max_participants,
          td.current_participants,
-         COUNT(e.id) as total_enrollments,
-         SUM(CASE WHEN e.enrollment_status = 'accepted' THEN 1 ELSE 0 END) as accepted_count,
-         SUM(CASE WHEN e.enrollment_status = 'pending' THEN 1 ELSE 0 END) as pending_count,
-         SUM(CASE WHEN e.enrollment_status = 'rejected' THEN 1 ELSE 0 END) as rejected_count
+         COUNT(te.id) as total_enrollments,
+         SUM(CASE WHEN te.status = 'approved' THEN 1 ELSE 0 END) as accepted_count,
+         SUM(CASE WHEN te.status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+         SUM(CASE WHEN te.status = 'rejected' THEN 1 ELSE 0 END) as rejected_count
        FROM training_details td
-       LEFT JOIN enrollments e ON td.cause_id = e.cause_id
+       LEFT JOIN training_enrollments te ON td.id = te.training_id
        WHERE td.cause_id = ?
        GROUP BY td.cause_id`,
       [causeId],
@@ -122,7 +124,8 @@ export async function GET(
           acceptedCount: courseStats.accepted_count,
           pendingCount: courseStats.pending_count,
           rejectedCount: courseStats.rejected_count,
-          availableSpots: courseStats.max_participants - courseStats.current_participants,
+          availableSpots:
+            courseStats.max_participants - courseStats.current_participants,
         },
         enrollments: enrollments.map((enrollment) => ({
           id: enrollment.enrollment_id,
@@ -173,12 +176,15 @@ export async function PUT(
     }
 
     // Check if user owns the cause (only cause owner can update enrollment status)
-    const causeOwnerCheck = await Database.query(
+    const causeOwnerCheck = (await Database.query(
       "SELECT user_id FROM causes WHERE id = ?",
       [causeId],
-    ) as any[];
+    )) as any[];
 
-    if (causeOwnerCheck.length === 0 || causeOwnerCheck[0].user_id !== parseInt(session.user.id)) {
+    if (
+      causeOwnerCheck.length === 0 ||
+      causeOwnerCheck[0].user_id !== parseInt(session.user.id)
+    ) {
       return NextResponse.json(
         { error: "Only the cause owner can update enrollment status" },
         { status: 403 },
@@ -202,13 +208,14 @@ export async function PUT(
     }
 
     // Get updated enrollment
-    const updatedEnrollment = await Database.query(
-      `SELECT e.*, u.name as user_name, u.email as user_email 
-       FROM enrollments e 
-       LEFT JOIN users u ON e.user_id = u.id 
-       WHERE e.id = ?`,
-      [enrollmentId],
-    ) as any[];
+    const updatedEnrollment = (await Database.query(
+      `SELECT te.*, u.name as user_name, u.email as user_email 
+       FROM training_enrollments te 
+       INNER JOIN training_details td ON te.training_id = td.id
+       LEFT JOIN users u ON te.user_id = u.id 
+       WHERE te.id = ? AND td.cause_id = ?`,
+      [enrollmentId, causeId],
+    )) as any[];
 
     return NextResponse.json({
       success: true,
@@ -220,10 +227,13 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating enrollment:", error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: "Failed to update enrollment",
-        details: process.env.NODE_ENV === "development" ? error.message : undefined
+        details:
+          process.env.NODE_ENV === "development"
+            ? (error as Error).message
+            : undefined,
       },
       { status: 500 },
     );
